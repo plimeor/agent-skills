@@ -18,6 +18,10 @@ npx skills add plimeor/agent-skills --skill defuddle
 
 | Skill | 说明 |
 |-------|------|
+| [attachment-janitor](skills/attachment-janitor/SKILL.md) | 清理和整理 Obsidian 附件目录，删除未引用附件并统一重命名已引用文件 |
 | [blog-feedback](skills/blog-feedback/SKILL.md) | 模拟指定读者逐节阅读文章，输出真实的阅读体验反馈 |
+| [blog-illustration](skills/blog-illustration/SKILL.md) | 为博客文章生成插图提示词，适合工作流、架构图和抽象概念配图 |
 | [blog-writing](skills/blog-writing/SKILL.md) | 基于 SCQA 方法论创建和优化博客文章 |
 | [defuddle](skills/defuddle/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
+| [nix-coding-protocol](skills/nix-coding-protocol/SKILL.md) | 编码协议型 skill，强调先读后写、最小连贯补丁、窄验证和真实风险提示，适合编码、调试、重构与 code review |
+| [nix-decision-protocol](skills/nix-decision-protocol/SKILL.md) | 决策协议型 skill，把建议任务结构化为选项、标准、trade-off、可逆性与下一步，适合 recommendation、优先级排序和 build vs buy |
