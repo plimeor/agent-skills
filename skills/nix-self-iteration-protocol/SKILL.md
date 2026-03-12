@@ -1,6 +1,6 @@
 ---
 name: nix-self-iteration-protocol
-description: 适用于评估、重写、重构、拆分、精简或演进 AGENTS.md、SKILL.md、prompt 架构、skill description 与 routing；也用于诊断 prompt failure、误触发、漏触发、指令冲突与使用摩擦。
+description: 适用于评估、重写、重构、拆分、精简或演进 AGENTS.md、SKILL.md、prompt 架构、skill description 与 routing；也用于诊断提示词失效、prompt failure、模型不遵守全局提示词、误触发、漏触发、指令冲突、规则放错层级，以及各类指令系统使用摩擦。
 ---
 
 # 目的
