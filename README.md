@@ -25,3 +25,4 @@ npx skills add plimeor/agent-skills --skill defuddle
 | [defuddle](skills/defuddle/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
 | [nix-coding-protocol](skills/nix-coding-protocol/SKILL.md) | 编码协议型 skill，强调先读后写、最小连贯补丁、窄验证和真实风险提示，适合编码、调试、重构与 code review |
 | [nix-decision-protocol](skills/nix-decision-protocol/SKILL.md) | 决策协议型 skill，把建议任务结构化为选项、标准、trade-off、可逆性与下一步，适合 recommendation、优先级排序和 build vs buy |
+| [nix-self-iteration-protocol](skills/nix-self-iteration-protocol/SKILL.md) | 指令系统迭代型 skill，用于评估和演进 AGENTS.md、SKILL.md、prompt 架构与 routing，适合诊断 prompt failure、误触发、漏触发与指令冲突 |
