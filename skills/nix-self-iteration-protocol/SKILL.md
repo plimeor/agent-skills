@@ -25,12 +25,13 @@ description: 适用于评估、重写、重构、拆分、精简或演进 AGENTS
 
 # 诊断流程
 
-1. 先明确观察到的 symptom、重复性 failure 或 friction。
+0. 先判断这是否真的是 prompt / routing / instruction design 问题；若更可能是 context 供给不足、tooling / MCP 缺口、repo-local 约束缺失、模型能力边界或缺少 eval，先在那里修，不要默认改 prompt。
+1. 明确观察到的 symptom、重复性 failure 或 friction。
 2. 在提改动前，先给 failure 分类。
 3. 判断修复应落在哪个层级。
 4. 只提出最小但有效的改动。
 5. 说明预期收益、可能回归与受影响任务。
-6. 指定如何用稳定任务集或 eval 验证改动。
+6. 指定如何用最小 eval 包或稳定任务集验证改动。
 
 # 失败类型分类
 
@@ -69,15 +70,16 @@ description: 适用于评估、重写、重构、拆分、精简或演进 AGENTS
 
 # 变更记录模板
 
-每次改动至少回答：
+每次改动至少按以下顺序输出，不要跳字段：
 
 - observed symptom
+- evidence
 - likely root cause
-- proposed change
-- 为什么这个 placement layer 是正确的
-- expected improvement
-- possible regression / cost
-- 受影响的示例任务
+- failure class
+- placement layer
+- minimal change
+- eval plan
+- rollback signal
 
 # skill description 规则
 
@@ -99,7 +101,14 @@ description: 适用于评估、重写、重构、拆分、精简或演进 AGENTS
 
 # 回归验证纪律
 
-不要只靠直觉判断 prompt 改好了。至少维护一个稳定任务集，覆盖：
+不要只靠直觉判断 prompt 改好了。每次改动至少准备一个最小 eval 包：
+
+- 2 个 should-trigger cases
+- 2 个 near-miss should-not-trigger cases
+- 1 个 baseline 对照（改前 description / prompt / 旧规则 / 无 skill）
+- 1 个 held-out case
+
+如果改动影响跨任务 routing、global AGENTS 或多个 skills 的边界，长期仍应维护一个稳定任务集，覆盖：
 
 - 一个 coding bugfix 任务
 - 一个局部 refactor 边界案例
@@ -116,10 +125,11 @@ description: 适用于评估、重写、重构、拆分、精简或演进 AGENTS
 
 # 完成标准
 
+- 已先排除明显的非 prompt / routing 问题。
 - 改动有明确 failure mode 或持续 friction 作为依据。
 - placement layer 选择清楚且可辩护。
 - description 足够支撑稳定 routing。
-- 验证方式或 regression checks 已被明确。
+- 验证方式、baseline 与 rollback signal 已被明确。
 
 # 反模式
 
