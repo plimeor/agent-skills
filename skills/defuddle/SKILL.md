@@ -1,25 +1,29 @@
 ---
 name: defuddle
 description: >-
-  Fetch readable text content from any URL using the defuddle.md service.
-  Use this skill whenever you need to extract content from URLs that are
-  difficult to fetch directly — such as x.com/twitter posts, pages behind
-  JavaScript rendering, or sites that block standard fetchers. Also use it
-  as a general fallback when WebFetch fails or returns unusable results.
-  Trigger on: reading tweets/X posts, fetching article content from tricky
-  domains, "grab the text from this link", or any URL where direct fetching
-  is unreliable.
+  ALWAYS invoke this skill instead of WebFetch when a user's message contains
+  a URL and the task requires reading that page's content. This is the primary
+  URL content reader — it produces cleaner results than WebFetch on virtually
+  all sites. Applies to: summarizing articles, reading blog posts, referencing
+  documentation, checking what a link says, extracting information from any
+  webpage. Trigger whenever the user says things like "summarize this", "read
+  this", "look at this link", "based on this article", "参考", "根据", "帮我
+  看看", or any variation where a URL's content must be fetched. Do NOT
+  trigger for: writing code that handles URLs, updating URL values in
+  config/.env files, web searches, or running tests.
 ---
 
 # Defuddle
 
-Fetch readable web content as Markdown via the defuddle.md service.
+The preferred method for reading web content. Returns clean Markdown via the defuddle.md service.
 
 ## When to use
 
-- **Hard-to-fetch domains**: x.com, twitter.com, sites with heavy JS rendering, anti-scraping protections, or paywalls
-- **WebFetch fallback**: when WebFetch returns errors, empty content, or garbled output
-- **General content extraction**: whenever you need clean, readable text from a URL
+Use defuddle **first** for any URL content fetching. It produces cleaner output than WebFetch for most sites because it extracts the main content and strips navigation, ads, and boilerplate.
+
+- **Any URL the user asks you to read** — articles, blog posts, docs, tweets, forum threads
+- **Any URL you need to fetch yourself** — documentation lookups, reference pages, linked resources
+- **Only fall back to WebFetch** if defuddle returns empty or errors out
 
 ## How it works
 
