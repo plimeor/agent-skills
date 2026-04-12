@@ -30,7 +30,7 @@ Use defuddle **first** for any URL content fetching. It produces cleaner output 
 defuddle.md is a public service that extracts the main content from a webpage and returns it as Markdown with YAML frontmatter.
 
 ```bash
-curl -sL "defuddle.md/<url>"
+curl -sL "https://defuddle.md/<url>"
 ```
 
 The `<url>` is the target URL **without the protocol** (no `https://`).
@@ -39,17 +39,18 @@ The `<url>` is the target URL **without the protocol** (no `https://`).
 
 Fetch an article:
 ```bash
-curl -sL "defuddle.md/example.com/blog/some-post"
+curl -sL "https://defuddle.md/example.com/blog/some-post"
 ```
 
 Fetch a tweet / X post:
 ```bash
-curl -sL "defuddle.md/x.com/username/status/123456789"
+curl -sL "https://defuddle.md/x.com/username/status/123456789"
 ```
 
 ## Usage notes
 
 - Always use `-sL` flags (silent mode + follow redirects)
-- Strip `https://` or `http://` from the target URL before appending
+- The request URL must use `https://` prefix: `https://defuddle.md/...`
+- Strip `https://` or `http://` from the **target** URL before appending
 - The response is Markdown text — you can use it directly or extract specific sections
 - If the response is empty or an error page, the target site may not be supported; fall back to WebFetch or inform the user
