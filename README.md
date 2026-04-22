@@ -22,6 +22,6 @@ npx skills add plimeor/agent-skills --skill defuddle
 | [blog-feedback](skills/blog-feedback/SKILL.md) | 模拟指定读者逐节阅读文章，输出真实的阅读体验反馈 |
 | [blog-illustration](skills/blog-illustration/SKILL.md) | 为博客文章生成插图提示词，适合工作流、架构图和抽象概念配图 |
 | [blog-writing](skills/blog-writing/SKILL.md) | 基于 SCQA 方法论创建和优化博客文章 |
+| [context-engineering-global](skills/context-engineering-global/SKILL.md) | 为全局 rules file 做 context engineering，专注跨任务、跨项目、跨会话都长期成立的规则 |
+| [context-engineering-project](skills/context-engineering-project/SKILL.md) | 为项目层做 context engineering，覆盖 repo-local 规则、任务级 context packing 与项目内漂移诊断 |
 | [defuddle](skills/defuddle/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
-| [nix-self-iteration-protocol](skills/nix-self-iteration-protocol/SKILL.md) | 指令系统迭代型 skill，用于评估和演进 AGENTS.md、SKILL.md、prompt 架构与 routing，适合诊断 prompt failure、误触发、漏触发与指令冲突 |
-| [system-prompt-tuning](skills/system-prompt-tuning/SKILL.md) | 评估和优化全局上下文（~/.claude/CLAUDE.md），按官方标准审查、精简、改动 |
