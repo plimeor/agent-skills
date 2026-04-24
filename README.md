@@ -20,19 +20,6 @@ npx skills add plimeor/agent-skills --skill ops-url-content-reader
 - `SKILL.md` frontmatter 里的 `name:` 必须和父目录名完全一致。
 - `README.md` 是公开索引；新增、删除或重命名 skill 时同步更新。
 
-## Naming Convention
-
-| Prefix | Use |
-|--------|------|
-| `code-*` | Coding, debugging, review, refactoring, and testing |
-| `knowledge-*` | Knowledge management, summarization, synthesis, and durable documentation |
-| `writing-*` | Blog posts, articles, and expression refinement |
-| `decision-*` | Decisions, trade-offs, prioritization, and option comparison |
-| `meta-*` | Prompt, AGENTS, SKILL, and context architecture |
-| `ops-*` | Local environment, automation, release, CI, and tooling |
-
-Choose the prefix by the skill's primary mode, not by secondary capability.
-
 ## Skills
 
 | Skill | 说明 |
