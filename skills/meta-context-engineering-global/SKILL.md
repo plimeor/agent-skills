@@ -1,7 +1,7 @@
 ---
-name: context-engineering-global
+name: meta-context-engineering-global
 description: >-
-  为全局 rules file 做 context engineering。适用于审查或改写 ~/.claude/CLAUDE.md 这类全局上下文文件，判断某条长期规则是否应进入全局层，或优化跨项目、跨任务、跨会话都生效的协作约束。触发词包括：全局提示词、全局上下文、CLAUDE.md 优化、system prompt、global prompt、global rules。
+  为全局 rules file 做 context engineering。适用于审查或改写 ~/.claude/CLAUDE.md 这类全局上下文文件，判断某条长期规则是否应进入全局层，或优化跨项目、跨任务、跨会话都生效的协作约束。触发词包括：全局提示词、全局上下文、CLAUDE.md 优化、system prompt、global prompt、global rules。Formerly named context-engineering-global.
 ---
 
 # 目的
@@ -37,7 +37,7 @@ description: >-
 - 会话压缩、切换模块、任务级 context packing
 - skill 误触发、漏触发、description 与 routing 修复
 
-以上问题交给 `context-engineering-project`。
+以上问题交给 `meta-context-engineering-project`。
 
 # 输入模式
 

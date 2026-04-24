@@ -1,6 +1,6 @@
 ---
-name: obsidian-attachment-janitor
-description: Clean up and organize the Attachments folder in the Obsidian vault. Finds and deletes unreferenced attachments, renames referenced ones with a date-prefixed, descriptive naming convention. Use this skill when the user mentions cleaning up attachments, finding unused images, organizing files, renaming attachments, or any variation of "附件清理", "整理附件", "清理图片", "附件重命名".
+name: knowledge-obsidian-attachment-janitor
+description: Clean up and organize the Attachments folder in the Obsidian vault. Finds and deletes unreferenced attachments, renames referenced ones with a date-prefixed, descriptive naming convention. Use this skill when the user mentions cleaning up attachments, finding unused images, organizing files, renaming attachments, or any variation of "附件清理", "整理附件", "清理图片", "附件重命名". Formerly named obsidian-attachment-janitor.
 ---
 
 # Obsidian Attachment Janitor

@@ -1,17 +1,18 @@
 ---
-name: blog-feedback
+name: writing-reader-feedback
 description: >
   Simulate a specific reader persona going through an article section by section, producing
   raw reading-experience feedback (not writing advice). This skill outputs what a reader
   THINKS and FEELS at each section — confusion, expectation shifts, boredom, excitement —
-  rather than suggestions for how to improve the writing. Use this skill (not blog-writing)
+  rather than suggestions for how to improve the writing. Use this skill (not writing-blog)
   whenever the user wants to know how a specific audience would experience their article,
   or asks to simulate/role-play a reader. Trigger on: "模拟读者", "读者反馈", "读者视角",
   "读者会怎么想", "读者能看懂吗", "阅读体验", "reader feedback", "simulate a reader",
   "reading experience", or when the user provides a reader persona/background and asks
   for feedback on a draft. Also trigger when a user says things like "如果一个产品经理读这篇文章",
   "这篇文章对新手来说怎么样", "帮我测试一下读者的反应". Do NOT trigger for general writing
-  improvement requests like "帮我改这篇文章" or "优化结构" — those belong to blog-writing.
+  improvement requests like "帮我改这篇文章" or "优化结构" — those belong to writing-blog.
+  Formerly named blog-feedback.
 ---
 
 # Blog Feedback — 逐节阅读体验模拟
@@ -31,7 +32,7 @@ description: >
 用户会提供文件路径或网页 URL：
 
 - **文件路径**：使用 Read 工具读取
-- **网页 URL**：使用 defuddle skill 或 WebFetch 获取正文，保存为临时文件
+- **网页 URL**：使用 ops-url-content-reader skill 或 WebFetch 获取正文，保存为临时文件
 
 ### 2. 确认读者身份
 

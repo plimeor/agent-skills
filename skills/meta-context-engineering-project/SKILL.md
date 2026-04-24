@@ -1,7 +1,7 @@
 ---
-name: context-engineering-project
+name: meta-context-engineering-project
 description: >-
-  为项目层做 context engineering。适用于 repo-local AGENTS.md/CLAUDE.md 设计、任务级 context packing、项目内上下文漂移，以及判断规则该落在项目规则、skill、tooling 还是当前任务上下文。触发词包括：给这个 repo 写 AGENTS、项目上下文、任务上下文、context pack、模型不按项目约定、误触发、漏触发。
+  为项目层做 context engineering。适用于 repo-local AGENTS.md/CLAUDE.md 设计、任务级 context packing、项目内上下文漂移，以及判断规则该落在项目规则、skill、tooling 还是当前任务上下文。触发词包括：给这个 repo 写 AGENTS、项目上下文、任务上下文、context pack、模型不按项目约定、误触发、漏触发。Formerly named context-engineering-project.
 ---
 
 # 目的
@@ -21,7 +21,7 @@ description: >-
 - 普通编码、调试或写文档任务本身
 - 与具体项目无关的泛化协作偏好
 
-全局层问题交给 `context-engineering-global`。
+全局层问题交给 `meta-context-engineering-global`。
 
 # 常见触发
 
@@ -135,7 +135,7 @@ description: >-
 
 ## 全局层
 
-只有当规则跨项目、跨任务、跨会话都稳定成立时，才上提到 `context-engineering-global`。
+只有当规则跨项目、跨任务、跨会话都稳定成立时，才上提到 `meta-context-engineering-global`。
 
 # 项目 rules file 最小骨架
 

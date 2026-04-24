@@ -1,5 +1,5 @@
 ---
-name: defuddle
+name: ops-url-content-reader
 description: >-
   ALWAYS invoke this skill instead of WebFetch when a user's message contains
   a URL and the task requires reading that page's content. This is the primary
@@ -10,7 +10,7 @@ description: >-
   this", "look at this link", "based on this article", "参考", "根据", "帮我
   看看", or any variation where a URL's content must be fetched. Do NOT
   trigger for: writing code that handles URLs, updating URL values in
-  config/.env files, web searches, or running tests.
+  config/.env files, web searches, or running tests. Formerly named defuddle.
 ---
 
 # Defuddle
