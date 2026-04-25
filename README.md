@@ -32,4 +32,5 @@ npx skills add plimeor/agent-skills --skill ops-url-content-reader
 | [ops-url-content-reader](skills/ops-url-content-reader/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
 | [writing-blog](skills/writing-blog/SKILL.md) | 基于 SCQA 方法论创建和优化博客文章 |
 | [writing-blog-illustration](skills/writing-blog-illustration/SKILL.md) | 为博客文章生成插图提示词，适合工作流、架构图和抽象概念配图 |
+| [writing-humanizer](skills/writing-humanizer/SKILL.md) | 去除 AI 写作痕迹，让 AI 生成的文档和草稿更自然、更像人写 |
 | [writing-reader-feedback](skills/writing-reader-feedback/SKILL.md) | 模拟指定读者逐节阅读文章，输出真实的阅读体验反馈 |
