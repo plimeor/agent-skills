@@ -25,6 +25,7 @@ Choose by primary mode, not by secondary capability. For example, a skill that r
 - Keep one source of truth for a skill name: directory name plus matching frontmatter `name:`.
 - Do not keep duplicate old-name directories after a rename.
 - Preserve old names only as alias text in descriptions when useful for trigger continuity.
+- Write new `SKILL.md` files in English. Do not migrate existing non-English skills unless the user explicitly asks.
 - Keep `SKILL.md` focused on the reusable workflow. Put large examples, references, or scripts in bundled resources only when they are actually needed.
 
 ## Verification
