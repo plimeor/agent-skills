@@ -1,29 +1,30 @@
 ---
 name: ops-url-content-reader
 description: >-
-  ALWAYS invoke this skill instead of WebFetch when a user's message contains
-  a URL and the task requires reading that page's content. This is the primary
-  URL content reader — it produces cleaner results than WebFetch on virtually
-  all sites. Applies to: summarizing articles, reading blog posts, referencing
-  documentation, checking what a link says, extracting information from any
-  webpage. Trigger whenever the user says things like "summarize this", "read
-  this", "look at this link", "based on this article", "参考", "根据", "帮我
-  看看", or any variation where a URL's content must be fetched. Do NOT
-  trigger for: writing code that handles URLs, updating URL values in
-  config/.env files, web searches, or running tests. Formerly named defuddle.
+  Primary URL content reader for tasks that need a webpage's main content.
+  Use when a user asks to summarize, read, inspect, reference, or extract facts
+  from a URL, including "read this", "look at this link", "based on this
+  article", "参考", "根据", or "帮我看看". Prefer this skill over generic
+  WebFetch for content extraction; fall back only when defuddle returns empty or
+  errors. Exclude URL string edits in code/config, web searches, and test
+  execution. Formerly named defuddle.
 ---
 
 # Defuddle
 
 The preferred method for reading web content. Returns clean Markdown via the defuddle.md service.
 
+## Outcome
+
+Success means you extract enough clean page content to answer the user's request, or clearly state that extraction failed and choose the smallest useful fallback. Stop once the relevant content or facts are available; do not fetch again just to improve phrasing.
+
 ## When to use
 
-Use defuddle **first** for any URL content fetching. It produces cleaner output than WebFetch for most sites because it extracts the main content and strips navigation, ads, and boilerplate.
+Start with defuddle for URL content fetching. It produces cleaner output than WebFetch for most sites because it extracts the main content and strips navigation, ads, and boilerplate.
 
 - **Any URL the user asks you to read** — articles, blog posts, docs, tweets, forum threads
 - **Any URL you need to fetch yourself** — documentation lookups, reference pages, linked resources
-- **Only fall back to WebFetch** if defuddle returns empty or errors out
+- **Fallback**: use WebFetch only when defuddle returns empty content or errors
 
 ## How it works
 
@@ -47,9 +48,9 @@ Fetch a tweet / X post:
 curl -sL "https://defuddle.md/x.com/username/status/123456789"
 ```
 
-## Usage notes
+## Usage Notes
 
-- Always use `-sL` flags (silent mode + follow redirects)
+- Use `-sL` flags (silent mode + follow redirects)
 - The request URL must use `https://` prefix: `https://defuddle.md/...`
 - Strip `https://` or `http://` from the **target** URL before appending
 - The response is Markdown text — you can use it directly or extract specific sections

@@ -1,7 +1,14 @@
 ---
 name: writing-blog
-description: |
-  Help create and optimize blog posts, articles, and polished writing with rigorous structure, reader expectation management, and SCQA methodology. This skill contains a specialized writing framework (reader personas, concept introduction protocol, diagnostic checklists, Pyramid Principle structure) that you CANNOT replicate without loading it. You MUST use this skill in ANY of these scenarios: (1) writing a blog post or article from notes/materials, (2) reviewing, diagnosing, or optimizing any draft or article for structure/clarity/readability, (3) polishing or refining notes into publishable form, (4) giving feedback on writing structure, flow, or reader experience, (5) creating outlines for articles. Trigger on keywords: "博客", "文章", "发布", "blog", "写作", "初稿", "打磨", "诊断", "优化文章", "结构", "大纲", "投稿", "公众号", "读者". Also trigger when the user shares a markdown file and asks to improve it, or asks if something "reads well" or "makes sense to readers". Formerly named blog-writing.
+description: >-
+  Create, diagnose, outline, or polish blog posts and articles with reader
+  expectation management, SCQA, Pyramid Principle structure, and concrete
+  revision guidance. Use for writing from notes, optimizing drafts for
+  structure/clarity/readability, polishing notes into publishable form, article
+  outlines, or feedback on whether a draft reads well. Trigger on "博客", "文章",
+  "发布", "blog", "写作", "初稿", "打磨", "诊断", "优化文章", "结构", "大纲", "投稿",
+  "公众号", and "读者". For raw reader-experience simulation without writing
+  advice, use writing-reader-feedback instead. Formerly named blog-writing.
 ---
 
 # Blog Writing
@@ -9,6 +16,13 @@ description: |
 帮助用户从笔记素材创作博客初稿，或对已有博客进行优化诊断。核心方法论：以读者的认知路径为中心组织内容，而不是以作者的思考路径。
 
 **你的角色定位：外行人的代表。** 这个概念来自《编辑力》——编辑不是作者的传声筒，而是替读者把关的人。你的职责是站在一个"聪明但对这个话题不熟悉"的读者立场上，检查每一段是否可理解。如果你作为 AI 都需要额外上下文才能理解某段话，那目标读者一定读不懂。同时注意：改写和重组时要保留作者的个人温度——个人经历、情感判断、口语化的表达——这些是博客区别于技术文档的灵魂。AI 改写后如果读起来像"由 AI 撰写的技术报告"，那就失败了。
+
+## 完成标准与停止条件
+
+- 初稿模式成功 = 产出一篇结构完整、面向明确读者、能自洽展开核心论点的 Markdown 文章，并在 frontmatter 中包含 `audience`、`takeaway` 和 `description`。
+- 诊断模式成功 = 标出文章最大的结构性问题、具体位置、修改建议、必要的新大纲和优先级。
+- 缺少 `audience` 或 `takeaway` 且会实质影响判断时，只问最小问题；如果用户要求快速处理，基于正文做保守推断并标注。
+- 达到用户请求的产出后停止。不要额外扩写未请求的栏目、重写全文或添加新论点。
 
 ## 两种工作模式
 
@@ -19,7 +33,7 @@ description: |
 **流程：**
 
 1. **理解素材** — 读完所有笔记，提取核心论点、关键案例、技术细节
-2. **确认写作意图** — 问用户两件事：目标读者是谁（见下方"读者画像"），以及希望读者带走什么（一句话）
+2. **确认写作意图** — 优先读取 frontmatter 和对话中已有信息；缺目标读者或 takeaway 且会影响初稿方向时，只问这两个问题
 3. **拟定结构大纲** — 按下方的结构框架组织，先给用户看大纲，确认后再写
 4. **写初稿** — 按大纲展开，遵循下方所有写作原则。输出的 Markdown 文档在 frontmatter 中写入 `audience`（读者定义）和 `takeaway`（希望读者带走什么）
 5. **自检** — 用诊断清单过一遍，标注潜在问题
@@ -31,7 +45,7 @@ description: |
 
 **流程：**
 
-1. **读取写作意图** — 检查文章 frontmatter 中是否有 `audience` 和 `takeaway` 字段。如果有，以此作为诊断基准（读者是谁、文章要传达什么）。如果没有，先问用户这两个问题，再开始诊断
+1. **读取写作意图** — 检查文章 frontmatter 中是否有 `audience` 和 `takeaway` 字段。如果有，以此作为诊断基准（读者是谁、文章要传达什么）。如果没有，且这两个信息会改变诊断结论，先问用户；用户要求快速诊断时，做保守推断并标注
 2. **通读全文** — 带着读者定义和 takeaway 读一遍
 3. **模拟首次读者** — 逐段标注：读者此刻知道什么、期待什么、实际读到什么
 4. **输出诊断报告** — 按诊断清单逐项检查，给出具体问题和修改建议

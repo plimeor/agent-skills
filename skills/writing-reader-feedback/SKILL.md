@@ -1,17 +1,14 @@
 ---
 name: writing-reader-feedback
-description: >
-  Simulate a specific reader persona going through an article section by section, producing
-  raw reading-experience feedback (not writing advice). This skill outputs what a reader
-  THINKS and FEELS at each section — confusion, expectation shifts, boredom, excitement —
-  rather than suggestions for how to improve the writing. Use this skill (not writing-blog)
-  whenever the user wants to know how a specific audience would experience their article,
-  or asks to simulate/role-play a reader. Trigger on: "模拟读者", "读者反馈", "读者视角",
-  "读者会怎么想", "读者能看懂吗", "阅读体验", "reader feedback", "simulate a reader",
-  "reading experience", or when the user provides a reader persona/background and asks
-  for feedback on a draft. Also trigger when a user says things like "如果一个产品经理读这篇文章",
-  "这篇文章对新手来说怎么样", "帮我测试一下读者的反应". Do NOT trigger for general writing
-  improvement requests like "帮我改这篇文章" or "优化结构" — those belong to writing-blog.
+description: >-
+  Simulate a specified reader persona reading an article section by section and
+  report raw reading-experience feedback, not writing advice. Use when the user
+  asks how a specific audience would experience a draft, whether readers can
+  understand it, or wants reader role-play. Trigger on "模拟读者", "读者反馈",
+  "读者视角", "读者会怎么想", "读者能看懂吗", "阅读体验", "reader feedback",
+  "simulate a reader", "reading experience", "如果一个产品经理读这篇文章",
+  "这篇文章对新手来说怎么样", or "帮我测试一下读者的反应". For general writing
+  improvement such as "帮我改这篇文章" or "优化结构", use writing-blog instead.
   Formerly named blog-feedback.
 ---
 
@@ -24,6 +21,10 @@ description: >
 产出物是一份**阅读体验报告**——按章节记录读者脑子里真正发生了什么。
 
 所有输出使用中文。
+
+## 成功标准与停止条件
+
+成功 = 按文章顺序覆盖每个阅读单元，记录该读者当下的期待、困惑、情绪和继续阅读动力，并在结尾补充整体印象。读完全文并输出整体印象后停止；不要转成写作建议或改稿方案，除非用户另行要求。
 
 ## 执行流程
 

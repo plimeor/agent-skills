@@ -28,6 +28,13 @@ Choose by primary mode, not by secondary capability. For example, a skill that r
 - Write new `SKILL.md` files in English. Do not migrate existing non-English skills unless the user explicitly asks.
 - Keep `SKILL.md` focused on the reusable workflow. Put large examples, references, or scripts in bundled resources only when they are actually needed.
 
+## Prompt Guidance
+
+- For `SKILL.md` prompts, define the outcome, constraints, success criteria, and stop rules before adding process.
+- Prefer short decision rules over step-by-step procedure unless the order is required for correctness.
+- Use absolute terms like `always`, `never`, `must`, and `only` only for true invariants: safety, irreversible actions, exact output contracts, or tool syntax.
+- Keep frontmatter `description:` focused on trigger conditions and near-miss exclusions, not marketing copy or internal rationale.
+
 ## Verification
 
 After adding, removing, or renaming skills:

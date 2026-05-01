@@ -17,6 +17,7 @@ description: >-
 4. 在出现协作摩擦时，先判断问题是否真的该落在全局层
 
 官方标准来源（需要时重新获取最新版本）：
+- https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5
 - https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
 - https://code.claude.com/docs/en/best-practices
 
@@ -103,9 +104,18 @@ description: >-
 6. **非冗余性** — 是否明显区别于模型默认行为？重复默认值只会增噪
 7. **精简性** — 是否已经是最短有效表述？
 8. **带动机性** — 是否解释了 why？解释动机通常比堆 MUST 更有效
-9. **无矛盾性** — 是否与已有全局规则冲突？
+9. **完成边界** — 是否写清结果、成功标准和停止条件，而不是堆执行过程？
+10. **无矛盾性** — 是否与已有全局规则冲突？
 
 # 官方标准参考
+
+## 模型无关 prompt 精简原则
+
+来源：https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5
+
+- 优先定义目标结果、约束、可用证据和最终输出形状，让模型选择高效路径
+- `always`、`never`、`must` 只用于真正不变量；判断型行为用决策规则表达
+- 对复杂任务写清成功标准、证据不足时的行为和停止条件
 
 ## 全局 rules file 精简原则
 
