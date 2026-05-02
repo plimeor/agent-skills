@@ -33,7 +33,7 @@ description: >-
 用户会提供文件路径或网页 URL：
 
 - **文件路径**：使用 Read 工具读取
-- **网页 URL**：使用 ops-url-content-reader skill 或 WebFetch 获取正文，保存为临时文件
+- **网页 URL**：使用 ops-url-reader skill 或 WebFetch 获取正文，保存为临时文件
 
 ### 2. 确认读者身份
 

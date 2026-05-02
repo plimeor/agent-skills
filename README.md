@@ -11,7 +11,7 @@ npx skills add plimeor/agent-skills
 安装单个 skill：
 
 ```bash
-npx skills add plimeor/agent-skills --skill ops-url-content-reader
+npx skills add plimeor/agent-skills --skill ops-url-reader
 ```
 
 ## Project Structure
@@ -30,7 +30,7 @@ npx skills add plimeor/agent-skills --skill ops-url-content-reader
 | [meta-context-engineering-global](skills/meta-context-engineering-global/SKILL.md) | 为全局 rules file 做 context engineering，专注跨任务、跨项目、跨会话都长期成立的规则 |
 | [meta-context-engineering-project](skills/meta-context-engineering-project/SKILL.md) | 为项目层做 context engineering，覆盖 repo-local 规则、任务级 context packing 与项目内漂移诊断 |
 | [ops-codex-session-maintenance](skills/ops-codex-session-maintenance/SKILL.md) | 维护本地 Codex 会话状态：先检查和备份，再归档旧 session/worktree、轮转日志并生成 handoff |
-| [ops-url-content-reader](skills/ops-url-content-reader/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
+| [ops-url-reader](skills/ops-url-reader/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
 | [writing-blog](skills/writing-blog/SKILL.md) | 基于 SCQA 方法论创建和优化博客文章 |
 | [writing-blog-illustration](skills/writing-blog-illustration/SKILL.md) | 为博客文章生成插图提示词，适合工作流、架构图和抽象概念配图 |
 | [writing-humanizer](skills/writing-humanizer/SKILL.md) | 去除 AI 写作痕迹，让 AI 生成的文档和草稿更自然、更像人写 |

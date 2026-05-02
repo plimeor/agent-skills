@@ -1,5 +1,5 @@
 ---
-name: ops-url-content-reader
+name: ops-url-reader
 description: >-
   Primary URL content reader for tasks that need a webpage's main content.
   Use when a user asks to summarize, read, inspect, reference, or extract facts
@@ -7,7 +7,7 @@ description: >-
   article", "参考", "根据", or "帮我看看". Prefer this skill over generic
   WebFetch for content extraction; fall back only when defuddle returns empty or
   errors. Exclude URL string edits in code/config, web searches, and test
-  execution. Formerly named defuddle.
+  execution.
 ---
 
 # Defuddle
