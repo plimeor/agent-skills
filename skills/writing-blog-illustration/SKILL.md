@@ -9,7 +9,7 @@ Generate prompts for image generation models (Gemini, Midjourney, DALL-E, etc.) 
 
 The output is a text prompt — not an image. The user takes the prompt to their preferred image generation model.
 
-**The prompt itself must be written in English**, regardless of the conversation language. Image models perform best with English prompts. Only use Chinese in the prompt when the user explicitly requests Chinese labels in the image.
+**The prompt itself must be written in English**, regardless of the conversation language. Short English labels are usually more reliable than Chinese labels in image models, but generated text may still need post-editing. Only use Chinese in the prompt when the user explicitly requests Chinese labels in the image.
 
 ## Outcome
 
@@ -17,7 +17,7 @@ Success means one ready-to-use English image prompt that names the intended visu
 
 ## Style DNA
 
-Every illustration shares these visual traits. This is the non-negotiable foundation that keeps illustrations consistent across different blog posts.
+Use this as the default house style for blog illustrations. Preserve it unless the user asks for a different tone, such as more serious, more technical, more editorial, or no character-driven metaphors.
 
 - **Cartoon infographic** — a hybrid of illustration and information graphics. Not flat/minimal design, not formal architecture diagrams, not corporate clip art
 - **White background** with soft pastel color-coded zones (rounded rectangles with subtle fills)
@@ -25,8 +25,8 @@ Every illustration shares these visual traits. This is the non-negotiable founda
 - **Simple faces** — dots for eyes, simple expressions. Charming but not childish. Think Dropbox/Notion illustration style
 - **Thin rounded arrows** in dark gray for flow and connections
 - **Clean white space** between zones — leave room to breathe
-- **English labels by default** — all text labels in the prompt (zone names, character names, flow annotations) use English. Image models render English reliably. Only use Chinese labels when the user explicitly requests it
-- **16:9 aspect ratio**, high quality, clean edges, no blur, no gradients
+- **English labels by default** — all text labels in the prompt (zone names, character names, flow annotations) use short English text. This is usually more reliable than Chinese labels, but generated text may still need post-editing. Only use Chinese labels when the user explicitly requests it
+- **16:9 aspect ratio by default**, high quality, clean edges, no blur, no gradients
 - **Soft pastel palette**: baby blue, lavender/pink, warm cream/yellow, sage green. Adjust per piece but stay in this family
 
 ## Process
@@ -49,7 +49,7 @@ This is the most important step. Each abstract component needs a concrete visual
 - **Function drives form.** A component that connects things → spider weaving silk. A component that cleans/audits → gardener pruning branches. A component that observes patterns → owl. A component that wanders freely → firefly.
 - **Visual distinctness.** Every character should be immediately distinguishable in silhouette. If two characters both look like "small robot doing X," the illustration fails.
 - **No generic defaults.** Never fall back to "a robot," "a gear," "a monitor with code," or "a person at a desk with sparkles." Push for a specific metaphor that carries meaning.
-- **Present options.** When the best metaphor isn't obvious, offer 2-3 alternatives with brief reasoning so the user can choose.
+- **Decide by default.** Return one coherent metaphor set in the final prompt. Offer 2-3 alternatives only when the metaphor would materially change the article's stance, when the user's intent is under-specified in a way that changes the visual meaning, or when the user asks to brainstorm.
 
 Reference examples:
 
@@ -83,7 +83,7 @@ If an element deliberately breaks the pattern (e.g., something autonomous that d
 
 ### 5. Write text labels
 
-Before writing the prompt, list all text labels that should appear in the image. Default to English for everything — image models render English reliably.
+Before writing the prompt, list all text labels that should appear in the image. Default to short English labels; they are usually more reliable than Chinese labels, but any generated text may still need post-editing.
 
 - **Zone labels**: e.g. "Maintenance", "Insight", "Output"
 - **Character labels**: e.g. "Weaver (daily)", "Sentinel (weekly)"
@@ -100,7 +100,7 @@ Structure the prompt as:
 2. **Layout overview** (1-2 sentences) — spatial arrangement and reading flow
 3. **Zone-by-zone description** — for each zone: background color, characters present, what they're doing, key visual details. Embed labels naturally: "a soft blue zone labeled 'Maintenance' in the top corner"
 4. **Special elements** — anything floating, detached, or breaking the main structure
-5. **Text and label placement** — explicitly list all Chinese text labels and where they appear. Be specific about placement (above, below, inside) so the model doesn't scatter them randomly
+5. **Text and label placement** — explicitly list all text labels and where they appear. Use Chinese labels only when requested. Be specific about placement (above, below, inside) so the model doesn't scatter them randomly
 6. **Style details block** — bullet list of specific requirements (palette, line weight, character style, mood, what NOT to include)
 7. **Technical specs** — aspect ratio, quality
 
