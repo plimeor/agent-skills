@@ -29,6 +29,7 @@ npx skills add plimeor/agent-skills --skill ops-url-reader
 | [knowledge-obsidian-attachment-janitor](skills/knowledge-obsidian-attachment-janitor/SKILL.md) | 清理和整理 Obsidian 附件目录，删除未引用附件并统一重命名已引用文件 |
 | [meta-context-engineering-global](skills/meta-context-engineering-global/SKILL.md) | 为全局 rules file 做 context engineering，专注跨任务、跨项目、跨会话都长期成立的规则 |
 | [meta-context-engineering-project](skills/meta-context-engineering-project/SKILL.md) | 为项目层做 context engineering，覆盖 repo-local 规则、任务级 context packing 与项目内漂移诊断 |
+| [meta-project-docs-maintenance](skills/meta-project-docs-maintenance/SKILL.md) | 维护项目 docs 分层、语言、命名和 living spec 清理策略 |
 | [ops-codex-session-maintenance](skills/ops-codex-session-maintenance/SKILL.md) | 维护本地 Codex 会话状态：先检查和备份，再归档旧 session/worktree、轮转日志并生成 handoff |
 | [ops-url-reader](skills/ops-url-reader/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
 | [writing-blog](skills/writing-blog/SKILL.md) | 基于 SCQA 方法论创建和优化博客文章 |
