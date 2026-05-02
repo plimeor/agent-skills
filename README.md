@@ -25,6 +25,7 @@ npx skills add plimeor/agent-skills --skill ops-url-reader
 | Skill | 说明 |
 |-------|------|
 | [code-scope-gate](skills/code-scope-gate/SKILL.md) | 编码前的范围门，防止过度实现并收敛到最小正确改动 |
+| [code-standards-gate](skills/code-standards-gate/SKILL.md) | 基于个人代码标准审核 spec、diff 和实现边界，优先检查公开契约、持久化状态和不必要抽象 |
 | [code-test-strategy](skills/code-test-strategy/SKILL.md) | 编码任务中的测试策略门禁，防止测试污染生产代码、过早写测试和实现细节测试 |
 | [knowledge-obsidian-attachment-janitor](skills/knowledge-obsidian-attachment-janitor/SKILL.md) | 清理和整理 Obsidian 附件目录，删除未引用附件并统一重命名已引用文件 |
 | [meta-context-engineering-global](skills/meta-context-engineering-global/SKILL.md) | 为全局 rules file 做 context engineering，专注跨任务、跨项目、跨会话都长期成立的规则 |
