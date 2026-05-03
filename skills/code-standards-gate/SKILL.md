@@ -12,22 +12,27 @@ This skill is narrower than `code-scope-gate`: `code-scope-gate` controls broad 
 
 ## Review Algorithm
 
-Plan review batches before writing findings. Review one batch at a time, line by line, and finish high-risk files before lower-risk implementation files.
+Plan review batches before writing findings. Group files by related behavior first, then order those groups by risk. Do not split one contract across unrelated batches just because files are large.
 
-Batch order:
+Use separate batches when the diff is large, crosses several contract surfaces, or includes high-risk declarations such as public API, CLI, schemas, persisted state, generated output, wrappers, or tests that lock a contract. A useful batch has one coherent question: "what contract or behavior is this group creating?"
 
-1. Public contract, spec, docs, CLI/API surface, and committed product boundary.
-2. Types, schemas, persisted state, generated files, config/state readers and writers.
-3. Wrapper behavior around external tools, libraries, runtimes, or protocols.
-4. Modes, branches, feature flags, adapters, strategies, and secondary workflows.
-5. Helpers, abstractions, duplication, and internal implementation polish.
+Default batch groups:
 
-For every new or changed type, field, option, branch, helper, generated artifact, wrapper rule, and persisted value, run this loop:
+1. Public contract group: spec, docs, CLI/API surface, exported package surface, and committed product boundary.
+2. Shape and state group: types, schemas, persisted state, generated metadata, config/state readers and writers.
+3. External owner group: wrapper behavior around tools, libraries, runtimes, protocols, package managers, filesystems, or network boundaries.
+4. Branching group: optional flows, providers, strategies, feature flags, adapters, secondary workflows, and tests that preserve them.
+5. Implementation group: helpers, abstractions, duplication, internal orchestration, and polish.
 
-1. Question its value: why does it exist now?
-2. Infer its intended use from the spec, call sites, tests, docs, and generated output.
-3. Delete it if current value does not justify its contract, state, branch, or maintenance cost.
-4. Simplify the remaining code after unnecessary surface is gone.
+Review one batch at a time, line by line. Finish the higher-risk associated groups before lower-risk implementation files. For very large reviews, run each batch independently, then merge and deduplicate findings only after all batch outputs exist.
+
+For every new or changed type, field, option, branch, helper, generated artifact, wrapper rule, and persisted value, run this loop before judging implementation quality:
+
+1. Name the concrete surface.
+2. Question its current value: what user behavior or present contract needs it now?
+3. Infer its intended use from the spec, call sites, tests, docs, generated output, and write/read paths.
+4. Delete it if current value does not justify its contract, state, branch, or maintenance cost.
+5. Simplify the remaining code after unnecessary surface is gone.
 
 Do not start with style nits when the diff exposes unnecessary product surface, state shape, schema contract, or wrapper semantics.
 
@@ -47,6 +52,10 @@ Use inventory to avoid missing review targets, not as a second findings list. Ke
 
 Every problematic inventory item should map to a finding unless it is explicitly accepted or outside the requested scope.
 
+For type, schema, and persisted-state batches, first make a symbol inventory from the code itself. Include exported schemas, helper schemas, optional/fallback/default variants, object schema fragments, transforms, inferred public types, persisted fields, generated metadata fields, and derived identity fields. Review each named symbol as design shape, not only as implementation.
+
+Do not rely on a general impression that a file is too broad or too clever. If a symbol, field, transform, helper, or generated property appears in the inventory, it must either appear by name in a finding, appear by name in an acceptance note, or be marked outside scope.
+
 ## Standards
 
 ### Review Types As Design Shape
@@ -57,13 +66,11 @@ Review every field, union member, mode, discriminant, helper, inferred output, a
 
 If a type, schema, helper, or field changes the shape of the program and only exists for future flexibility, convenience, or premature reuse, write a finding that names it directly.
 
-### Delete Disproportionate Modes And Future Surfaces
+### Delete Future Surfaces
 
 Remove modes, workflows, runtimes, command options, docs promises, state fields, tests, or generated artifacts that are not paying for themselves in the committed boundary.
 
 The spec is reviewable. Do not preserve a surface merely because the spec lists it. If faithful implementation of the spec spreads a low-value mode or future-facing concept across docs, commands, schemas, state, tests, and workspace paths, challenge the boundary itself and recommend deleting or reauthorizing that surface.
-
-When a low-value mode creates many branches, make the mode-removal finding first. Add separate field/path findings only when those edits remain relevant if the mode stays.
 
 ### Let Contract Owners Fail Naturally
 
@@ -118,6 +125,15 @@ Split findings at the level Plimeor would likely leave separate inline comments:
 Each finding should name the concrete surface, evidence location, why it matters, smallest correction, and interactions with other findings.
 
 Before finalizing, compare findings back to the inventory. Every problematic surface should be covered by a finding, accepted with a reason, or marked outside scope.
+
+Preserve output granularity:
+
+- Do not let a root helper finding automatically cover optional, array, fallback, or object-fragment variants unless the same edit removes the whole family and the finding names the variants.
+- Do not let a broad persisted-state finding cover unrelated presentation fields, policy fields, path fields, identity fields, local-machine fields, migration markers, or future hooks.
+- Do not let a broad parse-rewrite finding cover distinct transforms such as identity normalization, defaults, version rewrites, sorting, invalid-data fallback, and field copying.
+- Do not let a wrapper finding cover unrelated choices such as input rewriting, pre-validation, aliasing, ref resolution, output naming, and persistence.
+
+If a named item from the inventory disappears during summarization, the review is not finished.
 
 ## Output Shape
 
