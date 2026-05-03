@@ -39,7 +39,7 @@ Create a dedicated tests and validation batch whenever the diff includes tests, 
 
 For multi-batch reviews, the main reviewer must delegate each batch to an independent subagent and then synthesize the results. The number of subagents must equal the number of batches. Use `sub-agent.md` in this skill directory as the batch reviewer guide when it is available. If native subagents are unavailable but shell execution is available, launch isolated child review sessions instead. Do not perform a multi-batch review inline and call it equivalent.
 
-Each batch reviewer reads its batch line by line and produces its own findings, coverage notes, and judgment. The main reviewer only plans batches, launches batch reviewers, waits for all results, deduplicates findings, checks inventory coverage across batch outputs, and writes the final review.
+Each batch reviewer reads its batch line by line and produces its own inventory map, findings, coverage notes, and judgment. The main reviewer only plans batches, launches batch reviewers, waits for all results, deduplicates findings, checks inventory coverage across batch outputs, and writes the final review.
 
 Deduplication means removing the same issue reported by multiple batches. It does not mean merging distinct repair actions into theme-level summaries. If two reported issues would require different edits, keep them as separate final findings even when they share the same standard or root cause.
 
@@ -155,7 +155,7 @@ When synthesizing batch outputs:
 
 Each finding should name the concrete surface, evidence location, why it matters, smallest correction, and interactions with other findings.
 
-Before finalizing, compare findings back to the inventory. Every problematic surface should be covered by a finding, accepted with a reason, or marked outside scope.
+Before finalizing, compare findings back to the inventory. Every problematic surface should be covered by a finding, accepted with a reason, or marked outside scope. The final review must include the inventory map; do not treat inventory as private scratch work.
 
 Preserve output granularity:
 
@@ -173,11 +173,25 @@ When explicitly invoked, write in the user's primary language.
 Use this order:
 
 1. Findings.
-2. Coverage notes for important inventory items not covered by findings.
-3. Open questions that materially change the decision.
-4. Interaction map for findings that affect each other.
-5. Short overall judgment.
-6. Calibration note.
+2. Inventory.
+3. Coverage notes for important inventory items not covered by findings.
+4. Open questions that materially change the decision.
+5. Interaction map for findings that affect each other.
+6. Short overall judgment.
+7. Calibration note.
+
+The `Inventory` section is part of the deliverable, not an optional audit trail.
+Keep it compact, but include enough named items for a human reviewer to verify
+coverage without rerunning the review. For each batch, list the important named
+surfaces and mark each as one of:
+
+- `Finding: F#` when the item is covered by a final finding.
+- `Accepted` with a short reason when the item was reviewed and kept.
+- `Outside scope` with a short reason when the item was intentionally skipped.
+
+Do not hide the inventory inside coverage notes. Coverage notes can summarize
+why accepted or skipped items matter, but the inventory must still name the
+items.
 
 The calibration note should state that this skill is a review amplifier, not a
 replacement for human judgment. It should separate the handoff clearly:
@@ -204,5 +218,6 @@ Stop when:
 - each review batch was read line by line before moving on
 - types, schemas, and persisted shapes were reviewed as design shape
 - every problematic inventory item maps to a finding or has a reason
+- the final review includes an inventory section that maps named items to findings, accepted reasons, or outside-scope reasons
 - findings are split to likely inline-comment granularity
 - open questions only remain when they materially change the decision

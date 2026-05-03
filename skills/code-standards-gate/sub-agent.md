@@ -43,9 +43,15 @@ Write in the user's primary language unless instructed otherwise.
 Use this order:
 
 1. Findings, ordered by risk and review order.
-2. Coverage notes naming important inventory items accepted or outside scope.
-3. Open questions only when they materially change the decision.
-4. Short judgment.
+2. Inventory map.
+3. Coverage notes naming important inventory items accepted or outside scope.
+4. Open questions only when they materially change the decision.
+5. Short judgment.
+
+The `Inventory map` is required even when findings are long. Keep it compact,
+but name the important surfaces reviewed in the batch and mark each as
+`Finding: B#-F##`, `Accepted`, or `Outside scope` with a short reason. The main
+reviewer depends on this section to detect dropped symbols during synthesis.
 
 Each finding must name the concrete surface, evidence location, why it matters, and the smallest correction. Give findings stable ids such as `B2-F03` so the main reviewer can preserve them during synthesis.
 
