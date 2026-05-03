@@ -177,6 +177,20 @@ Use this order:
 3. Open questions that materially change the decision.
 4. Interaction map for findings that affect each other.
 5. Short overall judgment.
+6. Calibration note.
+
+The calibration note should state that this skill is a review amplifier, not a
+replacement for human judgment. It should separate the handoff clearly:
+
+- The skill is usually good enough to cover broad contract risk, persisted-state
+  bloat, wrapper/source-of-truth problems, generated-output contracts,
+  freshness/cleanup issues, and missing tests. A human can usually scan these
+  areas after reading the findings instead of re-reviewing them from scratch.
+- The skill is not reliable enough to replace a capable reviewer on
+  line-by-line value judgment, delete-vs-keep taste, type/schema shape judgment,
+  false abstractions, and final product-boundary calibration. A teammate should
+  inspect the inventories, accepted/skipped items, and especially type/schema
+  surfaces before treating the review as complete.
 
 If there are no findings, say so directly and name any residual risk or test gap.
 
