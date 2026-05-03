@@ -35,6 +35,8 @@ Default associated groups:
 
 Split public contract batches when one review would mix package distribution with command behavior. Installability, published files, executable entrypoints, dependency resolution, and export surface deserve their own batch when the diff creates or changes a publishable package. CLI/docs/spec behavior can then be reviewed separately.
 
+Create a dedicated tests and validation batch whenever the diff includes tests, fixtures, mocks, test helpers, or changes behavior that tests lock. Do not replace this batch with implementation, wrapper, or generated-output review. The tests batch reviews test files line by line as contract evidence, while other batches may still read nearby tests for verification.
+
 For multi-batch reviews, the main reviewer must delegate each batch to an independent subagent and then synthesize the results. The number of subagents must equal the number of batches. Use `sub-agent.md` in this skill directory as the batch reviewer guide when it is available. If native subagents are unavailable but shell execution is available, launch isolated child review sessions instead. Do not perform a multi-batch review inline and call it equivalent.
 
 Each batch reviewer reads its batch line by line and produces its own findings, coverage notes, and judgment. The main reviewer only plans batches, launches batch reviewers, waits for all results, deduplicates findings, checks inventory coverage across batch outputs, and writes the final review.
@@ -183,6 +185,7 @@ If there are no findings, say so directly and name any residual risk or test gap
 Stop when:
 
 - multi-batch reviews used one independent subagent or isolated child session per batch
+- test files in scope received their own tests and validation batch
 - high-risk files in scope were reviewed before lower-risk polish
 - each review batch was read line by line before moving on
 - types, schemas, and persisted shapes were reviewed as design shape
