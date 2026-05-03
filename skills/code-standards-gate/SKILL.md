@@ -1,204 +1,145 @@
 ---
 name: code-standards-gate
 description: >-
-  Apply Plimeor's personal code review standards and implementation-boundary
-  preferences. Use this skill for code reviews, reviewing specs before
-  implementation, judging whether a proposed feature scope matches MVP
-  standards, or checking whether code introduces unnecessary public surface,
-  persisted state, abstractions, custom wrapper behavior, or future-facing
-  options. Use after a spec or diff is available; for broad pre-spec scope
-  control, use code-scope-gate first.
+  Apply Plimeor's personal code review standards and implementation-boundary preferences. Use this skill for code reviews, reviewing specs before implementation, judging whether a proposed feature scope matches MVP standards, or checking whether code introduces unnecessary public surface, persisted state, abstractions, custom wrapper behavior, or future-facing options. Use after a spec or diff is available; for broad pre-spec scope control, use code-scope-gate first.
 ---
 
 # Code Standards Gate
 
-Use this skill as a reviewer and implementation-boundary gate for Plimeor's
-code taste. The job is to decide whether a spec, diff, or implementation plan
-matches the user's durable standards, then surface concrete changes before
-polishing details.
+Use this skill after a spec, diff, or concrete implementation shape exists. The job is to review code through Plimeor's standards: question value first, delete unjustified surface, simplify what remains, and only then polish implementation details.
 
-This skill is more specific than `code-scope-gate`: `code-scope-gate` narrows
-the requested work before or during planning; this skill applies Plimeor's
-personal standards once there is a spec, diff, or concrete implementation shape
-to judge.
+This skill is narrower than `code-scope-gate`: `code-scope-gate` controls broad scope before implementation; this skill reviews the actual contracts, types, state, wrappers, and abstractions that appeared in the spec or diff.
 
-## Core Review Order
+## Review Algorithm
 
-Review in this order:
+Plan review batches before writing findings. Review one batch at a time, line by line, and finish high-risk files before lower-risk implementation files.
 
-1. Public contract and committed product boundary.
-2. Persisted state, schemas, generated directories, and long-lived files.
-3. Ownership of validation and behavior between this code and underlying tools.
-4. Abstractions, helpers, and duplication.
-5. Internal implementation polish.
+Batch order:
 
-Do not start with style nits when the diff exposes unnecessary product surface,
-state shape, schema contract, or tool-wrapper semantics.
+1. Public contract, spec, docs, CLI/API surface, and committed product boundary.
+2. Types, schemas, persisted state, generated files, config/state readers and writers.
+3. Wrapper behavior around external tools, libraries, runtimes, or protocols.
+4. Modes, branches, feature flags, adapters, strategies, and secondary workflows.
+5. Helpers, abstractions, duplication, and internal implementation polish.
 
-## Durable Standards
+For every new or changed type, field, option, branch, helper, generated artifact, wrapper rule, and persisted value, run this loop:
 
-### Delete disproportionate secondary modes
+1. Question its value: why does it exist now?
+2. Infer its intended use from the spec, call sites, tests, docs, and generated output.
+3. Delete it if current value does not justify its contract, state, branch, or maintenance cost.
+4. Simplify the remaining code after unnecessary surface is gone.
 
-When a secondary mode adds schema, workspace, command, documentation, or test
-surface that is not paying for itself now, remove the mode instead of carrying
-it for completeness.
+Do not start with style nits when the diff exposes unnecessary product surface, state shape, schema contract, or wrapper semantics.
 
-Treat "we may need this later" as a future note, not a reason to keep active
-implementation.
+## Surface Inventory
 
-### Do not expose future surfaces
+Use inventory to avoid missing review targets, not as a second findings list. Keep it compact.
 
-Do not expose non-MVP or future-facing behavior in docs, state, command options,
-schemas, or public APIs unless the user explicitly authorizes that boundary.
+- **Contract surface**: public inputs, outputs, docs promises, exported types, generated artifacts, user-visible workflows.
+- **Type shape**: schemas, type aliases, unions, discriminants, object fields, inferred output shapes, generic helpers.
+- **Persistence**: durable state, generated metadata, migration markers, local-only values, derived values, caches.
+- **Parse and validation**: transforms, defaults, normalization, fallback behavior, validation-time mutation, migration behavior.
+- **Branches**: optional modes, providers, strategies, feature flags, adapters, secondary workflows.
+- **Wrappers**: code that intercepts, rewrites, aliases, pre-validates, or translates another tool's contract.
+- **Ownership**: invariants that should be enforced by the component that owns them.
+- **Identity**: source ids, derived ids, output names, routing keys, paths, cache keys, external refs.
+- **Abstractions**: helpers, shared fragments, generic adapters, normalization utilities.
 
-Specs should describe the committed boundary, not anticipated architecture.
-Remove inactive modes, placeholder commands, generalized option names, and
-state fields that only serve future expansion.
+Every problematic inventory item should map to a finding unless it is explicitly accepted or outside the requested scope.
 
-### Prefer tool-native contracts
+## Standards
 
-Prefer the underlying tool's native behavior when that tool already validates or
-defines the input contract. Avoid creating a wrapper-specific normalization or
-validation layer unless it clearly improves the current workflow.
+### Review Types As Design Shape
 
-Example: if Git already accepts and validates repository arguments, prefer
-passing clone-compatible arguments through and letting Git fail, rather than
-inventing a second repository-URL contract.
+Treat types, schemas, and persisted shape declarations as high-risk design evidence. A type often reveals the real architecture before the implementation does.
 
-### Keep persisted state minimal and portable
+Review every field, union member, mode, discriminant, helper, inferred output, and transform line by line. A field becomes state or public shape; a union member becomes a branch; a helper becomes shared semantics; a transform becomes migration or repair behavior; an exported type becomes a contract other modules preserve.
 
-Persisted state is a long-lived contract. Keep it minimal, portable, and
-non-duplicative.
+If a type, schema, helper, or field changes the shape of the program and only exists for future flexibility, convenience, or premature reuse, write a finding that names it directly.
 
-Default stance:
+### Delete Disproportionate Modes And Future Surfaces
 
-- Do not store derived paths when they can be recomputed from the stable id.
-- Do not duplicate configuration that already has a clearer source of truth
-  elsewhere.
-- Do not store tool-managed absolute paths that make state less portable.
-- Add fields only when current behavior needs them and migration cost is
-  justified.
+Remove modes, workflows, runtimes, command options, docs promises, state fields, tests, or generated artifacts that are not paying for themselves in the committed boundary.
 
-### Tool-owned directories protect themselves
+The spec is reviewable. Do not preserve a surface merely because the spec lists it. If faithful implementation of the spec spreads a low-value mode or future-facing concept across docs, commands, schemas, state, tests, and workspace paths, challenge the boundary itself and recommend deleting or reauthorizing that surface.
 
-When a tool creates generated, cache, or internal working directories, that
-tool-owned directory should protect itself from accidental commits. Do not make
-callers remember ignore rules for managed internal state.
+When a low-value mode creates many branches, make the mode-removal finding first. Add separate field/path findings only when those edits remain relevant if the mode stays.
 
-Prefer writing the appropriate `.gitignore` or equivalent guard inside the
-managed directory at creation time.
+### Let Contract Owners Fail Naturally
 
-### Avoid false schema helpers
+Prefer the native behavior of the tool, library, protocol, or layer that owns an input contract. Let errors happen where they naturally belong.
 
-Avoid generic helper schemas when fields may diverge semantically. Declare
-validation near the field until shared semantics are stable and real.
+A wrapper should not reject, rewrite, normalize, or reinterpret an input before the owner sees it unless the wrapper intentionally exposes a smaller current contract. If the wrapper stores or documents a broader generic concept than the owner or current workflow needs, treat that as a public contract problem.
 
-Generic helpers are suspect when they only save a few characters but hide
-field-specific validation needs.
+### Keep Persisted State Minimal
 
-Bad:
+Persisted state is a long-lived contract. Store only values that current behavior needs and that cannot be cheaply derived from a clearer source of truth.
 
-```ts
-const NonEmptyText = schema.string().trim().min(1)
+For every persisted field, ask who writes it, who reads it, what breaks if it is removed, whether it is portable across machines and CI, whether it duplicates another source of truth, and whether it creates migration or merge-conflict cost.
 
-title: OptionalText
-externalUrl: NonEmptyText
-```
+Do not collapse unrelated presentation, policy, path, identity, local-machine, and future-hook fields into one broad finding when they require different edits.
 
-Good:
+### Apply Law Of Demeter To Invariants
 
-```ts
-externalUrl: schema.string().trim().url()
-```
+Use Law of Demeter as a review frame: a component should not make callers, neighboring modules, or future reviewers know internal setup details in order to use it correctly.
 
-### Do not overwrite parsed persisted values silently
+Prefer local enforcement over social convention. Managed directories should create their own guard/config files; new coding patterns should come with lint, format, schema, test, or build checks when humans would otherwise have to remember them; internal state should stay behind the public contract.
 
-Do not silently replace parsed persisted values inside transforms unless that is
-the explicit migration contract. Silent replacement can mask invalid, old, or
-future schema state.
+### Avoid False Abstractions
 
-If a persisted value is no longer acceptable, validate and fail clearly, or
-write an explicit migration path.
+Avoid generic helpers when fields may diverge semantically. Declare schemas, validation, and object shape near the field until shared semantics are stable and real.
 
-### Validate all derived identities
+Helpers are suspect when they only save a few characters, describe syntax/container shape instead of domain meaning, or require transforms to patch their output back into the desired shape. If root helpers spawn optional/array/object variants, review the variants too.
 
-When validating arrays of entries, check uniqueness for every derived path or
-identity that can collide, not only the primary id.
+### Do Not Rewrite Persisted Values During Parse
 
-If two entries have different ids but derive the same directory, slug, file
-path, cache key, or external identity, the state is still invalid.
+Persisted state parsing should validate the stored contract, not silently repair it. Input normalization belongs at command/input boundaries unless an explicit migration contract says otherwise.
 
-## Review Style
+Treat parse-time identity normalization, missing-value defaults, version rewriting, collection sorting, invalid-data fallback, and field-copying as separate failure modes. If a transform only restates a value already guaranteed by validation, remove the transform.
 
-Prefer comments that name the boundary problem and the concrete deletion or
-replacement.
+### Validate Derived Identities
 
-Good review comments usually look like:
+Check uniqueness for every derived identity that can collide, not only the primary id. Directories, routes, output names, cache keys, external refs, generated artifact names, and custom paths can collide even when source ids differ.
 
-- "This mode adds command/schema/workspace surface without current value. Remove
-  it from this phase."
-- "This state field duplicates a value that can be derived from existing state.
-  Drop the field unless current behavior needs independent persistence."
-- "Let the underlying tool own this validation. Passing through its native input
-  keeps our contract smaller."
-- "This helper is a false abstraction. Inline the schema until the fields share
-  stable semantics."
+If a custom derived identity is unnecessary, remove it first. If it remains, validate uniqueness explicitly.
 
-Avoid review comments that only say "simplify this" without naming the extra
-contract, duplicated source of truth, or future surface being introduced.
+## Finding Discipline
 
-## Output Contract
+Start with findings in review order and keep summaries secondary. Do not cap the number of findings when the requested output is a review.
 
-When explicitly invoked, write in the user's primary language. If the current
-conversation language is clear, use that language.
+Split findings at the level Plimeor would likely leave separate inline comments:
 
-Start with findings in review order. Keep summaries secondary. Do not cap the
-number of findings; enumerate every concrete optimization item that follows
-from the standards above, even when several findings are related.
+- one low-value mode removal can be one finding when deleting the mode is the edit
+- one field removal is usually one finding per field or tightly coupled field pair
+- one helper family can be one finding only when the same edit removes the whole family
+- parse-time rewrites should split by failure mode when the edits differ
+- collision checks should split by identity class when validation points differ
 
-Use these priorities:
+Each finding should name the concrete surface, evidence location, why it matters, smallest correction, and interactions with other findings.
 
-- `P0`: The issue violates the committed boundary, corrupts or destabilizes
-  persisted state, creates a public contract that should not exist, causes data
-  loss, or blocks the feature from being accepted.
-- `P1`: The issue adds meaningful complexity, duplicate sources of truth,
-  brittle wrapper behavior, migration risk, or avoidable long-lived maintenance
-  cost, but the feature can still function.
-- `P2`: The issue is a local simplification, clarity improvement, smaller
-  abstraction cleanup, or non-blocking consistency fix.
+Before finalizing, compare findings back to the inventory. Every problematic surface should be covered by a finding, accepted with a reason, or marked outside scope.
 
-Before finalizing the list, check how findings interact. Some fixes change the
-shape or importance of other findings. Name those dependencies instead of
-treating every item as isolated.
+## Output Shape
 
-```markdown
-Findings:
-- [P0/P1/P2] [Concrete boundary or standards issue]
-  Evidence: [file, diff, spec section, or behavior]
-  Why it matters: [state contract, public surface, tool contract, schema risk, or complexity]
-  Change: [smallest concrete correction]
-  Interactions: [Upstream/downstream effects on other findings, or "None"]
+When explicitly invoked, write in the user's primary language.
 
-Open questions:
-- [Only questions that materially change the decision]
+Use this order:
 
-Interaction map:
-- [Finding A] affects [Finding B] because [specific dependency or consequence]
+1. Findings.
+2. Coverage notes for important inventory items not covered by findings.
+3. Open questions that materially change the decision.
+4. Interaction map for findings that affect each other.
+5. Short overall judgment.
 
-Summary:
-- [Short overall judgment]
-```
-
-If there are no findings, say that directly and name the residual risk or test
-gap, if any.
+If there are no findings, say so directly and name any residual risk or test gap.
 
 ## Stop Rules
 
-Stop when you have checked:
+Stop when:
 
-- Public contract and active product boundary do not expose future surfaces.
-- Persisted state and schemas are minimal, strict, portable, and non-duplicative.
-- Tool-native behavior is preserved unless wrapper behavior is justified.
-- Generated or cache directories guard themselves from accidental commits.
-- Helpers and abstractions remove real complexity now.
-- Validation catches collisions for derived identities, not only primary ids.
+- high-risk files in scope were reviewed before lower-risk polish
+- each review batch was read line by line before moving on
+- types, schemas, and persisted shapes were reviewed as design shape
+- every problematic inventory item maps to a finding or has a reason
+- findings are split to likely inline-comment granularity
+- open questions only remain when they materially change the decision
