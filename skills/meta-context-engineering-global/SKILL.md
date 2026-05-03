@@ -1,188 +1,148 @@
 ---
 name: meta-context-engineering-global
 description: >-
-  为全局 rules file 做 context engineering。适用于审查或改写 ~/.claude/CLAUDE.md 这类全局上下文文件，判断某条长期规则是否应进入全局层，或优化跨项目、跨任务、跨会话都生效的协作约束。触发词包括：全局提示词、全局上下文、CLAUDE.md 优化、system prompt、global prompt、global rules。Formerly named context-engineering-global.
+  Review, prune, or rewrite global rules files such as global AGENTS.md or
+  ~/.claude/CLAUDE.md. Use when deciding whether durable behavior rules belong in
+  the global context layer across tasks, projects, and sessions; when diagnosing
+  repeated collaboration friction; or when producing directly applicable
+  global-rule edits. Exclude project-local AGENTS.md/CLAUDE.md setup, skill
+  routing fixes, task context packing, and tooling enforcement. Formerly named
+  context-engineering-global.
 ---
 
-# 目的
+# Global Context Engineering
 
-帮助用户维护精简、稳定、可长期复用的全局上下文层。
+## Goal
 
-这个 skill 只负责“全局常驻”的那一层，不负责项目局部规则和当前任务的临时上下文。
+Maintain the user's global rules file as a small, durable context layer for
+behavior that should apply across tasks, projects, and sessions.
 
-这个 skill 做四件事：
-1. 审查和精简现有全局 rules file
-2. 评估候选规则是否真的值得进入全局层
-3. 给出可直接 apply 的改写文本和插入位置
-4. 在出现协作摩擦时，先判断问题是否真的该落在全局层
+## Success Criteria
 
-官方标准来源（需要时重新获取最新版本）：
-- https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5
-- https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
-- https://code.claude.com/docs/en/best-practices
+A good result:
 
-# 边界
+- Classifies each candidate or existing rule as `global`, `project`, `skill`,
+  `tooling`, `task context`, or `reject`.
+- Preserves the user's original intent and scope.
+- Proposes directly applicable text only for rules that belong in the global
+  layer.
+- Identifies insertion, replacement, deletion, or migration targets.
+- Stops once the core classification and concrete edits are justified.
 
-## 属于本 skill
+## Constraints
 
-- `~/.claude/CLAUDE.md` 或等价的全局 rules file
-- 跨任务、跨项目、跨会话都稳定成立的行为约束
-- 角色设定、输出偏好、少量高杠杆协作规则
-- “这条规则要不要进全局 prompt” 这类判断
+This skill covers global rules files only, such as `~/.claude/CLAUDE.md`, global
+`AGENTS.md`, or equivalent files.
 
-## 不属于本 skill
+It does not cover repo-local `AGENTS.md` / `CLAUDE.md`, new-project context
+setup, current-task context packing, session compaction, skill routing fixes, or
+tooling enforcement. Route those to `meta-context-engineering-project` or a more
+specific skill.
 
-- 仓库级或目录级 `AGENTS.md` / `CLAUDE.md`
-- 新项目接入时的 context setup
-- 当前任务要读哪些 spec、source、tests、errors
-- 会话压缩、切换模块、任务级 context packing
-- skill 误触发、漏触发、description 与 routing 修复
+When the user explicitly asks to update, modify, or optimize a global rules file,
+treat that as authorization to edit the requested file. Do not extend that
+authorization to installation sync, manifests, lockfiles, commits, remote
+services, project-local files, or other global state.
 
-以上问题交给 `meta-context-engineering-project`。
+Treat `must`, `always`, `never`, and `only` as reserved for true invariants:
+safety, exact output contracts, irreversible side effects, and required fields.
+Preserve artifact intent, length, structure, and boundary unless the user asks
+for a broader rewrite.
 
-# 授权语义
+## Input Routing
 
-当用户主动点名或明确触发本 skill，并要求“更新”“修改”“优化”全局上下文时，视为已经授权修改全局 `AGENTS.md` 或等价的全局 rules file。不要再把“是否允许写全局 rules file”作为额外确认问题。
+For collaboration friction, classify the root cause before proposing global text:
+global rule, project context, skill protocol, tooling, task evidence, or model
+capability boundary.
 
-这个授权只覆盖被请求的全局 rules file 本身。不要把它扩展到安装态同步、manifest/lockfile、仓库提交、远端服务或其他全局状态；这些仍然需要用户明确点名。
+For a proposed rule, read the current global rules file, classify each candidate,
+then provide replacement text and insertion location only for candidates that
+belong globally.
 
-# 输入模式
+For an existing global file review, audit each rule as keep, shorten, delete, or
+migrate. Provide a rewritten file only when the user asked for a rewrite.
 
-用户通常会以四种方式触发：
+For extraction from files, conversation history, or research, collect only the
+requested context, extract global candidates, and classify them before proposing
+edits.
 
-## 模式 1：描述协作摩擦
+## Evidence Budget
 
-用户描述一类长期重复出现的不顺心场景。
+Read the directly relevant artifact first: the target global rules file,
+candidate rule text, or user-provided friction evidence.
 
-做法：
-1. 先判断根因是不是全局层问题，而不是项目上下文、tooling、skill、模型能力边界或当前任务信息不足
-2. 如果是全局层问题，提出具体的规则改动
-3. 如果不是，明确指出真正应落的层级
+Fetch current external prompt guidance only when:
 
-## 模式 2：评估改动提案
+- the user asks to align with current model guidance
+- the existing skill cites external standards and the task is to update or
+  evaluate those standards
+- the answer would otherwise rely on an unsupported factual claim about model
+  behavior
 
-用户直接给出想写进全局 rules file 的内容。
+Useful references when needed:
 
-做法：
-1. 读取当前全局 rules file
-2. 用评估清单逐条检查提案内容
-3. 对每条内容给出判定：适合全局 / 应放项目层 / 应放 skill / 应交给 tooling / 不需要
-4. 对适合全局的内容，给出改写后的具体文本和插入位置
-5. 对不属于全局的内容，说明真正落点
+- `https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5`
+- `https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices`
+- `https://code.claude.com/docs/en/best-practices`
 
-## 模式 3：审查现有全局上下文
+Stop retrieval once the core classification and proposed text are supported. Do
+not search again for phrasing, examples, or nonessential background.
 
-用户没提供特定内容，要求直接优化现有全局文件。
+## Evaluation Rules
 
-做法：
-1. 读取当前全局 rules file
-2. 用评估清单逐条审查每条现有规则
-3. 输出审查报告：保留 / 精简 / 删除 / 迁移到项目层或 skill，每条附理由
-4. 给出改写后的完整全局上下文
+For each candidate rule, ask:
 
-## 模式 4：从信息中提取
+1. **Cross-task**: Does it hold across most task types?
+2. **Cross-project**: Does it avoid repo, stack, team, or workflow specifics?
+3. **Cross-session**: Is it worth loading in every future conversation?
+4. **Non-obvious**: Would the model fail to infer it from the request, code, or
+   local context?
+5. **Observable**: Can violation be seen in output or actions?
+6. **Non-redundant**: Does it differ from default model behavior and existing
+   rules?
+7. **Compact**: Is it the shortest effective expression?
+8. **Motivated**: Does it explain why when motivation changes behavior?
+9. **Outcome-bound**: Does it define result, success criteria, and stop
+   conditions instead of piling on process?
+10. **Consistent**: Does it avoid conflict with existing global rules?
 
-用户给一个指令让你读文件、读对话、搜索资料或总结摩擦，然后从中提取全局上下文候选内容。
+Prefer rules that define outcomes, constraints, evidence behavior, final output
+shape, or stopping conditions. Reject rules that are project-local, temporary,
+tool-enforceable, redundant, or primarily a specialized workflow that belongs in
+a skill.
 
-做法：
-1. 执行用户要求的上下文收集
-2. 从信息中筛出可能影响全局层的内容
-3. 按模式 2 的评估流程处理
+## Validation
 
-# 根因过滤
+For read-only review, state which files or sources were read.
 
-在建议“把它写进全局 prompt”之前，先排除以下更常见的真实原因：
+After edits, run the smallest relevant checks:
 
-1. **项目上下文缺失** — 需要 repo-local rules file、spec 摘要、相关源码或错误输出
-2. **规则放错层级** — 明明是项目规则、skill 协议或 tooling 检查
-3. **当前任务信息不足** — 模型没读到该读的文件
-4. **模型能力边界** — 不是多写一条全局规则就能修
+- Inspect the final diff for accidental scope expansion.
+- Verify no project-local file, sync state, lockfile, commit, or remote state
+  changed unless requested.
+- When editing a skill, confirm the frontmatter `name:` still matches its parent
+  directory.
 
-# 评估标准
+If validation cannot run, say why and name the next best check.
 
-对每条候选规则，依次检查：
+## Output
 
-1. **跨任务性** — 是否跨多数任务都成立？不是的话不要进全局层
-2. **跨项目性** — 是否不依赖某个仓库、技术栈或团队局部约定？
-3. **跨会话性** — 是否值得在每次对话都常驻？只在某阶段有效的不要常驻
-4. **不可推断性** — 模型能否从请求、代码或上下文自行推断？能推断的不需要写
-5. **可观察性** — 违反时能否从输出中看见？不可观察的规则很难验证
-6. **非冗余性** — 是否明显区别于模型默认行为？重复默认值只会增噪
-7. **精简性** — 是否已经是最短有效表述？
-8. **带动机性** — 是否解释了 why？解释动机通常比堆 MUST 更有效
-9. **完成边界** — 是否写清结果、成功标准和停止条件，而不是堆执行过程？
-10. **无矛盾性** — 是否与已有全局规则冲突？
+Default output:
 
-# 官方标准参考
+1. Key findings or classifications, ordered by impact.
+2. Concrete global-rule edits, with replacement text and insertion location.
+3. Non-global items and their correct layer.
+4. Rejected or intentionally unchanged content.
 
-## 模型无关 prompt 精简原则
+Omit empty sections. For review requests, lead with findings. For rewrite
+requests, include directly applicable text.
 
-来源：https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5
+## Stop Rules
 
-- 优先定义目标结果、约束、可用证据和最终输出形状，让模型选择高效路径
-- `always`、`never`、`must` 只用于真正不变量；判断型行为用决策规则表达
-- 对复杂任务写清成功标准、证据不足时的行为和停止条件
+Stop when the requested classification, edit text, evidence status, and
+non-global routing are clear.
 
-## 全局 rules file 精简原则
-
-来源：https://code.claude.com/docs/en/best-practices
-
-- 把 rules file 当代码对待：review、prune、test
-- 如果删掉某行不会导致模型犯错，就删掉它
-- 过长的全局文件会导致规则被忽略
-
-## 适合放在全局层的内容
-
-1. **角色设定** — 聚焦行为和语气的单句角色描述
-2. **清晰直接的协作规则** — 无歧义、可观察行为的约束
-3. **带动机的偏好** — 解释 why，少用重锤命令
-4. **少量输出偏好** — 只在偏好明显不同于默认值时才写
-5. **高频且高杠杆的抑制项** — 比如过度工程化倾向
-
-## 不适合放在全局层的内容
-
-1. **专项工作流** — 应放入 skill，按需加载
-2. **项目特定规则** — 应放项目级 `AGENTS.md` / `CLAUDE.md`
-3. **任务级 context packing** — spec、源码、错误输出应按任务提供
-4. **可由 tooling 确定性约束的规则** — 用 hooks、tests、linters、scripts 替代
-5. **过度指令** — 不需要用 CRITICAL/MUST 堆强调
-6. **冗余规则** — 与默认行为一致的内容是噪音
-7. **可从代码推断的内容** — 架构、文件路径、局部代码风格等
-
-# 输出要求
-
-无论哪种输入模式，最终输出都包含：
-
-## 1. 全局层判定
-
-对每条候选内容先给出结论：
-- 进入全局层
-- 不进入全局层，并注明真正落点
-
-## 2. 全局上下文改动
-
-对每条改动：
-- 改动类型：新增 / 修改 / 删除
-- 改动内容：具体的改写后文本
-- 评估依据：引用评估清单中的哪些条目
-- 插入位置：应放在现有文件的哪个 section
-
-## 3. 非全局建议
-
-对每条未进入全局层的内容：
-- 应落在哪一层：项目层 / skill / tooling / 当前任务上下文
-- 一句话理由
-- 如有必要，给出下一步最小动作
-
-## 4. 不采纳的内容
-
-对每条不采纳的内容，说明原因。
-
-# 执行纪律
-
-- 读完现有全局文件再提建议，不要凭空写
-- 全局上下文是寸土寸金的，宁可少一条，不可多一条
-- 先排除项目上下文和工具层问题，再决定是否修改全局层
-- 不要重复模型默认行为
-- 解释 why，而不是用大写字母喊 MUST
-- 改动要具体到可以直接 apply 的文本，不要只给抽象建议
+Do not continue pruning, syncing, committing, installing, or improving adjacent
+skills just because they look related. Ask one narrow question only when missing
+information would change the target file, authorization boundary, or
+classification result.

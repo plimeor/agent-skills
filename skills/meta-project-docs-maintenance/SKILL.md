@@ -1,50 +1,78 @@
 ---
 name: meta-project-docs-maintenance
 description: >-
-  Maintain project documentation under docs/ with clear layers for living specs,
-  implementation plans, and decision records. Use when the user asks to organize,
-  update, split, prune, archive, or clean up docs/specs, docs/plan,
-  docs/decisions, README content, or post-implementation documentation. Trigger
-  on project docs maintenance, living spec cleanup, plan implemented, ADR,
-  decision record, docs language policy, docs naming policy, README vs docs,
-  spec bloat, documentation pruning, and similar requests.
+  Maintain project documentation under docs/ as one current source of truth
+  across README, living specs, implementation plans, and decision records. Use
+  when the user asks to organize, update, split, prune, archive, or clean up
+  docs/specs, docs/plan, docs/decisions, README content, docs language or naming
+  policy, ADRs, implemented plans, README-vs-spec boundaries, spec bloat, or
+  post-implementation documentation. Do not use this as a general code-review or
+  implementation planning skill unless the requested output is documentation
+  maintenance.
 ---
 
 # Project Docs Maintenance
 
-Use this skill to keep project documentation useful as an operational memory
-system, not as a transcript of how the work unfolded.
+## Goal
 
-The goal is one current source of truth for each kind of information:
+Maintain docs as the current operational memory for the repo. Each active fact
+should have one owner:
 
 - README explains the public entrypoint.
 - Living specs describe current behavior and contracts.
 - Plans guide one active implementation and then disappear.
 - Decision records preserve expensive-to-reverse choices.
 
-## First Pass
+## Success Criteria
 
-Before editing docs, inspect the repo-local rules and current docs shape:
+A good docs-maintenance result:
 
-1. Read the project rules file if present, such as `AGENTS.md` or `CLAUDE.md`.
-2. List existing docs paths under `docs/`, especially `docs/specs/`,
-   `docs/plan/`, and `docs/decisions/`.
-3. Check README only for public-facing entrypoints and current usage.
-4. Follow repo-local naming and language rules when they are stricter than this
-   skill.
+- Places each fact in the correct layer and removes unnecessary duplication.
+- Keeps README public-facing instead of turning it into internal policy or a
+  duplicated spec.
+- Keeps living specs current and contract-focused.
+- Deletes or marks implemented plans as historical after extracting active value.
+- Keeps decision records thin and historical, not active plans.
+- Preserves the repo's language and naming rules.
+- Reports exact validation performed and any facts left unverified.
 
-If the user is asking to establish a new policy, propose the smallest policy
-that resolves the current problem. Do not rewrite the whole docs system unless
-the user explicitly asks for a migration.
+## Constraints
+
+When establishing policy, propose the smallest policy that solves the current
+problem. Treat a full docs-system migration as a separate task unless the user
+explicitly requests it.
+
+Do not update specs for changes that do not affect public behavior, shared
+contracts, state, package boundaries, install/sync/publish behavior, or current
+usage.
+
+Do not make documentation cleanup look like implementation evidence. Only claim
+tests, commands, logs, measurements, or smoke runs that were actually observed.
+
+## Evidence Budget
+
+Before editing docs, read the directly relevant docs and repo-local rules:
+
+- project rules file if present, such as `AGENTS.md` or `CLAUDE.md`
+- target docs and neighboring docs that link to or duplicate them
+- README when public entrypoint, commands, or usage are involved
+- existing `docs/specs/`, `docs/plan/`, and `docs/decisions/` shape when the
+  task concerns docs organization
+
+Read source code, package metadata, CLI help, schema files, or command output only
+when a documentation claim depends on executable behavior, command syntax,
+schema shape, package boundaries, or the user asks for verification.
+
+Scan all of `docs/` only when the user asks for comprehensive cleanup,
+migration, archive, or policy work. Stop once the current fact ownership and
+required edits are supported. Do not keep searching to improve phrasing.
 
 ## Documentation Layers
 
 ### README
 
 README is the public entrypoint. Continue using the language the current README
-already uses. Do not translate README as drive-by cleanup. If no README exists,
-or the repo is intentionally establishing a new public language, infer the
-language from the user's request, existing public docs, and expected audience.
+already uses. Do not translate README as drive-by cleanup.
 
 Put this in README:
 
@@ -54,13 +82,10 @@ Put this in README:
 - Package list or public module overview.
 - Links to deeper docs when useful.
 
-Do not put this in README:
-
-- One-feature implementation details.
-- Internal debate.
-- Long design alternatives.
-- Repo-local policy that belongs in `AGENTS.md`.
-- A duplicated copy of a living spec.
+Default away from putting one-feature implementation details, internal debates,
+long design alternatives, repo-local policy, or duplicated living specs in
+README. Keep those only when README is intentionally the sole public doc and the
+user asks for that shape.
 
 ### Living Specs
 
@@ -75,42 +100,35 @@ Specs describe the current effective contract:
 - Error cases and user-visible behavior.
 - Current invariants that future code changes must preserve.
 
-Do not put this in specs:
-
-- Superseded alternatives.
-- Chronological logs of failed attempts.
-- Step-by-step implementation plans.
-- Rationale that only explains why a major choice was made.
-- Repeated README usage examples unless the spec needs contract-level detail.
+Do not use specs for superseded alternatives, chronological logs of failed
+attempts, step-by-step implementation plans, or rationale that only explains why
+a major choice was made.
 
 When old context is still valuable, move it instead of deleting it silently:
 
 - Move stable rationale to `docs/decisions/`.
 - Move current user-facing usage to README.
 - Move unfinished execution steps to `docs/plan/`.
-- Delete stale attempts, dead alternatives, and duplicated prose.
+- Delete stale attempts, dead alternatives, and duplicated prose only when they
+  are not the only source of an active fact.
 
 ### Implementation Plans
 
 Use `docs/plan/YYYY-MM-DD-<english-description>.md` for one-time implementation
 plans.
 
-Plans are temporary. They should contain:
+Plans are temporary. They should contain the requested outcome, non-goals,
+dependencies, ordering, risks, decision points, verification steps, and a status
+marker such as `Planned`, `In Progress`, `Implemented`, `Superseded`, or
+`Abandoned`.
 
-- The requested outcome and explicit non-goals.
-- Dependencies and ordering.
-- Risks and decision points.
-- Verification steps for the implementation.
-- A short status marker such as `Planned`, `In Progress`, `Implemented`,
-  `Superseded`, or `Abandoned`.
-
-After the plan is implemented, perform the cleanup pass:
+After implementation:
 
 1. Extract current contracts into the relevant spec.
 2. Extract expensive-to-reverse rationale into a decision record.
 3. Extract public commands or usage into README.
-4. Delete the implemented plan unless the user explicitly wants to keep it as a
-   historical artifact.
+4. Delete the implemented plan unless the user wants to keep it as a historical
+   artifact.
 5. Check links and references so the deleted plan is not the only source of an
    active fact.
 
@@ -120,14 +138,9 @@ Use `docs/decisions/YYYY-MM-DD-<english-description>.md` for historical decision
 records.
 
 Decision records are for choices that are significant, traceable, and expensive
-to reverse:
-
-- Package boundaries.
-- Runtime or framework choices.
-- Schema and state-file commitments.
-- Public API or CLI direction.
-- Migration and deprecation strategy.
-- Security, publishing, or deployment posture.
+to reverse: package boundaries, runtime or framework choices, schema and
+state-file commitments, public API or CLI direction, migration strategy,
+security, publishing, or deployment posture.
 
 Keep decision records thin:
 
@@ -151,16 +164,12 @@ Continue using the README's current language for README and other established
 public entrypoints. Do not change their language unless the user explicitly asks
 for a translation or public-language migration.
 
-Use English for:
+Use English for filenames, package names, command names, options, schema fields,
+error codes, and code identifiers.
 
-- Filenames.
-- Package names, command names, options, schema fields, error codes, and code
-  identifiers.
-- Short public summaries when the repo has external readers.
-
-Do not create two canonical versions of the same doc in different languages.
-If outside readers need help, add a short English summary or README link instead
-of maintaining parallel full documents.
+Do not create two canonical versions of the same doc in different languages. If
+outside readers need help, add a short English summary or README link instead of
+maintaining parallel full documents.
 
 ## Naming Policy
 
@@ -171,8 +180,8 @@ Default naming:
 - `docs/specs/<topic>.md`: no date prefix because the file is a living spec.
 - `docs/plan/YYYY-MM-DD-<description>.md`: date prefix because the file is tied
   to one implementation episode.
-- `docs/decisions/YYYY-MM-DD-<description>.md`: date prefix because the file is
-  a historical record.
+- `docs/decisions/YYYY-MM-DD-<description>.md`: date prefix because the file is a
+  historical record.
 - `docs/ideas/YYYY-MM-DD-<description>.md`: date prefix if the repo uses an
   ideas folder for snapshots.
 
@@ -180,42 +189,60 @@ Use the event or decision date when it is known. Do not use today's date just
 because the cleanup is happening today.
 
 If the current repo already uses a different naming policy, do not rename files
-as drive-by cleanup. First state the mismatch and ask whether the user wants a
-separate migration.
+as drive-by cleanup. State the mismatch and ask whether the user wants a separate
+migration.
 
 ## Living Spec Hygiene
 
 Living specs should become more accurate over time, not just larger.
 
-Split a spec when:
+Split a spec when it covers multiple independent packages, commands, or public
+contracts; when readers need only one section most of the time; or when new
+changes repeatedly touch one subsection without touching the rest.
 
-- It covers multiple independent packages, commands, or public contracts.
-- Readers need only one section most of the time.
-- New changes repeatedly touch one subsection without touching the rest.
-- The doc has grown into unrelated top-level concerns.
+Prune a spec when a paragraph only explains a superseded plan, the same contract
+is stated in multiple places, README and spec both contain the same long usage
+block, examples no longer add contract detail, or historical rationale interrupts
+current behavior.
 
-Prune a spec when:
+Prefer links over duplication. The deeper doc owns the detailed contract; the
+higher-level doc summarizes and links.
 
-- A paragraph only explains a superseded plan.
-- The same contract is stated in multiple places.
-- README and spec both contain the same long usage block.
-- Examples no longer add contract detail.
-- Historical rationale interrupts the current behavior.
+## Validation
 
-Prefer links over duplication. The deeper doc should own the detailed contract;
-the higher-level doc should summarize and link.
+For docs-only prose cleanup, run `git diff --check -- docs` when `docs/` exists.
+If the repo has no `docs/` or the command is not applicable, say why.
+
+When deleting or moving a plan/spec, check old path and title references in
+`README.md`, `docs/`, and project rules, for example:
+
+```bash
+rg '<old-path>|<old-title>' README.md docs AGENTS.md
+```
+
+When editing commands, schema descriptions, CLI output, or executable examples,
+validate with source code, existing tests, CLI help, or the actual command. If
+you cannot validate, label the fact as unverified.
+
+Do not run code tests by default for docs cleanup unless the doc change claims
+executable behavior or the user asks.
+
+## Output
+
+When reporting completion, include:
+
+- Changed docs and the role each doc now owns.
+- Deleted, moved, or intentionally preserved docs.
+- Validation performed, with exact commands or checks.
+- Facts left unverified or follow-up migrations not included in scope.
 
 ## Stop Rules
 
-Do not update specs for changes that do not affect public behavior, shared
-contracts, state, package boundaries, install/sync/publish behavior, or current
-usage.
+Stop once the requested documentation ownership, edits, validation state, and
+out-of-scope follow-ups are clear.
 
 Do not keep an implemented plan synchronized with later code. Extract the value,
-then remove it or mark it as historical according to the repo policy.
+then remove it or mark it as historical according to repo policy.
 
 Do not create new documentation layers when the existing README/spec/plan/decision
 split is enough.
-
-Do not make documentation cleanup look like implementation evidence. Only claim
-tests, commands, logs, or measurements that were actually observed.

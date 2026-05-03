@@ -1,19 +1,22 @@
 ---
 name: ops-codex-session-maintenance
 description: >-
-  Optimize and maintain local Codex sessions when Codex Desktop or the Codex app
-  feels slow, session history is heavy, logs or worktrees are large, or the user
-  asks to clean up, archive, speed up, reset, or keep Codex sessions healthy. Use
-  this skill for inspect-first maintenance: backup important state, create handoff
-  docs, archive old sessions and worktrees, rotate logs, prune dead project paths,
-  and verify local Codex state. Do not use for code performance optimization,
-  model prompt tuning, or deleting user data.
+  Maintain local Codex Desktop/App state when Codex feels slow, session history
+  is heavy, logs or worktrees are large, or the user asks to inspect, archive,
+  clean up, rotate, hand off, reset, or speed up Codex sessions. Use for
+  inspect-first, backup-first local state maintenance: measure hotspots, create
+  handoffs for useful long sessions, archive stale sessions/worktrees, rotate old
+  logs, prune clearly dead project paths only after backup and confirmation, and
+  report concrete verification. Do not use for application code performance,
+  model prompt tuning, live conversation compaction, process killing, automation
+  scheduling unless requested, or deleting user data.
 ---
 
-# Purpose
+# Codex Session Maintenance
 
-Keep Codex responsive by keeping active local state small without losing
-recoverability.
+## Goal
+
+Keep local Codex state lightweight, recoverable, and explainable.
 
 The operating model:
 
@@ -22,74 +25,80 @@ The operating model:
 - Archives are for history.
 - Fresh threads are for speed.
 
-# Safety Invariants
+## Success Criteria
 
-- Treat local Codex state as user data.
-- Inspect before changing anything. Report the hot spots and proposed action
-  before moving files.
-- If Codex is running, inspect only. Do cleanup after the app is closed so local
-  state and databases are not being touched from two places.
-- Back up important files before cleanup.
-- Prefer archiving or rotating over deleting.
-- Never delete sessions, logs, worktrees, config, databases, memories, skills,
-  plugins, or automations unless the user explicitly asks for deletion after a
-  backup exists.
-- Do not archive pinned, current, recent, or ambiguous sessions.
-- Do not move dirty or externally registered git worktrees unless the user
-  confirms the exact worktree and the move method is safe.
+A good maintenance pass:
 
-# Default Scope
+- Identifies the main local hot spots before proposing cleanup.
+- Leaves live, current, pinned, dirty, ambiguous, and user-data state untouched
+  unless the user explicitly confirms a safe action.
+- Creates backups or manifests before any confirmed mutation.
+- Produces handoff docs before archiving useful long sessions.
+- Verifies completed actions with exact commands or checks.
+- Reports what changed, what was not touched, and what residual risk remains.
 
-Do:
+## Hard Constraints
 
-1. Locate Codex local state.
-2. Measure what is actually large.
-3. Back up important state.
-4. Create handoff docs for still-useful long sessions.
-5. Archive stale sessions and worktrees.
-6. Rotate large old logs.
-7. Prune config entries that point to paths that no longer exist.
-8. Verify the result and report what changed.
+Treat local Codex state as user data.
 
-Do not automatically:
+For `inspect`, never mutate files. For `cleanup`, first report proposed actions
+and get confirmation.
 
-- Create a weekly script or automation unless the user asks for automation.
-- Rewrite global rules, prompts, skills, or memories.
-- Compact live conversations by editing their contents.
-- Kill background processes. Identify heavy processes and let the user decide.
+If Codex is running, inspect only. Do cleanup after the app is closed so local
+state and databases are not touched from two places.
 
-# Workflow
+Never delete sessions, logs, worktrees, config, databases, memories, skills,
+plugins, or automations unless the user explicitly asks for deletion after a
+backup exists.
 
-## 1. Define The Maintenance Mode
+Do not archive pinned, current, recent, useful-without-handoff, or ambiguous
+sessions. Do not move dirty or externally registered git worktrees unless the
+user confirms the exact worktree and safe move method.
 
-Classify the request before touching files:
+## Modes
 
-- `inspect`: The user asks what is slow, heavy, or taking space.
-- `cleanup`: The user asks to clean up, archive, speed up, optimize, or make
-  Codex faster.
-- `handoff`: The user wants to restart long sessions in fresh chats.
-- `automation`: The user asks for recurring weekly maintenance.
+- `inspect`: run inventory, report hot spots, and stop.
+- `cleanup`: inspect, propose actions, confirm Codex is closed, create backup or
+  manifest, execute confirmed moves only, then verify.
+- `handoff`: identify useful long sessions, create handoff docs and starter
+  prompts, then ask before archiving.
+- `automation`: design the repeatable maintenance contract only; do not schedule
+  anything until the user confirms.
 
-For `inspect`, stop after the report. For `cleanup`, continue only after backup
-and after confirming Codex is not running. For `handoff`, create docs and starter
-prompts before archiving any useful session. For `automation`, first design the
-repeatable maintenance contract; do not schedule it until the user confirms.
+## Evidence Budget
 
-## 2. Locate Local State
+Start with one broad inventory:
 
-Prefer discovered paths over hard-coded assumptions.
+- `$CODEX_HOME`, falling back to `~/.codex` when unset
+- top-level size inventory
+- process list for Codex and common dev servers
+- session, archive, worktree, log, config, memory, skill, plugin, and automation
+  paths
 
-Check:
+Deep-dive only into the top hot spots or paths above obvious thresholds. Read
+metadata first: path, size, modified time, git status, manifest/config
+parseability, and database integrity when relevant.
 
-- `$CODEX_HOME`, falling back to `~/.codex` when unset.
-- Session and archived-session directories.
-- Worktree and archived-worktree directories.
-- Logs.
-- Config files.
-- Local state databases such as `*.db`, `*.sqlite`, or `*.sqlite3`.
-- Memories, skills, plugins, and automations.
+Do not read session JSONL contents unless creating a handoff. Search again only
+when a proposed mutation depends on missing facts, paths conflict, state looks
+ambiguous, or the user asks for comprehensive cleanup.
 
-Common directories include:
+## Useful Checks
+
+```bash
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+du -sh "$CODEX_HOME"/* 2>/dev/null | sort -h
+find "$CODEX_HOME/sessions" -type f -name '*.jsonl' -size +10M -print 2>/dev/null
+find "$CODEX_HOME/log" -type f -size +50M -print 2>/dev/null
+find "$CODEX_HOME/worktrees" -mindepth 1 -maxdepth 1 -type d -mtime +10 -print 2>/dev/null
+ps aux | rg -i '[c]odex'
+ps aux | rg -i 'node|bun|vite|next|webpack|tsx'
+```
+
+Do not kill processes automatically. Report candidates with command, PID, age,
+and why they look relevant.
+
+Common directories:
 
 ```text
 $CODEX_HOME/sessions
@@ -103,56 +112,27 @@ $CODEX_HOME/plugins
 $CODEX_HOME/automations
 ```
 
-On Windows, also watch for duplicate path forms such as normal `C:\...` paths
-and extended `\\?\C:\...` paths. Normalize only when you can prove both forms
-refer to the same location.
+On Windows, watch for duplicate path forms such as `C:\...` and `\\?\C:\...`.
+Normalize only when you can prove both forms refer to the same location.
 
-## 3. Inspect Hot Spots
+## Cleanup Policy
 
-Measure before proposing cleanup.
+Prefer archiving or rotating over deleting. Back up important files before
+cleanup.
 
-Useful checks:
-
-```bash
-CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
-du -sh "$CODEX_HOME"/* 2>/dev/null | sort -h
-find "$CODEX_HOME/sessions" -type f -name '*.jsonl' -size +10M -print 2>/dev/null
-find "$CODEX_HOME/log" -type f -size +50M -print 2>/dev/null
-find "$CODEX_HOME/worktrees" -mindepth 1 -maxdepth 1 -type d -mtime +10 -print 2>/dev/null
-```
-
-Also inspect running processes:
-
-```bash
-ps aux | rg -i '[c]odex'
-ps aux | rg -i 'node|bun|vite|next|webpack|tsx'
-```
-
-Do not kill processes automatically. Report candidates with command, PID, age,
-and why they look relevant.
-
-## 4. Back Up First
-
-Create a timestamped backup outside the hot active state tree, for example:
+Create a timestamped backup outside the active state tree, for example:
 
 ```text
 ~/.codex-maintenance/backups/YYYYMMDD-HHMMSS/
 ```
 
-Back up small but important state before changing anything:
-
-- Config files.
-- Global state or session indexes.
-- Local state databases.
-- Memories.
-- Skills.
-- Plugins.
-- Automations.
-- Any manifest that maps sessions, projects, or worktrees.
+Back up small important state before changing anything: config files, global
+state or session indexes, local databases, memories, skills, plugins,
+automations, and manifests that map sessions, projects, or worktrees.
 
 For large session files or worktrees, a manifest plus archive move is usually
-better than a full duplicate copy. The manifest should include original path,
-size, modified time, and planned destination.
+better than a duplicate copy. The manifest should include original path, size,
+modified time, and planned destination.
 
 If a database is present and `sqlite3` is available, verify it before and after:
 
@@ -162,11 +142,13 @@ sqlite3 path/to/state.sqlite 'PRAGMA integrity_check;'
 
 Stop if the database cannot be opened or the integrity check fails.
 
-## 5. Create Handoff Docs
+Propose pruning clearly dead project paths only after backup. Execute config
+changes only after confirmation. Preserve unknown entries and report them
+instead of guessing.
 
-Before archiving a long session that still matters, create a handoff document.
+## Handoff Docs
 
-Use this structure:
+Before archiving a long session that still matters, create a concise handoff:
 
 ```markdown
 # Codex Handoff: [short task name]
@@ -194,58 +176,44 @@ Use this structure:
 [A ready-to-paste prompt for a fresh Codex session]
 ```
 
-Keep handoffs concise. Do not turn them into transcripts. Preserve decisions,
-current state, evidence, and the next prompt.
+Preserve decisions, current state, evidence, and the next prompt. Do not turn
+handoffs into transcripts.
 
-## 6. Archive Stale State
+## Archive Candidates
 
-Sessions:
+Sessions from the last 7-10 days are usually too recent to archive, but age is
+only a heuristic. Keep pinned, current, ambiguous, or useful sessions. Archive
+old non-pinned sessions only by moving them to the archived-session location and
+recording the original path in a manifest. Do not edit session JSONL contents as
+a cleanup tactic.
 
-- Keep sessions from the last 7-10 days by default.
-- Keep pinned, current, or ambiguous sessions.
-- Archive old non-pinned sessions by moving them to the archived-session
-  location and recording the original path in a manifest.
-- Do not edit session JSONL contents as a cleanup tactic.
+For worktrees, inspect each candidate with `git status --short` when it is a git
+repository. Keep dirty worktrees unless the user confirms a specific archive
+action. If a directory is a registered git worktree, prefer the repository's safe
+worktree move mechanism; stop if you cannot verify it.
 
-Worktrees:
+For logs, rotate oversized old logs by moving them to an archive folder. Leave
+the active log path available so Codex can recreate fresh logs. Do not truncate a
+log while Codex is running.
 
-- Inspect each candidate with `git status --short` when it is a git repository.
-- Keep dirty worktrees unless the user confirms a specific archive action.
-- If a directory is a registered git worktree, prefer the repository's safe
-  worktree move mechanism. If you cannot verify that, stop and ask.
-- Archive stale clean Codex worktrees by moving them to the archived-worktree
-  location and recording a manifest entry.
+## Validation
 
-Logs:
+For `inspect`, report commands and observed sizes/processes, and state that no
+files changed.
 
-- Rotate oversized old logs by moving them to an archive folder.
-- Leave the active log path available so Codex can recreate fresh logs.
-- Do not truncate a log file while Codex is running.
+For `cleanup`, verify backup exists, manifest entries match moved paths, config
+parses if config changed, databases open if touched or nearby, dirty worktrees
+were not moved, and before/after sizes or counts changed as expected.
 
-Config:
+For `handoff`, verify the handoff file exists and includes `Goal`, `Current
+State`, and `Restart Prompt`.
 
-- Remove project paths only when the path clearly no longer exists and the
-  config was backed up.
-- Preserve unknown entries and report them instead of guessing.
+For `automation`, do not claim scheduling verification unless the user approved
+scheduling and it actually happened.
 
-## 7. Verify
+## Output
 
-After cleanup, verify:
-
-- Config still parses.
-- State databases still open.
-- Active session size dropped.
-- Archived session count or size increased by the expected amount.
-- Large logs were moved and Codex can recreate fresh logs.
-- No broken or duplicate project paths remain in the cleaned config.
-- Dirty worktrees were not moved accidentally.
-
-Report exact commands that were run and their observed results. Never claim a
-test, parse check, database check, or size reduction that was not actually run.
-
-# Output Contract
-
-When this skill triggers, report in this shape:
+Report in this shape:
 
 ```markdown
 ## Codex Session Maintenance
@@ -256,11 +224,17 @@ Mode:
 Observed hot spots:
 - [path] - [size / age / reason]
 
-Backups:
-- [backup path or "not created because this was inspect-only"]
+Proposed actions:
+- [only for actions not yet confirmed]
 
-Actions:
+Completed actions:
 - [what was archived, rotated, pruned, or left unchanged]
+
+Not touched:
+- [live, pinned, dirty, ambiguous, or out-of-scope state]
+
+Backups and manifests:
+- [backup path, manifest path, or "not created because this was inspect-only"]
 
 Verification:
 - [commands/checks actually run and results]
@@ -269,13 +243,10 @@ Residual risk:
 - [anything left for the user to decide]
 ```
 
-# Stop Rules
+## Stop Rules
 
-Stop and ask for confirmation when:
-
-- Codex is running and the next step would mutate local state.
-- A candidate session appears pinned, current, or important but lacks a handoff.
-- A worktree is dirty or appears to be registered externally.
-- A database integrity check fails.
-- The cleanup would delete rather than archive.
-- The target Codex state directory cannot be identified confidently.
+Stop and ask for confirmation when Codex is running and the next step would
+mutate local state; a candidate session appears pinned, current, or important but
+lacks a handoff; a worktree is dirty or externally registered; a database
+integrity check fails; cleanup would delete rather than archive; or the target
+Codex state directory cannot be identified confidently.

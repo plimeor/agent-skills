@@ -1,116 +1,147 @@
 ---
 name: writing-blog-illustration
-description: Generate English image-model prompts for blog or article illustrations in a colorful cartoon infographic style. Use when the user wants a visual, illustration, concept diagram, system architecture image, comparison image, or prompt for an image model, including "画图", "插图", "图片提示词", "配图", "illustration", "infographic", or "image prompt". Formerly named blog-illustration.
+description: >-
+  Generate English image-model prompts for blog or article illustrations in a
+  colorful cartoon infographic style. Use when the user asks for an illustration
+  prompt, image prompt, concept diagram prompt, system-architecture visual
+  prompt, comparison visual prompt, or blog/article 配图提示词, including "画图",
+  "插图", "图片提示词", "配图", "illustration", "infographic", or "image prompt".
+  This skill returns text prompts, not generated images; if the user asks Codex
+  to directly create or edit a bitmap image, use image generation instead unless
+  they explicitly want a prompt. Formerly named blog-illustration.
 ---
 
 # Blog Illustration Prompt Generator
 
-Generate prompts for image generation models (Gemini, Midjourney, DALL-E, etc.) that produce colorful cartoon-style infographic illustrations for blog posts.
+## Goal
 
-The output is a text prompt — not an image. The user takes the prompt to their preferred image generation model.
+Generate one ready-to-use English prompt for an image model to create a
+blog/article illustration.
 
-**The prompt itself must be written in English**, regardless of the conversation language. Short English labels are usually more reliable than Chinese labels in image models, but generated text may still need post-editing. Only use Chinese in the prompt when the user explicitly requests Chinese labels in the image.
+## Success Criteria
 
-## Outcome
+A good result:
 
-Success means one ready-to-use English image prompt that names the intended visual outcome, layout, characters, labels, style constraints, and technical specs. Keep it to 200-400 words and stop at the prompt unless the user explicitly asks to generate the image.
+- Returns one text prompt, not an image.
+- Keeps the prompt around 200-400 words unless the user asks for a different
+  format.
+- Names the intended visual outcome, layout, metaphors, labels, style
+  constraints, and technical specs.
+- Uses concrete visual anchors from the user's content without inventing product
+  facts, metrics, customers, roadmap claims, or architecture details.
+- Stops after the prompt unless the user asks for explanation or direct image
+  generation.
 
-## Style DNA
+## Core Constraints
 
-Use this as the default house style for blog illustrations. Preserve it unless the user asks for a different tone, such as more serious, more technical, more editorial, or no character-driven metaphors.
+The prompt itself must be written in English, regardless of the conversation
+language. Use Chinese labels only when the user explicitly requests Chinese text
+inside the image.
 
-- **Cartoon infographic** — a hybrid of illustration and information graphics. Not flat/minimal design, not formal architecture diagrams, not corporate clip art
-- **White background** with soft pastel color-coded zones (rounded rectangles with subtle fills)
-- **Cute characters with personality** — each abstract concept becomes a concrete visual metaphor. No generic robots, no gear icons, no floating screens with "AI" badges
-- **Simple faces** — dots for eyes, simple expressions. Charming but not childish. Think Dropbox/Notion illustration style
-- **Thin rounded arrows** in dark gray for flow and connections
-- **Clean white space** between zones — leave room to breathe
-- **English labels by default** — all text labels in the prompt (zone names, character names, flow annotations) use short English text. This is usually more reliable than Chinese labels, but generated text may still need post-editing. Only use Chinese labels when the user explicitly requests it
-- **16:9 aspect ratio by default**, high quality, clean edges, no blur, no gradients
-- **Soft pastel palette**: baby blue, lavender/pink, warm cream/yellow, sage green. Adjust per piece but stay in this family
+Return a prompt for the user's preferred image generation model. If the user
+asks Codex to directly generate or edit an image, hand off to image generation
+instead of returning only a prompt.
 
-## Process
+## Default Style
 
-### 1. Analyze the content
+Use this house style unless the user asks for a more serious, technical,
+editorial, realistic, or non-character-driven direction:
 
-Read the text that needs illustration. Identify:
+- Cartoon infographic: a hybrid of illustration and information graphics, not a
+  formal architecture diagram or corporate clip art.
+- White background with soft pastel color-coded zones.
+- Cute characters with personality. Each abstract concept becomes a concrete
+  metaphor. Avoid generic robots, gear icons, floating screens, and "AI" badges.
+- Simple faces, thin rounded arrows, clean white space, and charming but not
+  childish proportions.
+- Short English labels by default.
+- 16:9 aspect ratio, high quality, clean edges, no blur, no gradients.
+- Soft pastel palette: baby blue, lavender/pink, warm cream/yellow, sage green.
 
-- **Components**: The key actors, concepts, or stages (3-6 is ideal for one illustration; more than 6 means you should suggest splitting into multiple images)
-- **Relationships**: How do they connect? Sequential flow, hierarchy, cycle, hub-and-spoke, or loose association?
-- **Groupings**: Are there natural clusters or layers?
-- **The one thing**: What single idea should a reader grasp at a glance, before reading any labels?
+## Evidence And Retrieval Budget
 
-### 2. Design character metaphors
+Use the user's provided text, article draft, title, notes, screenshot, or
+conversation as the source of truth.
 
-This is the most important step. Each abstract component needs a concrete visual form that hints at its function.
+If the user provides a URL, file, screenshot, or named article and its contents
+are needed, read only enough to identify the visual thesis, components,
+relationships, and required labels.
 
-**Principles:**
+Stop reading once the core visual structure and labels are clear. Do not search
+or elaborate just to make the scene sound richer.
 
-- **Function drives form.** A component that connects things → spider weaving silk. A component that cleans/audits → gardener pruning branches. A component that observes patterns → owl. A component that wanders freely → firefly.
-- **Visual distinctness.** Every character should be immediately distinguishable in silhouette. If two characters both look like "small robot doing X," the illustration fails.
-- **No generic defaults.** Never fall back to "a robot," "a gear," "a monitor with code," or "a person at a desk with sparkles." Push for a specific metaphor that carries meaning.
-- **Decide by default.** Return one coherent metaphor set in the final prompt. Offer 2-3 alternatives only when the metaphor would materially change the article's stance, when the user's intent is under-specified in a way that changes the visual meaning, or when the user asks to brainstorm.
+## Design Decisions
 
-Reference examples:
+### Content Fit
 
-| Function | Weak | Strong |
-|---|---|---|
-| Links/connects items | Robot with wires | Spider weaving silk between cards |
-| Audits/cleans/maintains | Robot with magnifying glass | Gardener pruning dead branches |
-| Generates profile from behavioral data | Brain with arrows | Painter creating portrait from scattered fragments |
-| Equal partnership | Two robots | Two silhouettes back-to-back, one human-shaped, one geometric |
-| Free exploration with occasional output | Floating robot | Firefly drifting lazily, glowing when it finds something |
-| Filters or guards | Shield icon | Cat sitting on a fence, letting some things pass |
-| Schedules or orchestrates | Clock icon | Conductor with a baton, cueing different performers |
+Derive three to six visual anchors from the source: actors, concepts, stages, or
+contrasts. If the content has more than six distinct elements, default to
+suggesting a split or compress the prompt to the most important three to six
+anchors when the user insists on one image.
 
-### 3. Plan the layout
+### Metaphor Choice
 
-Choose a layout pattern based on the relationship structure:
+Function drives form. A connector might become a spider weaving silk; a cleaner
+or auditor might become a gardener pruning branches; an observer might become an
+owl; a scheduler might become a conductor.
 
-- **Z-flow** (top-left → top-right → bottom-left → bottom-right): For sequential processes with 3-4 stages. Follows natural reading direction.
-- **Hub-and-spoke**: For a central concept with multiple related elements radiating outward.
-- **Layered bands** (horizontal or vertical): For systems with distinct tiers or phases.
-- **Scattered/organic**: For loosely related elements. Use sparingly — it's easy to look messy.
+Return one coherent metaphor set by default. Offer alternatives only when the
+metaphor would materially change the article's stance, the user's intent is
+under-specified in a way that changes visual meaning, or the user asks to
+brainstorm.
 
-If an element deliberately breaks the pattern (e.g., something autonomous that doesn't fit the main structure), position it **outside** the organized zones — floating, slightly translucent, with dashed connections. This visual separation communicates "this one is different" without explanation.
+### Layout Choice
 
-### 4. Assign colors and zones
+Choose the layout from the relationship structure:
 
-- Each logical group gets a distinct soft pastel zone (rounded rectangle)
-- Use color to reinforce grouping, not for decoration
-- 3-4 zone colors maximum. More than that becomes visual noise
-- Special or anomalous elements: desaturated, translucent, or no zone background at all
+- `Z-flow`: sequential processes with three or four stages.
+- `Hub-and-spoke`: one central concept with related elements.
+- `Layered bands`: systems with distinct tiers or phases.
+- `Scattered/organic`: loose associations; use sparingly.
 
-### 5. Write text labels
+If an element deliberately breaks the pattern, place it outside the organized
+zones with dashed or softer connections.
 
-Before writing the prompt, list all text labels that should appear in the image. Default to short English labels; they are usually more reliable than Chinese labels, but any generated text may still need post-editing.
+### Labels
 
-- **Zone labels**: e.g. "Maintenance", "Insight", "Output"
-- **Character labels**: e.g. "Weaver (daily)", "Sentinel (weekly)"
-- **Flow annotations**: e.g. "changes", "approve", "reject"
-- **Key elements**: e.g. "Notes Vault", "Profile"
+Keep labels short, usually two to four words. List exact label text and placement
+inside the prompt: above, below, inside, top-left zone, beside the character, or
+along an arrow.
 
-Keep labels short — 2-4 words per label. Only use Chinese labels when the user explicitly asks for them.
+### Style Adaptation
 
-### 6. Write the prompt
+Honor user requests for a serious, technical, editorial, minimal, or
+non-character style. Preserve the prompt-generator boundary even when style
+changes.
 
-Structure the prompt as:
+## Output
 
-1. **Style declaration** (1 sentence) — establish the overall look and purpose
-2. **Layout overview** (1-2 sentences) — spatial arrangement and reading flow
-3. **Zone-by-zone description** — for each zone: background color, characters present, what they're doing, key visual details. Embed labels naturally: "a soft blue zone labeled 'Maintenance' in the top corner"
-4. **Special elements** — anything floating, detached, or breaking the main structure
-5. **Text and label placement** — explicitly list all text labels and where they appear. Use Chinese labels only when requested. Be specific about placement (above, below, inside) so the model doesn't scatter them randomly
-6. **Style details block** — bullet list of specific requirements (palette, line weight, character style, mood, what NOT to include)
-7. **Technical specs** — aspect ratio, quality
+The final prompt should contain:
 
-Keep the prompt **200-400 words**. Image models perform worse with extremely long prompts — be specific about what matters, brief about the rest.
+1. Style declaration.
+2. Layout overview.
+3. Zone-by-zone or component-by-component visual description.
+4. Special elements that break the main pattern.
+5. Text labels and placement.
+6. Style constraints and things to avoid.
+7. Technical specs such as aspect ratio and quality.
 
-## Things to avoid
+## Things To Avoid
 
-- **Labels that are too long.** Keep each label to 2-4 words. Longer text is harder for models to render cleanly. If a concept needs more explanation, that's what the article text is for — the image just needs a short label.
-- **Generic characters.** Two "cute robots" in the same illustration is a design failure. Every character needs its own metaphor.
-- **"AI" badges or labels on characters.** If the context already makes clear these are AI components, badges add nothing and look tacky.
-- **Formal diagram conventions.** No UML, no swimlanes, no database cylinders. This is an illustration, not a spec sheet.
-- **Overloaded compositions.** More than 6 distinct elements in one image = suggest splitting into multiple illustrations.
-- **Decorative gradients or 3D effects.** Stay flat and clean. Depth comes from overlapping elements and subtle shadows, not from glossy renders.
+- Labels longer than two to four words.
+- Generic characters that all look alike.
+- "AI" badges or labels when the context already makes this clear.
+- UML, swimlanes, database cylinders, or formal diagram conventions unless the
+  user explicitly asks for them.
+- Overloaded compositions.
+- Decorative gradients or glossy 3D effects.
+
+## Stop Rules
+
+If enough context exists, output the prompt directly. Ask one narrow question
+only if the missing answer changes visual meaning, audience, label language, or
+image format.
+
+Before finalizing, check that the prompt is one usable English prompt, fits the
+word budget, has short labels, includes layout/style/technical specs, avoids
+invented facts, and does not directly generate an image.

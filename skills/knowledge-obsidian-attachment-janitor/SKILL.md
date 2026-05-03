@@ -1,32 +1,67 @@
 ---
 name: knowledge-obsidian-attachment-janitor
-description: Clean up and organize an Obsidian vault's Attachments folder by planning deletion of unreferenced files and renaming referenced files with date-prefixed, descriptive names. Use when the user mentions cleaning up attachments, finding unused images, organizing files, renaming attachments, or says "附件清理", "整理附件", "清理图片", or "附件重命名". Formerly named obsidian-attachment-janitor.
+description: >-
+  Plan and safely execute cleanup of an Obsidian vault's Attachments folder:
+  identify unreferenced attachments for deletion, rename referenced attachments
+  to date-prefixed descriptive filenames, and verify embeds after confirmed
+  changes. Use when the user mentions attachment cleanup, unused images,
+  Obsidian attachments, renaming attachments, "附件清理", "整理附件", "清理图片",
+  or "附件重命名". Requires an explicit delete/rename plan before any destructive
+  action. Formerly named obsidian-attachment-janitor.
 ---
 
 # Obsidian Attachment Janitor
 
-Clean up and organize attachments in the Obsidian vault. Two jobs:
+## Goal
 
-1. Find and delete unreferenced attachments
-2. Rename referenced attachments with consistent, searchable names
+Clean up and organize files in an Obsidian vault's `Attachments/` folder without
+breaking embeds or touching unrelated vault content.
 
-## Outcome
+## Success Criteria
 
-Success means the user first receives a concrete delete/rename/skip plan, no destructive action happens before explicit confirmation, and any confirmed changes are followed by a scan for broken embeds. Stop after reporting counts and any remaining blockers; leave unrelated vault organization alone.
+A good result:
 
-## Naming convention
+- Produces a concrete `Delete / Rename / Skip` plan before any destructive
+  action.
+- Deletes only attachments with no detected reference form.
+- Renames only attachments with enough evidence for a date and a short
+  descriptive filename.
+- Waits for explicit user confirmation before deleting or renaming.
+- Verifies confirmed changes by scanning for broken embeds and reports counts
+  and blockers.
 
-```
+## Constraints
+
+Treat deletion and rename as destructive or externally visible vault changes.
+Do not delete or rename files before explicit confirmation.
+
+Leave unrelated vault organization, note content, frontmatter, and
+non-attachment files alone. If reference status, date, or description is
+uncertain, put the item in `Skip`.
+
+Use `path=` for Obsidian CLI operations; do not use `file=`. The `file=`
+parameter resolves like a wikilink and fails on filenames with special
+characters such as spaces, `@`, underscores, or hashes.
+
+## Naming Convention
+
+```text
 YYYY-MM-DD description.ext
 ```
 
-- **Date prefix**: from the referencing note's filename. Extract the `YYYY-MM-DD` portion only (ignore time like `1230` in `2026-03-09 1230 ...`)
-- **Description**: short English kebab-case phrase describing what the attachment is, based on the embedding context in the note. Keep it under 5 words.
-- **Extension**: preserved from original
+- **Date prefix**: use the referencing note's `YYYY-MM-DD` filename prefix.
+  Ignore time suffixes like `1230` in `2026-03-09 1230 ...`.
+- **Description**: use a short English kebab-case phrase based on the embedding
+  context. Keep it under five words.
+- **Extension**: preserve the original extension.
 
-When the same note embeds multiple attachments, differentiate by what each one depicts, not by index number. Read the surrounding text to understand each attachment's role.
+When the same note embeds multiple attachments, differentiate by what each one
+depicts, not by index number. Use the attachment timestamp only when the filename
+contains a clear `YYYY-MM-DD` timestamp and it conflicts with the note date;
+otherwise use the referencing note date.
 
-Example — a blog post note `2026-03-09 1230 让 AI 接管笔记维护.md` embeds 4 images:
+Example: a note named `2026-03-09 1230 让 AI 接管笔记维护.md` embeds four
+images.
 
 | Original | New |
 |---|---|
@@ -35,61 +70,63 @@ Example — a blog post note `2026-03-09 1230 让 AI 接管笔记维护.md` embe
 | `CleanShot 2026-03-09 at 20.40.27@2x.png` | `2026-03-09 pr-diff-screenshot.png` |
 | `CleanShot 2026-03-10 at 23.45.40@2x.png` | `2026-03-10 sentinel-report-screenshot.png` |
 
-Notice the last one uses `2026-03-10` — the date comes from the attachment's own CleanShot timestamp when it differs from the note date and is clearly identifiable. Prefer the note's date when in doubt.
+## Evidence Budget
 
-## Workflow
+First scan all attachment filenames and Markdown references in the vault.
+Include Obsidian embeds, Markdown image links, normal Markdown links, URL-encoded
+paths, and raw filename/path mentions when checking whether an attachment is
+referenced. Exclude `.agents/skills/` documentation examples.
 
-### Step 1: Build reference map
+For rename descriptions, read the embed line, surrounding paragraph, and nearest
+heading first. Read the full referencing note only when local context is
+insufficient. Do not inspect unrelated notes once reference status and rename
+context are sufficient.
 
-1. List all files in `Attachments/`
-2. Search all `.md` files for `![[filename]]` embeds
-   - **Exclude** `.agents/skills/` — documentation examples, not real references
-   - Strip parameters: `![[file.png|300]]` → `file.png`, `![[file.png|alt text]]` → `file.png`
-3. Result: a map of `attachment filename → [referencing note paths]`
+## Planning Rules
 
-### Step 2: Classify
+Build three lists:
 
-- **Unreferenced**: zero references → candidate for deletion
-- **Referenced, datable**: referencing note has `YYYY-MM-DD` in filename → candidate for rename
-- **Referenced, undatable**: referencing note has no date prefix (e.g., `Private/Career/Portfolio/` notes) → skip rename, keep as-is
+1. `Delete`: attachments with no detected reference form. Include path, size, and
+   evidence reason.
+2. `Rename`: referenced attachments with a reliable date and description. Include
+   old path, new name, referencing note, and evidence phrase.
+3. `Skip`: attachments kept as-is. Include path and reason, such as undatable,
+   already named well, multiple conflicting references, unclear reference status,
+   or insufficient context.
 
-### Step 3: Generate rename plan
+For multiple references, prefer the most specific embedding context. If dates or
+ownership conflict, skip unless one source clearly owns the attachment. If two
+files would receive the same name, make descriptions more specific rather than
+adding index numbers.
 
-For each datable attachment:
+## Execution Rules
 
-1. Read the referencing note to understand the embedding context
-2. Extract `YYYY-MM-DD` from the note filename
-3. Generate a descriptive English kebab-case name
-4. Check for naming collisions — if two files would get the same name, make descriptions more specific rather than adding numbers
+Wait for explicit user confirmation before executing anything.
 
-Skip if the attachment already matches the convention.
+Use the Obsidian CLI for confirmed operations because it updates references:
 
-### Step 4: Present plan
-
-Show the user three lists:
-
-1. **Delete** — unreferenced attachments with file sizes
-2. **Rename** — `current name → new name` with the referencing note for context
-3. **Skip** — attachments kept as-is with reason (undatable, already named well, etc.)
-
-**Wait for explicit user confirmation before executing anything.**
-
-### Step 5: Execute
-
-Use the Obsidian CLI for both operations — it handles reference updates automatically.
-
-For deletions:
 ```bash
 obsidian delete path="Attachments/filename.png" permanent
-```
-
-For renames:
-```bash
 obsidian rename path="Attachments/old-name.png" name="new-name.png"
 ```
 
-**Always use `path=` instead of `file=`** — the `file=` parameter resolves like a wikilink and fails on filenames with special characters (spaces, `@`, underscores, hashes).
+Before execution, confirm the CLI is available, the target vault is correct, and
+the command paths match the approved plan.
 
-### Step 6: Verify
+## Output
 
-Run a quick scan to confirm no broken embed references were introduced. Report summary: X deleted, Y renamed, Z skipped.
+Before execution, show:
+
+- `Delete`: path, size, evidence reason
+- `Rename`: old path, new name, referencing note, evidence phrase
+- `Skip`: path, reason
+
+After execution, report deleted count, renamed count, skipped count, and broken
+embed scan result.
+
+## Stop Rules
+
+Stop after the plan is delivered and wait for confirmation. After confirmed
+changes, stop after verification and the summary report. Do not continue into
+broader vault cleanup, note rewriting, metadata repair, or attachment taxonomy
+work unless the user explicitly asks.
