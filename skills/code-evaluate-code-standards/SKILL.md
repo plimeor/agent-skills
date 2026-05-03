@@ -1,5 +1,5 @@
 ---
-name: meta-evaluate-code-standards
+name: code-evaluate-code-standards
 description: >-
   Evaluate and improve the code-standards-gate review skill against human PR/MR
   review evidence. Use when the user asks to benchmark, score, validate,
