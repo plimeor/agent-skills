@@ -55,7 +55,9 @@ Do not start with style nits when the diff exposes unnecessary product surface, 
 
 ## Surface Inventory
 
-Use inventory to avoid missing review targets, not as a second findings list. Keep it compact.
+Use inventory to avoid missing review targets, not as a second findings list.
+Keep a working inventory while reviewing, but make the final inventory a compact
+coverage map that a human can scan quickly.
 
 - **Contract surface**: public inputs, outputs, docs promises, exported types, generated artifacts, user-visible workflows.
 - **Type shape**: schemas, type aliases, unions, discriminants, object fields, inferred output shapes, generic helpers.
@@ -67,11 +69,15 @@ Use inventory to avoid missing review targets, not as a second findings list. Ke
 - **Identity**: source ids, derived ids, output names, routing keys, paths, cache keys, external refs.
 - **Abstractions**: helpers, shared fragments, generic adapters, normalization utilities.
 
-Every problematic inventory item should map to a finding unless it is explicitly accepted or outside the requested scope.
+Every problematic working-inventory item should map to a finding unless it is
+explicitly accepted or outside the requested scope.
 
 For type, schema, and persisted-state batches, first make a symbol inventory from the code itself. Include exported schemas, helper schemas, optional/fallback/default variants, object schema fragments, transforms, inferred public types, persisted fields, generated metadata fields, and derived identity fields. Review each named symbol as design shape, not only as implementation.
 
-Do not rely on a general impression that a file is too broad or too clever. If a symbol, field, transform, helper, or generated property appears in the inventory, it must either appear by name in a finding, appear by name in an acceptance note, or be marked outside scope.
+Do not rely on a general impression that a file is too broad or too clever. If a
+symbol, field, transform, helper, or generated property appears in the working
+inventory, it must either appear by name in a finding, appear by name in an
+acceptance note, or be marked outside scope.
 
 ## Standards
 
@@ -155,7 +161,10 @@ When synthesizing batch outputs:
 
 Each finding should name the concrete surface, evidence location, why it matters, smallest correction, and interactions with other findings.
 
-Before finalizing, compare findings back to the inventory. Every problematic surface should be covered by a finding, accepted with a reason, or marked outside scope. The final review must include the inventory map; do not treat inventory as private scratch work.
+Before finalizing, compare findings back to the working inventory. Every
+problematic surface should be covered by a finding, accepted with a reason, or
+marked outside scope. The final review must include a readable inventory map; do
+not treat inventory as private scratch work.
 
 Preserve output granularity:
 
@@ -180,18 +189,28 @@ Use this order:
 6. Short overall judgment.
 7. Calibration note.
 
-The `Inventory` section is part of the deliverable, not an optional audit trail.
-Keep it compact, but include enough named items for a human reviewer to verify
-coverage without rerunning the review. For each batch, list the important named
-surfaces and mark each as one of:
+The final `Inventory` section is part of the deliverable, not an optional audit
+trail, but it is not the full working checklist. Format it as a compact
+batch-by-batch coverage map:
 
-- `Finding: F#` when the item is covered by a final finding.
-- `Accepted` with a short reason when the item was reviewed and kept.
-- `Outside scope` with a short reason when the item was intentionally skipped.
+- one bullet per batch or coherent surface group
+- semicolon-separated named items inside each bullet
+- items covered by findings use only `F#` references, without repeating finding
+  rationale, evidence, or fixes
+- accepted or outside-scope items get a short reason only when the reason is not
+  obvious from the findings
+- omit low-risk reviewed items unless naming them helps prove coverage
 
-Do not hide the inventory inside coverage notes. Coverage notes can summarize
-why accepted or skipped items matter, but the inventory must still name the
-items.
+Example shape:
+
+```text
+- B3 schema/state: `ProjectIdSchema` F2; `ProjectsDocumentSchema` F6; `strictObject` usage Accepted.
+- B6 tests: persisted bad-state tests missing, freshness invalidation tests missing. Not separate findings because they belong to F2/F10 acceptance.
+```
+
+Do not hide the inventory inside coverage notes. Coverage notes should summarize
+raw batch count, final count, merge/drop reasons, and validation level. They
+should not repeat the findings or expand the inventory.
 
 The calibration note should state that this skill is a review amplifier, not a
 replacement for human judgment. It should separate the handoff clearly:
@@ -218,6 +237,6 @@ Stop when:
 - each review batch was read line by line before moving on
 - types, schemas, and persisted shapes were reviewed as design shape
 - every problematic inventory item maps to a finding or has a reason
-- the final review includes an inventory section that maps named items to findings, accepted reasons, or outside-scope reasons
+- the final review includes a readable inventory map that cites findings by id instead of repeating their content
 - findings are split to likely inline-comment granularity
 - open questions only remain when they materially change the decision

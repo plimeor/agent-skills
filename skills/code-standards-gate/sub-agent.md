@@ -48,10 +48,13 @@ Use this order:
 4. Open questions only when they materially change the decision.
 5. Short judgment.
 
-The `Inventory map` is required even when findings are long. Keep it compact,
-but name the important surfaces reviewed in the batch and mark each as
-`Finding: B#-F##`, `Accepted`, or `Outside scope` with a short reason. The main
-reviewer depends on this section to detect dropped symbols during synthesis.
+The `Inventory map` is required even when findings are long, but it is a compact
+coverage map, not the full working checklist. For surfaces covered by findings,
+name the item and cite only `B#-F##`; do not repeat the finding rationale,
+evidence, or fix. For accepted or outside-scope items, include a short reason
+only when it helps the main reviewer understand coverage. Omit low-risk reviewed
+items unless naming them prevents an apparent gap. The main reviewer depends on
+this section to detect dropped symbols during synthesis.
 
 Each finding must name the concrete surface, evidence location, why it matters, and the smallest correction. Give findings stable ids such as `B2-F03` so the main reviewer can preserve them during synthesis.
 

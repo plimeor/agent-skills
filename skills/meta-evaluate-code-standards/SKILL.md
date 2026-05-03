@@ -1,6 +1,28 @@
-# Code Standards Gate Evaluation
+---
+name: meta-evaluate-code-standards
+description: >-
+  Evaluate and improve the code-standards-gate review skill against human PR/MR
+  review evidence. Use when the user asks to benchmark, score, validate,
+  calibrate, or iterate code-standards-gate; compare skill findings with human
+  review comments; diagnose missed findings; or decide which reusable review
+  rules should move into code-standards-gate, project rules, tooling, or stay
+  local. Do not use this for ordinary code review; use code-standards-gate for
+  reviewing code directly.
+---
 
-Use this guide to evaluate `code-standards-gate` against a human review. The goal is not to maximize finding count blindly. The goal is to measure whether the skill finds the same kind of atomic, actionable issues a strong human reviewer found, then identify which skill rule, batch plan, or subagent instruction should change.
+# Evaluate Code Standards
+
+Use this skill to evaluate `code-standards-gate` against human review evidence
+and decide the smallest durable improvement. The goal is not to maximize finding
+count. The goal is to measure whether the skill finds the same kind of atomic,
+actionable issues a strong human reviewer found, then identify which skill rule,
+batch plan, subagent instruction, or placement decision should change.
+
+This skill replaces standalone standards extraction for review evidence. When
+the task is only to run a code review, use `code-standards-gate`. When the task
+is to evaluate, calibrate, or improve that review skill, use this skill.
+
+## Workspace
 
 Keep all evaluation artifacts under a local workspace, for example:
 
@@ -13,48 +35,35 @@ code-standards-gate-workspace/
     iterations/
 ```
 
-Do not write sample-specific findings into `SKILL.md` or `sub-agent.md`. Use sample evidence only in evaluation artifacts and iteration summaries.
+Do not write sample-specific findings into `code-standards-gate/SKILL.md` or
+`code-standards-gate/sub-agent.md`. Use sample evidence only in evaluation
+artifacts and iteration summaries.
 
 ## Inputs
 
 Every evaluation needs:
 
 - local project path
-- review target: GitHub PR URL or GitLab MR URL
-- branch/range to review, when it is not obvious from the PR/MR metadata
+- review target: GitHub PR URL, GitLab MR URL, or local review evidence
+- branch/range to review, when it is not obvious from PR/MR metadata
 - current installed skill path, usually `~/.agents/skills/code-standards-gate`
 - output directory for artifacts
 
-For GitHub:
+For GitHub, use an authenticated `gh` session. For GitLab, use `glab` with an
+authenticated session or `GITLAB_TOKEN`. Do not paste tokens into artifact
+files.
 
-- GitHub PR URL
-- authenticated `gh`
-- local project path
+If the user asks to extract standards from conversation history instead of a
+PR/MR, collect the relevant user corrections, concrete before/after examples,
+and explicit boundaries. If the relevant conversation is not in context, ask for
+the excerpt or session pointer before extracting.
 
-For GitLab:
+## Collect Human Review Evidence
 
-- GitLab MR URL
-- GitLab access token
-- authenticated or token-backed `glab`
-- local project path
+Use hosted review tools as the source of truth when available. Store raw output
+first, then normalize it. Never compare directly from terminal output.
 
-## Collect GitHub PR Review Evidence
-
-Use `gh` as the source of truth for PR metadata and review comments. Store raw output first, then normalize it. Never compare directly from terminal output.
-
-Suggested artifact layout:
-
-```text
-human-review/
-  pr.json
-  review-threads.json
-  reviews.json
-  comments.json
-  files.json
-  human-findings.md
-```
-
-Collect basic metadata:
+For GitHub, collect PR metadata and review comments:
 
 ```bash
 gh pr view "$PR_URL" \
@@ -62,7 +71,8 @@ gh pr view "$PR_URL" \
   > human-review/pr.json
 ```
 
-Collect inline review threads with GraphQL. Fill `OWNER`, `REPO`, and `PR_NUMBER` from the PR URL or `pr.json`.
+Collect inline review threads with GraphQL. Fill `OWNER`, `REPO`, and
+`PR_NUMBER` from the PR URL or `pr.json`.
 
 ```bash
 gh api graphql \
@@ -105,13 +115,33 @@ query($owner: String!, $repo: String!, $number: Int!) {
 }' > human-review/review-threads.json
 ```
 
-If the PR has more than 100 threads, rerun with pagination rather than truncating. Record unresolved/outdated state, but do not automatically discard outdated comments; sometimes they still reveal durable standards.
+If the PR has more than 100 threads, rerun with pagination rather than
+truncating. Record unresolved and outdated state, but do not automatically
+discard outdated comments; sometimes they still reveal durable standards.
 
-Normalize the human review into atomic findings:
+For GitLab, collect MR metadata, discussions, notes, and changed files:
+
+```bash
+glab api "projects/$PROJECT_ID/merge_requests/$MR_IID" \
+  > human-review/mr.json
+
+glab api "projects/$PROJECT_ID/merge_requests/$MR_IID/discussions" \
+  --paginate \
+  > human-review/discussions.json
+
+glab api "projects/$PROJECT_ID/merge_requests/$MR_IID/notes" \
+  --paginate \
+  > human-review/notes.json
+
+glab api "projects/$PROJECT_ID/merge_requests/$MR_IID/changes" \
+  > human-review/changes.json
+```
+
+Normalize human review into atomic findings:
 
 ```text
 H01 title
-- source: review thread/comment URL
+- source: review thread/comment URL, comment ID, or conversation pointer
 - file/line: path:line when available
 - status: unresolved | resolved | outdated | discussion
 - issue: what the reviewer objected to
@@ -120,79 +150,22 @@ H01 title
 - category: contract | type-shape | persisted-state | parse-rewrite | wrapper | generated-output | tests | package | other
 ```
 
-## Collect GitLab MR Review Evidence
+## Run code-standards-gate
 
-Use `glab` plus the GitLab API. Do not paste the token into artifact files. Prefer `GITLAB_TOKEN` or an existing `glab auth login` session.
-
-Suggested artifact layout:
-
-```text
-human-review/
-  mr.json
-  discussions.json
-  notes.json
-  changes.json
-  human-findings.md
-```
-
-Authenticate without persisting the token in shell history when possible:
-
-```bash
-export GITLAB_TOKEN="$TOKEN"
-```
-
-For a GitLab MR URL, identify:
-
-- host
-- project path, URL-encoded for API calls
-- MR IID
-
-Collect MR metadata:
-
-```bash
-glab api "projects/$PROJECT_ID/merge_requests/$MR_IID" \
-  > human-review/mr.json
-```
-
-Collect diff discussions:
-
-```bash
-glab api "projects/$PROJECT_ID/merge_requests/$MR_IID/discussions" \
-  --paginate \
-  > human-review/discussions.json
-```
-
-Collect general notes if needed:
-
-```bash
-glab api "projects/$PROJECT_ID/merge_requests/$MR_IID/notes" \
-  --paginate \
-  > human-review/notes.json
-```
-
-Collect changed files:
-
-```bash
-glab api "projects/$PROJECT_ID/merge_requests/$MR_IID/changes" \
-  > human-review/changes.json
-```
-
-Normalize GitLab discussions into the same `human-findings.md` format used for GitHub. Preserve resolved state, `position.new_path`, `position.new_line`, `position.old_path`, `position.old_line`, and note URLs when available.
-
-## Run The Skill Review
-
-Run the review from the local project path so local rules, dependencies, and diff context are real.
-
-Use the installed skill, not only the repository copy, when testing actual Codex behavior:
+Run the review from the local project path so local rules, dependencies, and
+diff context are real. Use the installed skill, not only the repository copy,
+when testing actual Codex behavior.
 
 ```bash
 codex exec \
   --sandbox danger-full-access \
   --output-last-message "$CASE_DIR/skill-run/final-review.md" \
-  "Use the installed skill code-standards-gate from ~/.agents/skills/code-standards-gate. Review $PROJECT_PATH for the same PR/MR diff. Do not edit files. Follow the skill exactly: plan batches by association and risk, launch exactly one independent subagent or isolated child session per batch, save each batch output under $CASE_DIR/skill-run/batches, preserve atomic findings, report raw count, final count, and dropped/merged findings. Write the final output in the user's primary language."
+  "Use the installed skill code-standards-gate from ~/.agents/skills/code-standards-gate. Review $PROJECT_PATH for the same PR/MR diff. Do not edit files. Follow the skill exactly: plan batches by association and risk, launch exactly one independent subagent or isolated child session per batch, save each batch output under $CASE_DIR/skill-run/batches, preserve atomic findings, report raw count, final count, and dropped/merged findings, and include the final inventory map. Write the final output in the user's primary language."
 ```
 
-If the local branch is not already checked out to the target head, first create or checkout a local worktree that matches the PR/MR head commit. Record the exact commit in `skill-run/run-metadata.md`.
+If the local branch is not already checked out to the target head, first create
+or checkout a local worktree that matches the PR/MR head commit. Record the
+exact commit in `skill-run/run-metadata.md`.
 
 The skill output should include:
 
@@ -201,11 +174,13 @@ The skill output should include:
 - raw batch finding count
 - final finding count
 - dropped or merged finding reasons
+- final inventory map
 - final findings with stable ids
 
 ## Normalize Skill Findings
 
-Create `skill-run/skill-findings.md` using the same atomic finding shape as `human-findings.md`:
+Create `skill-run/skill-findings.md` using the same atomic finding shape as
+`human-findings.md`:
 
 ```text
 S01 title
@@ -217,9 +192,11 @@ S01 title
 - category: contract | type-shape | persisted-state | parse-rewrite | wrapper | generated-output | tests | package | other
 ```
 
-Do not normalize broad theme findings as one issue if they imply several independent edits. Split them before scoring, and note that the final synthesis lost granularity.
+Do not normalize broad theme findings as one issue if they imply several
+independent edits. Split them before scoring, and note that the final synthesis
+lost granularity.
 
-## Compare Human And Skill Reviews
+## Compare Reviews
 
 Create `comparison/mapping.md`.
 
@@ -252,7 +229,7 @@ Then summarize skill-only findings:
 
 ```text
 | Skill ID | Status | Category | Notes |
-|---|---|---|---|
+|---|---|---|
 | S12 | valid-extra | package | Reproduced packed install failure. |
 | S18 | weak-extra | generated-output | Valid but likely follow-up, not PR-blocking. |
 ```
@@ -308,7 +285,26 @@ For every missed or partial human finding, classify the failure:
 - `guide miss`: `sub-agent.md` lacks operational instruction
 - `tooling miss`: CLI/API/test execution needed to reveal the issue was not run
 
-This diagnosis determines the optimization target. Do not edit `SKILL.md` for collection, scope, or tooling misses unless the skill itself caused them.
+This diagnosis determines the optimization target. Do not edit `SKILL.md` for
+collection, scope, or tooling misses unless the skill itself caused them.
+
+## Recommend Placement
+
+When review evidence suggests a lasting rule, recommend the smallest durable
+home:
+
+- `code-standards-gate`: reusable cross-project code review standards,
+  batching rules, output granularity rules, or subagent guidance.
+- Project rules: repo-specific recurring expectations that belong in `AGENTS.md`
+  or equivalent project context.
+- Tooling/checks: deterministic formatting, naming, schema, or test requirements
+  that the repo can enforce mechanically.
+- Keep local: one-off findings, weak signals, or rules that depend on the exact
+  implementation.
+
+Do not treat every human comment as a reason to edit `code-standards-gate`.
+Global rules should be durable, transferable, and useful for future review
+decisions.
 
 ## Recommend Optimizations
 
@@ -323,6 +319,12 @@ Write `comparison/recommendations.md` with:
 
 ## Do Not Add
 - Sample-specific fields, exact file names, one-off PR details, or rules that only fit this case.
+
+## Placement
+- code-standards-gate:
+- Project rules:
+- Tooling/checks:
+- Keep local:
 
 ## Next Eval
 - The next command to run.
@@ -369,3 +371,16 @@ what_regressed:
 next_target:
 ```
 
+## Stop Rules
+
+Stop when:
+
+- raw human review evidence has been collected or the missing evidence is named
+- human review has been normalized into atomic findings
+- `code-standards-gate` has run against the same review target, or the blocker is named
+- skill findings have been normalized at the same granularity as human findings
+- each human finding has a matched, partial, missed, not-reviewable, or out-of-scope status
+- skill-only findings have valid-extra, weak-extra, invalid-extra, or duplicate status
+- misses are diagnosed by failure type
+- recommendations distinguish skill changes, project rules, tooling, and keep-local evidence
+- no sample-specific rule is promoted into a global skill recommendation
