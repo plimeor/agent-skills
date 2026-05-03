@@ -40,6 +40,12 @@ description: >-
 
 以上问题交给 `meta-context-engineering-project`。
 
+# 授权语义
+
+当用户主动点名或明确触发本 skill，并要求“更新”“修改”“优化”全局上下文时，视为已经授权修改全局 `AGENTS.md` 或等价的全局 rules file。不要再把“是否允许写全局 rules file”作为额外确认问题。
+
+这个授权只覆盖被请求的全局 rules file 本身。不要把它扩展到安装态同步、manifest/lockfile、仓库提交、远端服务或其他全局状态；这些仍然需要用户明确点名。
+
 # 输入模式
 
 用户通常会以四种方式触发：
