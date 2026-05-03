@@ -16,15 +16,30 @@ Plan review batches before writing findings. Group files by related behavior fir
 
 Use separate batches when the diff is large, crosses several contract surfaces, or includes high-risk declarations such as public API, CLI, schemas, persisted state, generated output, wrappers, or tests that lock a contract. A useful batch has one coherent question: "what contract or behavior is this group creating?"
 
-Default batch groups:
+Create batches by association first, then sort by risk:
 
-1. Public contract group: spec, docs, CLI/API surface, exported package surface, and committed product boundary.
-2. Shape and state group: types, schemas, persisted state, generated metadata, config/state readers and writers.
-3. External owner group: wrapper behavior around tools, libraries, runtimes, protocols, package managers, filesystems, or network boundaries.
-4. Branching group: optional flows, providers, strategies, feature flags, adapters, secondary workflows, and tests that preserve them.
-5. Implementation group: helpers, abstractions, duplication, internal orchestration, and polish.
+1. Keep files that create or preserve the same behavior in the same batch.
+2. Keep tests with the behavior they lock unless the test surface is large enough to require its own batch.
+3. Put public contract, persisted shape, generated contracts, and wrapper boundaries before internal implementation polish.
+4. Split a large type/schema/state batch before splitting low-risk implementation files.
 
-Review one batch at a time, line by line. Finish the higher-risk associated groups before lower-risk implementation files. For very large reviews, run each batch independently, then merge and deduplicate findings only after all batch outputs exist.
+Default associated groups:
+
+1. Package and distribution contract: publish/install promises, package metadata, executable entrypoints, dependency ranges, files whitelist, exports, prepack/smoke checks, and packed artifact shape.
+2. User command/API contract: spec, docs, CLI/API surface, command options, command output, and committed product boundary.
+3. Shape and state: types, schemas, persisted state, generated metadata, config/state readers and writers.
+4. External owner: wrapper behavior around tools, libraries, runtimes, protocols, package managers, filesystems, or network boundaries.
+5. Generated behavior: generated files, indexes, frontmatter, cleanup, scan outputs, cache outputs, and reader contracts.
+6. Tests and validation: tests that lock public behavior, persisted state, generated output, wrapper semantics, or helper APIs.
+7. Implementation: helpers, abstractions, duplication, internal orchestration, and polish.
+
+Split public contract batches when one review would mix package distribution with command behavior. Installability, published files, executable entrypoints, dependency resolution, and export surface deserve their own batch when the diff creates or changes a publishable package. CLI/docs/spec behavior can then be reviewed separately.
+
+For multi-batch reviews, the main reviewer must delegate each batch to an independent subagent and then synthesize the results. The number of subagents must equal the number of batches. Use `sub-agent.md` in this skill directory as the batch reviewer guide when it is available. If native subagents are unavailable but shell execution is available, launch isolated child review sessions instead. Do not perform a multi-batch review inline and call it equivalent.
+
+Each batch reviewer reads its batch line by line and produces its own findings, coverage notes, and judgment. The main reviewer only plans batches, launches batch reviewers, waits for all results, deduplicates findings, checks inventory coverage across batch outputs, and writes the final review.
+
+Deduplication means removing the same issue reported by multiple batches. It does not mean merging distinct repair actions into theme-level summaries. If two reported issues would require different edits, keep them as separate final findings even when they share the same standard or root cause.
 
 For every new or changed type, field, option, branch, helper, generated artifact, wrapper rule, and persisted value, run this loop before judging implementation quality:
 
@@ -114,6 +129,8 @@ If a custom derived identity is unnecessary, remove it first. If it remains, val
 
 Start with findings in review order and keep summaries secondary. Do not cap the number of findings when the requested output is a review.
 
+The final review should preserve the batch reviewers' atomic findings. Prefer a longer findings list over a short thematic list when the short list hides separate edits. A finding is atomic when a reviewer can point to one surface or tightly coupled surface pair and make one concrete code decision.
+
 Split findings at the level Plimeor would likely leave separate inline comments:
 
 - one low-value mode removal can be one finding when deleting the mode is the edit
@@ -121,6 +138,18 @@ Split findings at the level Plimeor would likely leave separate inline comments:
 - one helper family can be one finding only when the same edit removes the whole family
 - parse-time rewrites should split by failure mode when the edits differ
 - collision checks should split by identity class when validation points differ
+- test gaps should split by the behavior that is not protected; do not combine unrelated command failures, persisted-state failures, generated-output failures, wrapper failures, and parser-binding failures into one missing-test finding
+- persisted fields should split when they have different owners, readers, write paths, portability risks, or validation points; do not combine fields merely because they are all "state"
+
+A tightly coupled field pair means the same code edit removes or validates both fields together, the same owner reads them, and the finding names both fields. If one field controls a clone/cache path, another controls generated output, another controls presentation, and another stores a local machine value, they are separate findings.
+
+When synthesizing batch outputs:
+
+- keep each batch finding unless it is a duplicate, outside scope, or clearly invalid
+- merge only exact duplicates or findings whose smallest correction is the same edit
+- record any dropped or merged batch finding with a short reason
+- report raw batch finding count and final finding count
+- treat a large count drop as a review failure unless it is explained by duplicates or invalid findings
 
 Each finding should name the concrete surface, evidence location, why it matters, smallest correction, and interactions with other findings.
 
@@ -153,6 +182,7 @@ If there are no findings, say so directly and name any residual risk or test gap
 
 Stop when:
 
+- multi-batch reviews used one independent subagent or isolated child session per batch
 - high-risk files in scope were reviewed before lower-risk polish
 - each review batch was read line by line before moving on
 - types, schemas, and persisted shapes were reviewed as design shape
