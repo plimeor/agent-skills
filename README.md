@@ -33,6 +33,7 @@ npx skills add plimeor/agent-skills --skill ops-url-reader
 | [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md) | 维护和升级面向 GPT 系列模型的 prompt artifact，覆盖 SKILL.md、AGENTS、system/developer prompt、agent workflow、eval 和 grader prompt |
 | [code-evaluate-code-standards](skills/code-evaluate-code-standards/SKILL.md) | 对照人类 PR/MR review 评估和迭代 code-standards-gate，并判断规则应进入全局 skill、项目规则、tooling 还是保留本地 |
 | [meta-project-docs-maintenance](skills/meta-project-docs-maintenance/SKILL.md) | 维护项目 docs 分层、语言、命名和 living spec 清理策略 |
+| [ops-bear](skills/ops-bear/SKILL.md) | 通过 Bear App 本地 CLI 读取、搜索、创建、编辑、整理和打开 Bear 笔记 |
 | [ops-codex-session-maintenance](skills/ops-codex-session-maintenance/SKILL.md) | 维护本地 Codex 会话状态：先检查和备份，再归档旧 session/worktree、轮转日志并生成 handoff |
 | [ops-url-reader](skills/ops-url-reader/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
 | [writing-blog](skills/writing-blog/SKILL.md) | 基于 SCQA 方法论创建和优化博客文章 |
