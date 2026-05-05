@@ -2,12 +2,14 @@
 name: ops-bear
 description: >-
   Use Bear App's local `bear` / `bearcli` command-line interface to read,
-  search, create, edit, organize, open, or manage Bear notes and attachments on
-  this Mac. Use whenever the user mentions Bear App, Bear notes, Bear CLI,
-  `bear help`, the local Bear database, Bear tags, pins, attachments, note
-  capture, or updating/retrieving notes from Bear. Do not use for Obsidian,
-  generic Markdown files, web articles, or cloud note services; use the relevant
-  local skill or tool instead.
+  search, create, append, edit, overwrite, tag, pin, archive, trash, restore,
+  open, or manage attachments for Bear notes on this Mac. Use whenever the user
+  mentions Bear App, Bear notes, Bear CLI, `bear`, `bearcli`, `bear help`, the
+  local Bear database, Bear tags, pins, attachments, note capture,
+  updating/retrieving notes from Bear, Bear MCP server setup, or checking this
+  skill against current local CLI behavior. Do not use for Obsidian, generic
+  Markdown files, web articles, or cloud note services; use the relevant local
+  skill or tool instead.
 ---
 
 # Bear CLI
@@ -20,6 +22,9 @@ making mutations auditable.
 The CLI reads and writes the local Bear database in place. Treat Bear content as
 private local user data: retrieve only the fields needed for the request, avoid
 broad dumps, and verify mutations with the smallest useful follow-up read.
+
+If the user asks whether this skill is still accurate, or asks to update the
+skill against the local CLI, follow [evaluate.md](evaluate.md).
 
 ## Compatibility
 
@@ -49,8 +54,10 @@ help.
 
 ## Operating Rules
 
-- Prefer `--format json` whenever output will be parsed, summarized, or used by
-  another command. Default TSV has no header.
+- Prefer `--format json` for read commands when output will be parsed,
+  summarized, or used by another command. Default TSV has no header.
+- Do not add `--format json` to mutating commands. They are silent on success
+  and use the exit code as the success signal.
 - Prefer note IDs from `list`, `search`, or `create` over case-insensitive
   `--title` lookups when mutating notes.
 - Bound broad reads with `--limit`, `--fields`, `--count`, and specific Bear
@@ -69,10 +76,9 @@ help.
 
 ## Output And Errors
 
-Common output formats:
+Common read output formats:
 
-- `--format json`: structured JSON for all commands, including JSON error
-  objects.
+- `--format json`: structured JSON for read commands and JSON error objects.
 - `--format csv`: RFC 4180 CSV with a header row.
 - default TSV: tab-separated output with no header.
 
@@ -83,8 +89,13 @@ Useful JSON shapes:
 - `show`, `create`: one object.
 - `cat`: `{"content":"..."}`.
 - `--count`: `{"count":N}`.
-- mutating commands: `{"ok":true}`.
-- errors: `{"error":{"code":"...","message":"..."}}`.
+- errors from commands that accept `--format json`:
+  `{"error":{"code":"...","message":"..."}}`.
+
+Mutating commands such as `append`, `edit`, `overwrite`, `archive`, `restore`,
+`trash`, `open`, `tags add/remove/rename/delete`, `pin add/remove`, and
+`attachments add/delete` produce no stdout on success and do not accept
+`--format`.
 
 Exit codes are `0` for success, `1` for business errors, and `64` for usage
 errors. Empty `list` or `search` results are still success: `[]` in JSON mode.
@@ -126,9 +137,9 @@ settings.
 Use `append` for additive updates:
 
 ```bash
-bear append <note-id> --content "New paragraph" --format json
-printf "%s" "$CONTENT" | bear append <note-id> --position end --format json
-bear append --title "Mars" --content "Update" --position beginning --format json
+bear append <note-id> --content "New paragraph"
+printf "%s" "$CONTENT" | bear append <note-id> --position end
+bear append --title "Mars" --content "Update" --position beginning
 ```
 
 Use `edit` only for exact string replacement or insertion. Run `search-in`
@@ -136,23 +147,25 @@ first when the target string might be ambiguous.
 
 ```bash
 bear search-in <note-id> --string "TODO" --format json
-bear edit <note-id> --at "TODO" --replace "DONE" --format json
-bear edit <note-id> --at "## Notes" --insert "\nNew line" --format json
-bear edit <note-id> --at "cat" --replace "dog" --all --word --format json
+bear edit <note-id> --find "TODO" --replace "DONE"
+bear edit <note-id> --find "## Notes" --insert-after "\nNew line"
+bear edit <note-id> --find "## Notes" --insert-before "Intro paragraph\n\n"
+bear edit <note-id> --find "cat" --replace "dog" --all --word
 ```
 
-Use `write` only when the user wants to replace the whole note. Preserve the
+Use `overwrite` only when the user wants to replace the whole note. Preserve the
 first heading, tags, and inline attachment references unless the user explicitly
 wants them removed. Protect full-note writes with the current `hash` via
 `--base`:
 
 ```bash
 bear show <note-id> --format json --fields hash,content
-printf "%s" "$NEW_CONTENT" | bear write <note-id> --base <hash> --format json
+printf "%s" "$NEW_CONTENT" | bear overwrite <note-id> --base <hash>
 ```
 
-Without `--base`, `write` is unconditional and can overwrite changes made in
-Bear or another client.
+Without `--base`, `overwrite` is unconditional and can overwrite changes made in
+Bear or another client. Use `--force` only after the user explicitly approves
+removing attachments that the safety gate reports would be dropped.
 
 ## Organize Notes
 
@@ -161,10 +174,10 @@ Tag commands:
 ```bash
 bear tags list --format json
 bear tags list <note-id> --format json
-bear tags add <note-id> work "work/meetings" --format json
-bear tags remove <note-id> draft --format json
-bear tags rename --from draft --to published --format json
-bear tags delete --name "work/old" --format json
+bear tags add <note-id> work "work/meetings"
+bear tags remove <note-id> draft
+bear tags rename --from draft --to published
+bear tags delete --name "work/old"
 ```
 
 `tags rename` and `tags delete` affect all notes. Ask for explicit confirmation
@@ -176,8 +189,8 @@ Pin commands:
 ```bash
 bear pin list --format json
 bear pin list <note-id> --format json
-bear pin add <note-id> global work --format json
-bear pin remove <note-id> global --format json
+bear pin add <note-id> global work
+bear pin remove <note-id> global
 ```
 
 Pin operations are atomic for tag-specific pins: if any target tag does not
@@ -186,9 +199,9 @@ exist, no pins are applied or removed.
 Location commands:
 
 ```bash
-bear trash <note-id> --format json
-bear archive <note-id> --format json
-bear restore <note-id> --format json
+bear trash <note-id>
+bear archive <note-id>
+bear restore <note-id>
 ```
 
 `trash` is a soft delete, `archive` hides a note from active notes, and
@@ -202,10 +215,10 @@ files attached to a Bear note:
 
 ```bash
 bear attachments list <note-id> --format json
-bear attachments add <note-id> --filename photo.jpg --format json < photo.jpg
+bear attachments add <note-id> --filename photo.jpg < photo.jpg
 bear attachments save <note-id> --filename photo.jpg > photo.jpg
 bear attachments save <note-id> --filename photo.jpg --format json
-bear attachments delete <note-id> --filename photo.jpg --format json
+bear attachments delete <note-id> --filename photo.jpg
 ```
 
 `attachments save` writes raw bytes to stdout by default; redirect it to a file.
@@ -217,9 +230,9 @@ Open a note in the Bear app only when the user asks for UI navigation or manual
 editing:
 
 ```bash
-bear open <note-id> --format json
-bear open --title "Mars" --header "Moons" --edit --format json
-bear open <note-id> --new-window --format json
+bear open <note-id>
+bear open --title "Mars" --header "Moons" --edit
+bear open <note-id> --new-window
 ```
 
 `open` brings Bear to the foreground. Treat it as a visible local side effect.
@@ -233,8 +246,8 @@ tool interface; prefer the CLI for one-off Bear tasks.
 After a mutating command, run a targeted verification:
 
 - `create`: inspect the returned ID with `show` or `cat`.
-- `append`, `edit`, `write`: read the changed note or use `search-in` for the
-  changed text; for `write`, include the resulting `hash` when useful.
+- `append`, `edit`, `overwrite`: read the changed note or use `search-in` for
+  the changed text; for `overwrite`, include the resulting `hash` when useful.
 - `tags add/remove`: run `tags list` for the note.
 - `tags rename/delete`: run `tags list` globally, and spot-check affected notes
   if the user requested a broad change.
