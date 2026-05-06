@@ -34,7 +34,22 @@ For every named inventory item, ask:
 4. Is the closest owner enforcing the invariant?
 5. Is this input normalization, persisted validation, generated output, wrapper policy, or future surface?
 
+For surfaces that look broad, generic, defensive, or AI-assisted, also ask:
+
+1. Is this a real problem, or an imagined one?
+2. Is there a simpler way?
+3. What can this break for existing users or callers?
+
 Prefer deletion when current value does not justify contract, state, branch, or maintenance cost. Prefer native owner behavior when a tool, library, protocol, filesystem, package manager, schema library, or generated directory already owns the contract.
+
+Challenge abstraction, configuration, state, fallback behavior, adapters,
+generalized helpers, duplicated blocks, and broad find-and-replace edits when
+they are justified only by flexibility, completeness, symmetry, or future reuse.
+Prefer reshaping data flow or ownership so special cases disappear into the
+normal path. Treat a theoretically cleaner fix that breaks existing workflow,
+CLI/API behavior, persisted data, generated output, import paths, or documented
+contracts as a compatibility finding unless the migration is explicit and
+authorized.
 
 ## Output
 

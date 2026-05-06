@@ -153,6 +153,47 @@ The spec is reviewable. If faithful implementation spreads a low-value mode or
 future-facing concept across docs, commands, schemas, state, tests, and paths,
 challenge the boundary itself and recommend deleting or reauthorizing it.
 
+### Challenge AI-Introduced Complexity
+
+Review AI-assisted code, or code that shows AI-like failure modes, by observable
+symptoms rather than by provenance. Do not write a finding because code may have
+been AI-generated; write one when the diff contains concrete complexity,
+contract, compatibility, or validation risk.
+
+Use three taste questions as the first pass over suspicious surfaces:
+
+- Is this a real problem, or an imagined one?
+- Is there a simpler way?
+- What can this break for existing users or callers?
+
+Treat a surface as suspect when it adds abstraction, configuration, state,
+fallback behavior, adapters, generalized helpers, or new workflows for an
+unproven future case. Ask what current user behavior, present contract, or
+observed failure pays for the new surface. If the answer is only flexibility,
+completeness, symmetry, or future reuse, write a deletion or reauthorization
+finding.
+
+Prefer reshaping the control flow, data model, or ownership boundary so special
+cases disappear into the normal path. Challenge fixes that add branches,
+sentinel states, nullable fields, catch-all fallbacks, or layered validators when
+a smaller representation would remove the edge case.
+
+Flag plausible-looking code that does not fit the local codebase: calls to
+nonexistent or wrong-owner helpers, new patterns that bypass existing utilities,
+generic adapters that obscure a simple local operation, and tests that mirror the
+implementation without protecting the user-facing contract.
+
+Check for code-volume debt: duplicated blocks, near-copy variants, broad
+find-and-replace edits, helper layers that save little, and patches that mostly
+add instead of deleting, moving, or simplifying existing code. The smallest
+correction may be to delete the new path, use the existing owner, or fold the
+case into an existing function rather than adding another abstraction.
+
+Do not accept a theoretically cleaner fix that breaks existing user workflow,
+CLI/API behavior, persisted data, generated output, import paths, or documented
+contracts. A change that is correct only after users update their behavior is a
+compatibility finding unless the migration is explicit and authorized.
+
 ### Let Contract Owners Fail Naturally
 
 Prefer the native behavior of the tool, library, protocol, or layer that owns an
