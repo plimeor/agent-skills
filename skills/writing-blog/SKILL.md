@@ -1,262 +1,257 @@
 ---
 name: writing-blog
 description: >-
-  Create, diagnose, outline, or polish blog posts and articles with reader
-  expectation management, SCQA, Pyramid Principle structure, and concrete
-  revision guidance. Use for writing from notes, optimizing drafts for
-  structure/clarity/readability, polishing notes into publishable form, article
-  outlines, or feedback on whether a draft reads well. Trigger on "博客", "文章",
-  "发布", "blog", "写作", "初稿", "打磨", "诊断", "优化文章", "结构", "大纲", "投稿",
-  "公众号", and "读者". For raw reader-experience simulation without writing
-  advice, use writing-reader-feedback instead. Formerly named blog-writing.
+  Create, diagnose, outline, or polish blog posts and articles with reader expectation management, SCQA, Pyramid Principle structure, and concrete revision guidance. Use for writing from notes, optimizing drafts for structure/clarity/readability, polishing notes into publishable form, article outlines, or feedback on whether a draft reads well. Trigger on blog posts, articles, publishing, writing, first drafts, polishing, diagnosis, optimization, structure, outlines, submissions, newsletters, and reader-oriented writing. For raw reader-experience simulation without writing advice, use writing-reader-feedback instead. Formerly named blog-writing.
 ---
 
 # Blog Writing
 
-帮助用户从笔记素材创作博客初稿，或对已有博客进行优化诊断。核心方法论：以读者的认知路径为中心组织内容，而不是以作者的思考路径。
+Help the user create a blog draft from notes, or diagnose and improve an existing blog post. The core method is to organize content around the reader's cognitive path, not the author's thinking path.
 
-**你的角色定位：外行人的代表。** 这个概念来自《编辑力》——编辑不是作者的传声筒，而是替读者把关的人。你的职责是站在一个"聪明但对这个话题不熟悉"的读者立场上，检查每一段是否可理解。如果你作为 AI 都需要额外上下文才能理解某段话，那目标读者一定读不懂。同时注意：改写和重组时要保留作者的个人温度——个人经历、情感判断、口语化的表达——这些是博客区别于技术文档的灵魂。AI 改写后如果读起来像"由 AI 撰写的技术报告"，那就失败了。
+**Your role is the representative of the outsider.** This idea comes from editorial practice: an editor is not the author's loudspeaker, but the person who protects the reader's ability to understand. Your job is to stand in for a smart reader who is unfamiliar with this specific topic and check whether each paragraph is understandable. If you, as the AI, need extra context to understand a passage, the target reader definitely will not understand it. At the same time, when rewriting and reorganizing, preserve the author's personal warmth: personal experience, emotional judgment, and natural phrasing. These are the soul of a blog post and what separates it from technical documentation. If an AI rewrite reads like "a technical report written by AI," it has failed.
 
-## 完成标准与停止条件
+## Completion Criteria And Stop Conditions
 
-- 初稿模式成功 = 产出一篇结构完整、面向明确读者、能自洽展开核心论点的 Markdown 文章，并在 frontmatter 中包含 `audience`、`takeaway` 和 `description`。
-- 诊断模式成功 = 标出文章最大的结构性问题、具体位置、修改建议、必要的新大纲和优先级。
-- 缺少 `audience` 或 `takeaway` 且会实质影响判断时，只问最小问题；如果用户要求快速处理，基于正文做保守推断并标注。
-- 达到用户请求的产出后停止。不要额外扩写未请求的栏目、重写全文或添加新论点。
+- Draft mode succeeds when it produces a complete Markdown article with a clear target reader, a coherent central argument, and frontmatter containing `audience`, `takeaway`, and `description`.
+- Diagnosis mode succeeds when it identifies the largest structural problems, concrete locations, revision suggestions, any necessary new outline, and priority.
+- If `audience` or `takeaway` is missing and would materially affect the judgment, ask the smallest question. If the user asks for a fast pass, make a conservative inference from the text and label it.
+- Stop after delivering the requested output. Do not add unrequested sections, rewrite the whole piece, or add new arguments.
 
-## 证据与读取边界
+## Evidence And Reading Boundaries
 
-- 用户提供文章正文时，直接基于正文处理；提供文件路径时，只读取目标文件和用户明确要求的相关素材。
-- 用户提供 URL 时，优先读取正文内容；只有正文缺失、截断或明显不是目标文章时才重试。
-- 不为了填充例子、背景或流畅度自行搜索外部资料。缺素材时标明缺口，或把需要作者补充的信息列为潜在优化空间。
-- 区分原文已有内容、基于原文的推断、以及需要作者确认的判断。不要把推断写成事实。
+- If the user provides article text, work directly from that text. If the user provides a file path, read only the target file and any related material the user explicitly requested.
+- If the user provides a URL, read the body content first. Retry only when the body is missing, truncated, or obviously not the target article.
+- Do not search external sources to fill examples, background, or fluency. If source material is missing, state the gap or list it as possible improvement space that requires author input.
+- Distinguish content already present in the source, inferences based on the source, and judgments that need author confirmation. Do not write inference as fact.
 
-## 两种工作模式
+## Two Work Modes
 
-### 模式一：笔记 → 博客初稿
+### Mode 1: Notes -> Blog Draft
 
-用户提供一组笔记作为素材，你帮助拼出一篇结构完整的博客初稿。
+The user provides a set of notes as source material. Help assemble them into a complete blog draft.
 
-**流程：**
+**Process:**
 
-1. **理解素材** — 读完所有笔记，提取核心论点、关键案例、技术细节
-2. **确认写作意图** — 优先读取 frontmatter 和对话中已有信息；缺目标读者或 takeaway 且会影响初稿方向时，只问这两个问题
-3. **拟定结构大纲** — 按下方的结构框架组织，先给用户看大纲，确认后再写
-4. **写初稿** — 按大纲展开，遵循下方所有写作原则。输出的 Markdown 文档在 frontmatter 中写入 `audience`（读者定义）和 `takeaway`（希望读者带走什么）
-5. **自检** — 用诊断清单过一遍，标注潜在问题
-6. **更新 description** — 根据最终内容，在 frontmatter 中写入 `description`：一句话概括文章讲了什么，适合作为社交分享卡片的摘要
+1. **Understand the material** - Read all notes and extract the central argument, key cases, and technical details.
+2. **Confirm writing intent** - Prefer frontmatter and existing conversation context. If the target reader or takeaway is missing and would affect the draft direction, ask only those two questions.
+3. **Draft the structure outline** - Organize with the structure framework below, show the outline to the user first, and write only after confirmation.
+4. **Write the draft** - Expand according to the outline and follow all writing principles below. Put `audience` (reader definition) and `takeaway` (what the reader should take away) in the Markdown frontmatter.
+5. **Self-check** - Run through the diagnostic checklist and mark potential issues.
+6. **Update `description`** - Based on the final content, write a one-sentence `description` in frontmatter that summarizes the article and can work as a social sharing card summary.
 
-### 模式二：博客优化诊断
+### Mode 2: Blog Optimization Diagnosis
 
-用户提供一篇已有的博客文章，你做诊断并给出修改建议。
+The user provides an existing blog article. Diagnose it and provide revision suggestions.
 
-**流程：**
+**Process:**
 
-1. **读取写作意图** — 检查文章 frontmatter 中是否有 `audience` 和 `takeaway` 字段。如果有，以此作为诊断基准（读者是谁、文章要传达什么）。如果没有，且这两个信息会改变诊断结论，先问用户；用户要求快速诊断时，做保守推断并标注
-2. **通读全文** — 带着读者定义和 takeaway 读一遍
-3. **模拟首次读者** — 逐段标注：读者此刻知道什么、期待什么、实际读到什么
-4. **输出诊断报告** — 按诊断清单逐项检查，给出具体问题和修改建议
-5. **提供修改方案** — 可以是结构调整建议（大纲级别），也可以是逐段改写
-6. **更新 description** — 如果内容发生了变更，根据最终内容更新 frontmatter 中的 `description`。如果没有这个字段，新增一个
+1. **Read writing intent** - Check whether the article frontmatter contains `audience` and `takeaway`. If present, use them as the diagnostic baseline: who the reader is and what the article wants to convey. If absent and these two fields would change the diagnosis, ask the user first. If the user wants a fast diagnosis, make a conservative inference and label it.
+2. **Read the full article** - Read with the reader definition and takeaway in mind.
+3. **Simulate a first-time reader** - Paragraph by paragraph, mark what the reader knows at that moment, what they expect, and what they actually receive.
+4. **Output the diagnosis report** - Check against the diagnostic checklist and give concrete problems and revision suggestions.
+5. **Provide a revision plan** - This can be structural adjustment advice at the outline level or paragraph-level rewrites.
+6. **Update `description`** - If the content changes, update the final `description` accordingly. If the field does not exist, add it.
 
-## 读者画像
+## Reader Persona
 
-读者画像不是固定的，需要根据文章的话题和发布渠道来确定。在开始写作或诊断之前，先确认核心读者是谁（占大多数的那群人），外围读者自然是可能感兴趣但专业背景不同的人。
+The reader persona is not fixed. It should be determined from the article topic and publishing channel. Before writing or diagnosing, first confirm who the core reader is: the majority reader the article most needs to serve. Peripheral readers are people who may be interested but have different professional backgrounds.
 
-**读者定义的来源（按优先级）：**
+**Reader-definition sources, in priority order:**
 
-1. 文章 frontmatter 中的 `audience` 字段（已有文章）
-2. 用户在对话中指定
-3. 根据文章内容推断，向用户确认
+1. The article frontmatter `audience` field, for existing articles.
+2. The user-specified audience in the conversation.
+3. Conservative inference from the article content, then confirmation with the user.
 
-**关键原则：把核心读者想象成"对这个具体话题刚入门的聪明人"。** 他们有学习意愿和基础素养，但对文章涉及的特定领域大概率是第一次接触。这意味着：
+**Key principle: imagine the core reader as "a smart beginner in this specific topic."** They have willingness to learn and basic competence, but the specific domain covered by the article is probably new to them. This means:
 
-- 领域内的专业术语需要在首次出现时用一句话交代
-- 不能假设读者了解你的特定工具链、框架或工作流
-- 需要从"这个东西解决什么问题"开始建立理解
+- Domain-specific terms need a one-sentence explanation on first appearance.
+- Do not assume the reader knows the author's specific toolchain, framework, or workflow.
+- Start by establishing "what problem this thing solves."
 
-这个假设同时照顾了外围读者：对核心读者解释清楚的内容，外围读者也基本能跟上。反过来，如果核心读者都读不懂某一段，那这段的概念引入一定有问题。
+This assumption also helps peripheral readers: content that is clear to the core reader can usually be followed by peripheral readers too. Conversely, if the core reader cannot understand a paragraph, the concept introduction in that paragraph is definitely broken.
 
-## 结构框架
+## Structure Framework
 
-一篇博客的结构应该让读者在任何位置停下来都觉得"到目前为止我理解了"。做到这一点的方法是：先给结论，再给证据；先给全景，再给细节。
+A blog article should let readers stop anywhere and still feel, "I understand up to this point." The way to achieve that is to give the conclusion before the evidence and the whole picture before the details.
 
-这套框架融合了《金字塔原理》（芭芭拉·明托）和《编辑力》的核心思想。金字塔原理提供了结构骨架——结论先行、以上统下、归类分组、逻辑递进。编辑力提供了读者视角——编辑（此处即你）的角色是"外行人的代表"，替读者把关内容是否可理解，而不是替作者辩护。
+This framework combines the core ideas of the Pyramid Principle and editorial practice. The Pyramid Principle provides the structural skeleton: conclusion first, top-down support, grouping, and logical progression. Editorial practice provides the reader perspective: the editor, here meaning you, represents the outsider and checks whether the content is understandable instead of defending the author.
 
-### 导语：用 SCQA 框架引入
+### Opening: Introduce With SCQA
 
-导语的目的是在最短时间内让读者产生"我要继续读"的动力。使用 SCQA 框架（源自金字塔原理）：
+The purpose of the opening is to make the reader want to continue as quickly as possible. Use the SCQA framework, from the Pyramid Principle:
 
-- **S（Situation / 情景）**：从读者熟悉的场景或公认的事实切入。
-- **C（Complication / 冲突）**：指出和预期不符的矛盾。
-- **Q（Question / 疑问）**：由冲突自然引出问题。
-- **A（Answer / 回答）**：给出你的答案/核心主张。
+- **S (Situation)**: Start from a familiar scene or accepted fact.
+- **C (Complication)**: Point out a contradiction or mismatch with expectation.
+- **Q (Question)**: Let the complication naturally raise a question.
+- **A (Answer)**: Give your answer or central claim.
 
-SCQA 不需要死板地分四段写。它是一个思维框架——确保导语覆盖了这四个要素。可以浓缩成两三句话，也可以展开成一个段落。关键是读者读完导语后能回答：这篇文章要讲什么、和我有什么关系、作者的核心主张是什么。如果文章涉及"之前 vs 现在"的对比，S 和 C 就是交代"之前的痛点"的地方。
+SCQA does not need to be written as four rigid paragraphs. It is a thinking framework that ensures the opening covers these four elements. It can be compressed into two or three sentences, or expanded into a paragraph. The key is that after reading the opening, the reader can answer: what this article is about, what it has to do with me, and what the author's central claim is. If the article involves a "before vs now" contrast, S and C are where the earlier pain should be established.
 
-### 推荐结构
+### Recommended Structure
 
+```text
+1. Opening (SCQA)
+   - Situation -> Complication -> Question -> Answer (central claim)
+   - After the opening, the reader already knows what the author wants to say and why.
+
+2. Whole-picture overview
+   - The overall structure of the solution, system, or argument, where the reader builds a mental model.
+   - If the article involves multiple components or steps, include a Mermaid diagram so the reader can see the whole picture at a glance.
+   - Add a one-sentence summary or analogy.
+   - After this section, the reader should be able to tell someone else what the article is about.
+
+3. Core mechanism (2-3 key points)
+   - For each key point: what the problem is -> why this choice or view -> what the effect is.
+   - Order by importance, not by time.
+   - Follow the MECE principle between sections: no overlap, no omissions.
+   - Continuous analysis can tire readers; vary the rhythm with stories or cases when appropriate.
+
+4. Detail expansion (optional)
+   - Keep only details that help the reader understand the core mechanism.
+   - Code snippets in technical articles need contextual explanation.
+
+5. Ending (reflection / cognitive change / value return)
+   - Return to the question in the opening and answer "so what happened?"
+   - If there was a cognitive change, state clearly: "I used to think X; now I realize Y."
 ```
-1. 导语（SCQA）
-   - 情景 → 冲突 → 疑问 → 回答（核心主张）
-   - 读完导语，读者已经知道作者要说什么、为什么要说
 
-2. 全景概览
-   - 方案/系统/论点的整体结构，读者在这里建立心智模型
-   - 涉及多个组件或步骤的文章应包含图表（Mermaid），让读者一眼看到全貌
-   - 辅以一句话概括或一个类比
-   - 读完这一节，读者应该能向别人转述"他讲了个什么事"
+### Core Structural Principles
 
-3. 核心机制（2-3 个关键点）
-   - 每个关键点：问题是什么 → 为什么这样选/这样想 → 效果如何
-   - 按重要性排序，不是按时间排序
-   - 章节之间遵循 MECE 原则：不重叠、不遗漏
-   - 连续的分析容易让读者疲劳，适当穿插故事或案例来变换节奏
+**Lead with conclusions and support top-down.** Each section title or first sentence should summarize the conclusion of that section, not just name a topic. The reader should know what the section is going to say from the title, then see the details in the body as support. If a section cannot be summarized by its title, it may be doing two things and should be split.
 
-4. 细节展开（可选）
-   - 只保留对理解核心机制有帮助的细节
-   - 技术类文章的代码片段要有上下文说明
+**Create a vertical question-answer chain.** After reading one section, the reader naturally forms a question. The beginning of the next section should answer that question. If the next section discusses a completely unrelated topic, the section order is wrong.
 
-5. 结尾（反思 / 认知变化 / 价值回收）
-   - 回到导语中的问题，回答"所以怎么样了"
-   - 如果有认知变化，说清楚"之前以为 X，现在发现 Y"
-```
+**Do not organize by "how I thought of this"; organize by "how the reader can understand it."** The author's thinking path is divergent, recursive, and full of accidents. The reader needs a straight path from A to B. The author's exploration process can be used as material inside the argument, but it should not become the article's skeleton.
 
-### 结构的核心原则
+**Preserve the author's material. Do not delete lightly.** When reorganizing structure, your job is to rearrange and re-present, not to cut by default. Every piece of material the author provided may carry writing intent: personal experience, source of inspiration, emotional resonance, or something else. Even if a paragraph seems to have "no direct contribution to the central argument," do not delete it immediately. You can move it to a better position, fold it into another paragraph as support, place it in a "background" or "origin" section, or move it to an appendix at the end. Deletion is the last resort. Consider it only when content is clearly repetitive or contradictory, and explain the reason in the self-check note.
 
-**结论先行，以上统下。** 每一节的标题（或首句）应该是该节内容的结论概括，而不是话题标签。读者看到标题就知道这一节要说什么，然后正文展开细节来支撑。如果一节的内容无法被标题概括，说明这节可能在讲两件事，需要拆分。
+## Writing Principles
 
-**纵向形成疑问-回答链。** 读者读完一节后，脑子里会自然产生一个问题。下一节的开头应该回应这个问题。如果下一节讲的是完全不相关的话题，说明章节顺序有问题。
+### 1. Reader Expectation Management
 
-**不要按"我是怎么想到的"组织，要按"读者怎么才能理解"组织。** 作者的思考路径是发散的、有回溯的、充满偶然的。读者需要的是一条从 A 到 B 的直线。作者的探索过程可以作为素材穿插在论证中，但不应该成为文章的骨架。
+This is the most important principle. Readers carry expectations while reading each paragraph: expectations about what comes next, what terms mean, and where the article is going. When the actual content deviates from those expectations, readers need to stop and repair their understanding. That consumes cognitive resources and lowers the reading experience.
 
-**保留作者的素材，不要轻易删除。** 重组结构时，你的工作是重新排列和重新呈现，而不是删减。作者提供的每一段素材背后都有写作意图——可能是个人经历、灵感来源、情感共鸣点。即使某段内容看起来"对核心论点没有直接贡献"，也不要删掉。你可以：把它移到更合适的位置、融入其他段落作为补充、收进一个"背景"或"缘起"小节、或放到文末附录。删除是最后手段，只有在内容明确重复或自相矛盾时才考虑，且需要在自检备注中说明理由。
+**Specific requirements:**
 
-## 写作原则
+- **Headings should accurately preview content.** A heading is an agreement with the reader. Its abstraction level should match the content. If the content only makes one concrete point, the heading should not use a grand concept.
+- **The start of each section should connect to the previous section.** The reader has just finished the previous section and is still processing that context. The first sentence of the new section should carry the reader forward from the previous context instead of suddenly jumping to a new topic.
+- **Do not create surprise with reversals.** Technical blogs do not need narrative tension. Giving the conclusion directly is clearer than setting up suspense and then reversing it. When the source uses rhetorical questions, rewrite them as direct statements: conclusion first, then reasons.
+- **The direction at the end of a paragraph should connect to the next paragraph.** If the end of a paragraph implies that topic A will be expanded, the next paragraph should be A, not B.
+- **Turns and conclusions need setup.** If you want to say "I am really doing X now," the reader first needs to know why you were not doing X before. Do not assume the reader can fill in the other side of the contrast. Likewise, if you say "a feature happens automatically," explain what mechanism makes it automatic. Do not leave the reader to guess.
 
-### 1. 读者预期管理
+### 2. Concept Introduction Protocol
 
-这是最重要的原则。读者在阅读每一段时都带着预期——对下文内容的预期，对术语含义的预期，对文章走向的预期。当实际内容偏离预期时，读者需要停下来修正自己的理解，这会消耗认知资源并降低阅读体验。
+When readers first meet a concept, they need to know three things: what it is, what role it plays in this context, and why it is being mentioned now.
 
-**具体要求：**
+**Specific requirements:**
 
-- **标题要准确预告内容。** 标题是和读者的约定。标题的抽象层级要和内容匹配——如果内容只讲了一个具体的点，标题就不应该用一个宏大的概念。
-- **每一节的开头要衔接上文。** 读者刚读完上一节，脑子里还在消化那些内容。新一节的第一句话应该把读者从上一节的语境中接过来，而不是突然跳到一个新话题。
-- **不要用反转制造惊喜。** 技术博客不需要叙事张力。直接给结论比设置悬念再反转更清晰。遇到原文中的反问句式，改写为直陈句——先给结论，再展开理由。
-- **段落结尾的走向要和下一段呼应。** 如果这一段的结尾暗示要展开 A 话题，下一段就应该是 A，不是 B。
-- **转折和结论需要铺垫。** 如果要说"我现在真的在做 X 了"，读者需要先知道"以前为什么没在做 X"。不要假设读者能自行脑补对比的另一端。同样，如果说"某个功能会自动发生"，需要交代是什么机制让它自动的，不能留给读者猜。
+- **Explain new concepts in one sentence on first appearance.** A full definition is not necessary, but the reader should be able to continue without searching. This rule applies not only to technical terms but also to abstract concepts. Terms like "separation of concerns," "hybrid system," and "governance" are not self-evident to non-specialist readers; explain what they mean in this context in one sentence.
+- **Do not use a concept before explaining it.** If a term is explained in the third paragraph, the first paragraph cannot assume the reader already knows it.
+- **Use terminology consistently.** If the same thing is called different names in different places, readers will wonder whether they are the same thing or different things. If the article has two easily confused near-synonyms, make an early distinction.
+- **Consider peripheral readers.** A concept obvious to the core reader may need one functional description for peripheral readers. A parenthesis or subordinate clause is enough; do not expand it too much.
+- **Avoid jargon.** Some terms have clear meaning in a specific circle but become opaque outside that context. Replace them with more general wording or explain them in parentheses on first use.
 
-### 2. 概念引入协议
+### 3. Mental Model First
 
-读者第一次遇到一个概念时，需要知道三件事：它是什么、它在这个语境下扮演什么角色、为什么此刻要提到它。
+Readers need to build a frame in their mind before they can accept details. Details without a frame are noise.
 
-**具体要求：**
+**Specific requirements:**
 
-- **新概念首次出现时用一句话交代。** 不需要完整定义，但要让读者不需要去搜索就能继续读下去。这条规则不只适用于技术名词，也适用于抽象概念——"分离关注点"、"混合系统"、"治理"这类词对非专业读者并不自明，需要用一句话说清楚在这个语境下是什么意思。
-- **不要在概念解释之前就使用它。** 如果第三段才解释某个术语，第一段就不能假设读者知道它。
-- **术语的使用要一致。** 同一个东西在不同地方用了不同的名字，读者会困惑"这是同一个东西还是不同的东西"。如果文章中有两个容易混淆的近义词，建议在早期做一次区分声明。
-- **考虑外围读者。** 对核心读者来说显而易见的概念，对外围读者可能需要一句功能性描述。用括号或从句补一句就够，不要展开。
-- **避免行话。** 有些词在特定圈子里有明确含义，但脱离上下文就变成了黑话。这类词要么替换为更通用的说法，要么首次使用时括号注明含义。
+- **Give the whole picture before details.** If the article introduces a multi-part solution, summarize the whole in a few sentences before introducing each part. Do not leave the reader discovering, by the third part, how many parts there are in total.
+- **When introducing a subtopic, explain how it relates to the whole.** The reader needs to know where the current paragraph sits in the whole article.
+- **Use analogy or one-sentence summaries for complex concepts.** A one-sentence summary is the anchor for the reader's mental model.
+- **Provide diagrams for multi-component or multi-step material.** When pure text describes system architecture, module relationships, or workflows, readers have to assemble a diagram in their own head, which is cognitively expensive. Use a Mermaid diagram to help readers see the structure. The diagram should let the reader answer at a glance: what this thing does, what parts it has, and how they cooperate. A diagram is not decoration; it is an expression medium as important as the text.
 
-### 3. 心智模型优先
+### 4. Evidence And Argument
 
-读者需要先在脑子里建立一个框架，才能接受细节。没有框架的细节就是噪音。
+**Specific requirements:**
 
-**具体要求：**
+- **Claims need support.** Assertion is not argument. "X can do Y" needs an explanation of why it can and what the judgment is based on.
+- **Trust and choice need reasons.** If you say "I trust X" or "I chose X instead of Y," the reader will ask why. Give the basis: a fallback mechanism, small blast radius, practical validation, or another concrete reason.
+- **Examples should be self-contained.** When giving an example, readers should not need background knowledge to understand its point. If the example involves a specialized concept, explain it inside the example. Do not assume the reader knows your other work.
+- **Examples should be concrete, named, and numerical.** Abstract discussion is weaker than a named real case. Examples with names, scenes, and numbers make readers feel "this is real" rather than "this is just a claim." The author's lived experience and concrete observations are the best material.
+- **"Automatic" requires a mechanism.** Any behavior described as automatic needs at least one sentence explaining what mechanism implements that automation.
+- **Separate data from interpretation.** Present the data first, then the comparison baseline, then the interpretation. Do not ask the reader to accept a judgment of "more," "less," "fast," or "slow" without a frame of reference.
 
-- **在讲细节之前先给全景。** 如果文章要介绍一个有多个部分的方案，先用几句话概括整体，再逐个介绍。不要让读者在读到第三个部分时还不知道一共有几个。
-- **引入子话题时说明它和整体的关系。** 读者需要知道当前这一段在整篇文章中的位置。
-- **复杂概念用类比或一句话总结。** 一句话的概括就是读者的心智模型锚点。
-- **涉及多组件/多步骤时要提供图表。** 纯文本描述系统架构、模块关系、工作流程时，读者需要在脑子里自己拼出一张图，很消耗认知资源。用 Mermaid 图帮读者"看见"结构。图表应该让读者一眼就能回答：这个东西做什么、有哪些部分、它们怎么协作。图不是装饰，是和文字同等重要的表达方式。
+### 5. Style
 
-### 4. 证据和论证
+The target style is "rigorous narrative": the structure and logic are rigorous, while the prose can be relaxed.
 
-**具体要求：**
+**Specific requirements:**
 
-- **观点要有支撑。** 断言不是论证。"X 能做到 Y"需要说明为什么能，以及这个判断的依据是什么。
-- **信任和选择要有理由。** 如果说"我信任 X"或"我选择了 X 而不是 Y"，读者会问凭什么。需要给出依据——是因为有兜底机制？是因为影响范围小？是因为实践验证过？
-- **例子要自足。** 举例时，读者不应该需要背景知识才能理解这个例子的要点。如果例子涉及专有概念，要在例子内部解释清楚，不要假设读者了解你的其他作品。
-- **例子要具体、有名字、有数字。** 抽象的论述不如一个具名的真实案例。有人名、有场景、有数字的例子让读者觉得"这是真的"，而不是"这是一个观点"。作者的亲身经历和具体观察是最好的素材来源。
-- **"自动"要解释机制。** 任何用"自动"描述的行为，都需要至少一句话说明是什么机制实现了这个"自动"。
-- **数据和解读分开呈现。** 先给数据，再给对比基准，再给解读。不要让读者在没有参照系的情况下接受一个"多/少/快/慢"的判断。
+- **Use a natural tone, not an academic register.** "I want to talk about..." is better than "This article explores..." But do not make the prose so casual that it loses information density.
+- **Use shorter sentences.** Long sentences force the reader to do too much parsing. Consider splitting sentences that require the reader to hold multiple clauses, conditions, or actors in memory at once.
+- **Use less passive voice, and make subjects explicit.** When describing a multi-step process, every step needs a clear actor. The reader should not need to guess "who is doing this." If a paragraph contains more than three actions, check whether each action has a clear subject.
+- **Do not overuse bold.** If one paragraph has more than two bold spans, the focus becomes blurry. Use bold for core conclusions, not to emphasize every keyword.
 
-### 5. 风格
+## Diagnostic Checklist
 
-目标风格是"严谨叙事"：结构和逻辑是严谨的，文笔可以轻松。
+When diagnosing and optimizing a blog article, check the following issues one by one. If a problem exists, provide a concrete location and revision suggestion.
 
-**具体要求：**
+### Structure Layer
 
-- **语气自然，不要学术腔。** "本文探讨了……"不如"我想聊聊……"。但也不要刻意口语化到影响信息密度。
-- **句子短一点。** 长句子迫使读者在脑子里做太多解析。超过 40 个字的句子考虑拆分。
-- **少用被动语态，主语必须明确。** 描述多步骤流程时，每一步的执行者都要写清楚。读者不应该需要猜"谁在做这件事"。如果一个段落里有三个以上的动作，检查每个动作的主语是否清晰。
-- **不要滥用加粗。** 一段话里加粗两处以上，重点就模糊了。加粗用于核心结论，不用于强调每一个关键词。
+- [ ] **Does the opening establish reader expectations?** After reading the opening, can the reader answer "what is this article about, and what does it have to do with me?"
+- [ ] **Is there a whole-picture overview?** Before entering details, does the reader already have a mental model of the whole?
+- [ ] **Is a diagram needed?** If the article involves multiple components, steps, or relationships, does it provide a diagram to help the reader visualize them?
+- [ ] **Does the section order serve the reader?** Is the article ordered by the reader's path of understanding, or by the author's thinking/time order?
+- [ ] **Does each section opening connect to the previous section?** Can the reader transition smoothly from the previous section to this one?
+- [ ] **Does the ending fulfill the opening's promise?** Does the ending answer the question raised in the opening?
 
-## 诊断清单
+### Concept Layer
 
-对博客文章进行优化诊断时，逐项检查以下问题。每个问题如果存在，给出具体的位置和修改建议。
+- [ ] **Are there concepts used before being explained?** Mark all terms and abstract concepts that first appear without explanation.
+- [ ] **Is terminology consistent?** Is the same thing called by different names in different places?
+- [ ] **Are examples self-contained?** Can readers understand the point of each example without extra knowledge?
 
-### 结构层
+### Expectation Layer
 
-- [ ] **导语是否建立了读者预期？** 读完导语，读者能否回答"这篇文章要讲什么、和我有什么关系"？
-- [ ] **是否有全景概览？** 读者在进入细节之前，是否已经对整体有了心智模型？
-- [ ] **是否需要图表？** 如果文章涉及多个组件、步骤或关系，是否提供了图表帮助读者可视化？
-- [ ] **章节顺序是否服务读者？** 是按读者的理解路径排列，还是按作者的思考/时间顺序排列？
-- [ ] **每一节开头是否衔接上文？** 读者能否顺畅地从上一节过渡到这一节？
-- [ ] **结尾是否回收了导语的承诺？** 导语提出的问题，结尾是否给了回答？
+- [ ] **Are headings accurate?** Does each heading accurately describe the content of its section?
+- [ ] **Are there expectation reversals?** Are there cases where "the heading implies A, but the content is actually B"?
+- [ ] **Are there logical jumps between paragraphs?** Are there places where two paragraphs lack transition and the reader needs to supply the logic?
 
-### 概念层
+### Reader Layer
 
-- [ ] **是否有未解释就使用的概念？** 标注所有首次出现但没有交代的术语和抽象概念。
-- [ ] **术语使用是否一致？** 同一个东西是否在不同地方用了不同的名字？
-- [ ] **例子是否自足？** 读者不需要额外知识就能理解每个例子的要点吗？
+- [ ] **Can the core reader read smoothly?** Are there concepts that even the core reader needs explained?
+- [ ] **Where will peripheral readers get stuck?** Mark paragraphs that are hard for non-specialist readers to understand.
+- [ ] **Where will readers think "so what?"** Are there facts described without explaining why they matter?
 
-### 预期层
+### Argument Layer
 
-- [ ] **标题是否准确？** 每个标题是否准确描述了该节的内容？
-- [ ] **是否有预期反转？** 是否存在"标题暗示 A，内容实际是 B"的情况？
-- [ ] **段落间的逻辑跳跃。** 是否存在两段之间缺少过渡、读者需要自己补逻辑的地方？
+- [ ] **Are there unsupported assertions?** Are any views merely stated without reasons or evidence?
+- [ ] **Does the value proposition appear early enough?** Does the reader need to read far into the article before understanding what this thing is useful for?
+- [ ] **Are there places where "the author thinks it is obvious, but the reader does not"?** Did the author skip steps they personally thought did not need explaining?
 
-### 读者层
+## De-Mechanical Pass
 
-- [ ] **核心读者能否顺畅阅读？** 有没有对他们来说也需要解释的概念？
-- [ ] **外围读者在哪里会卡住？** 标注对非专业读者来说难以理解的段落。
-- [ ] **读者在哪里会想"所以呢"？** 有没有描述了一个事实但没有说明为什么重要的地方？
+After finishing a draft or rewrite, use the humanizer skill to check the output text and remove AI-writing traces. A blog is personal expression and should not read like "an AI-generated technical report." The humanizer checks and repairs inflated symbolic language, promotional wording, vague attribution, overused punctuation, three-part routines, high-frequency AI wording, and similar issues.
 
-### 论证层
+## Output Format
 
-- [ ] **有没有无支撑的断言？** 有没有观点只是声明了但没有给出理由或证据？
-- [ ] **价值主张是否足够早出现？** 读者是否需要读到很后面才能理解"这个东西有什么用"？
-- [ ] **是否存在"作者觉得显然但读者不觉得"的地方？** 作者跳过了自己认为不需要解释的步骤？
+### Draft Mode
 
-## 去机械化
+Output the complete blog article directly in Markdown. All material provided by the author should appear in the draft in some form: reorganized, folded into other paragraphs, placed in background/appendix sections, or otherwise represented. Do not discard it. At the end of the article, attach a short self-check note listing the key tradeoffs you made while writing, for example: "moved X from the main body to the background section because it was part of the personal exploration path rather than the core argument."
 
-完成初稿或改写后，使用 humanizer skill 检查输出文本，消除 AI 写作痕迹。博客是个人表达，读起来不能像"AI 生成的技术报告"。humanizer 会检测并修复：膨胀的象征性表述、推销式语言、模糊归因、破折号滥用、三段式套路、AI 高频词汇等问题。
+### Diagnosis Mode
 
-## 输出格式
+Output diagnosis in two layers:
 
-### 初稿模式
+**Layer 1: Clear problems, directly fixable**
 
-直接输出完整的博客文章（Markdown 格式）。作者提供的所有素材都应该在初稿中有所体现——可以重新组织位置、融入其他段落、或放入背景/附录章节，但不要丢弃。在文章末尾附上一个简短的"自检备注"，列出你在写作过程中做的关键取舍（比如"将 X 从正文移到了背景章节，因为它是个人探索历程而非核心论证"）。
+Check against the diagnostic checklist and identify concrete violations. These problems have clear right/wrong standards and can be fixed without extra author input.
 
-### 诊断模式
+Output format:
 
-诊断分两个层次输出：
+1. **One-sentence summary**: what the article's largest structural problem is.
+2. **Itemized diagnosis**: list concrete problems by diagnostic-checklist category, mark locations with source quotes, and provide revision suggestions.
+3. **Structural reorganization suggestion**: if section order needs adjustment, provide a proposed new outline and explain the reason for each move.
+4. **Priority order**: which fixes bring the highest return, helping the user decide what to change first.
 
-**第一层：明确的问题（直接修复）**
+**Layer 2: Potential improvement space, requiring author participation**
 
-按诊断清单逐项检查，找出违反规则的具体问题。这些问题有明确的对错标准，不需要作者额外输入就能修复。
+Beyond clear errors, there may be places that "could be better," but these optimizations require the author to provide extra information, make a judgment, or add material. List them so the author knows what directions remain.
 
-输出格式：
-1. **一句话总结**：这篇文章最大的结构性问题是什么
-2. **逐项诊断**：按诊断清单的分类，列出具体问题，标注位置（引用原文），给出修改建议
-3. **结构重组建议**：如果需要调整章节顺序，给出建议的新大纲，并解释每个调整的理由
-4. **优先级排序**：哪些问题改了收益最大，帮用户决定先改什么
+For each suggestion, state:
 
-**第二层：潜在的优化空间（需要作者参与）**
-
-除了明确的错误，还有一些"可以做得更好"的地方——但这些优化需要作者提供额外信息、做出判断、或补充素材才能完成。把这些列出来，让作者知道还有哪些改进方向。
-
-每条建议说明：
-- **当前状态**：现在文章里是怎么写的
-- **优化方向**：可以怎么改进
-- **需要作者提供什么**：补充一个例子？确认一个事实？提供背景信息？还是做一个取舍决策？
+- **Current state**: how the article currently handles it.
+- **Improvement direction**: how it could be improved.
+- **What the author needs to provide**: an example, fact confirmation, background information, or a trade-off decision.

@@ -1,14 +1,14 @@
 # Agent Skills
 
-适用于 Codex 和 GPT agents 的个人 skills 与工作流合集。
+Personal skills and workflows for Codex and GPT agents.
 
-## 安装
+## Installation
 
 ```bash
 npx skills add plimeor/agent-skills
 ```
 
-安装单个 skill：
+Install a single skill:
 
 ```bash
 npx skills add plimeor/agent-skills --skill ops-url-reader
@@ -16,27 +16,27 @@ npx skills add plimeor/agent-skills --skill ops-url-reader
 
 ## Project Structure
 
-- `skills/<skill-name>/SKILL.md`：每个 skill 一个独立目录，`SKILL.md` 是入口文件。
-- `SKILL.md` frontmatter 里的 `name:` 必须和父目录名完全一致。
-- `README.md` 是公开索引；新增、删除或重命名 skill 时同步更新。
+- `skills/<skill-name>/SKILL.md`: each skill has its own directory, and `SKILL.md` is the entrypoint.
+- The `name:` field in `SKILL.md` frontmatter must match the parent directory name exactly.
+- `README.md` is the public index. Update it whenever a skill is added, removed, or renamed.
 
 ## Skills
 
-| Skill | 说明 |
-|-------|------|
-| [code-scope-gate](skills/code-scope-gate/SKILL.md) | 编码前的范围门，防止过度实现并收敛到最小正确改动 |
-| [code-standards-gate](skills/code-standards-gate/SKILL.md) | 基于个人代码标准审核 spec、diff 和实现边界，优先检查公开契约、持久化状态和不必要抽象 |
-| [code-test-strategy](skills/code-test-strategy/SKILL.md) | 编码任务中的测试策略门禁，防止测试污染生产代码、过早写测试和实现细节测试 |
-| [decision-look-before-leap](skills/decision-look-before-leap/SKILL.md) | 回答、建议或决策前做 look-before-you-leap 检查；上下文惯性风险较高时优先引入独立 subagent 推敲 |
-| [knowledge-project-docs-maintenance](skills/knowledge-project-docs-maintenance/SKILL.md) | 维护项目 docs 分层、语言、命名和 living spec 清理策略 |
-| [meta-code-standards-calibration](skills/meta-code-standards-calibration/SKILL.md) | 对照人类 PR/MR review 校准 code-standards-gate，并判断规则应进入全局 skill、项目规则、tooling 还是保留本地 |
-| [meta-context-engineering-global](skills/meta-context-engineering-global/SKILL.md) | 为全局 rules file 做 context engineering，专注跨任务、跨项目、跨会话都长期成立的规则 |
-| [meta-context-engineering-project](skills/meta-context-engineering-project/SKILL.md) | 为项目层做 context engineering，覆盖 repo-local 规则、任务级 context packing 与项目内漂移诊断 |
-| [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md) | 维护和升级面向 GPT 系列模型的 prompt artifact，覆盖 SKILL.md、AGENTS、system/developer prompt、agent workflow、eval 和 grader prompt |
-| [ops-bear](skills/ops-bear/SKILL.md) | 通过 Bear App 本地 CLI 读取、搜索、创建、编辑、整理和打开 Bear 笔记 |
-| [ops-codex-session-maintenance](skills/ops-codex-session-maintenance/SKILL.md) | 维护本地 Codex 会话状态：先检查和备份，再归档旧 session/worktree、轮转日志并生成 handoff |
-| [ops-url-reader](skills/ops-url-reader/SKILL.md) | 通过 defuddle.md 从任意 URL 提取正文内容 |
-| [writing-blog](skills/writing-blog/SKILL.md) | 基于 SCQA 方法论创建和优化博客文章 |
-| [writing-blog-illustration](skills/writing-blog-illustration/SKILL.md) | 为博客文章生成插图提示词，适合工作流、架构图和抽象概念配图 |
-| [writing-humanizer](skills/writing-humanizer/SKILL.md) | 去除 AI 写作痕迹，让 AI 生成的文档和草稿更自然、更像人写 |
-| [writing-reader-feedback](skills/writing-reader-feedback/SKILL.md) | 模拟指定读者逐节阅读文章，输出真实的阅读体验反馈 |
+| Skill | Description |
+|-------|-------------|
+| [code-scope-gate](skills/code-scope-gate/SKILL.md) | Scope gate before coding: prevent over-implementation and converge on the smallest correct change |
+| [code-standards-gate](skills/code-standards-gate/SKILL.md) | Review specs, diffs, and implementation boundaries against personal code standards, with emphasis on public contracts, persisted state, and unnecessary abstractions |
+| [code-test-strategy](skills/code-test-strategy/SKILL.md) | Test-strategy gate for coding tasks: avoid test-driven production complexity, premature tests, and implementation-detail tests |
+| [decision-look-before-leap](skills/decision-look-before-leap/SKILL.md) | Look-before-you-leap check before answers, recommendations, or decisions; use independent subagent scrutiny when context-inertia risk is high |
+| [knowledge-project-docs-maintenance](skills/knowledge-project-docs-maintenance/SKILL.md) | Maintain project docs layering, language, naming, and living-spec cleanup strategy |
+| [meta-code-standards-calibration](skills/meta-code-standards-calibration/SKILL.md) | Calibrate code-standards-gate against human PR/MR reviews and decide whether rules belong in a global skill, project rules, tooling, or local context |
+| [meta-context-engineering-global](skills/meta-context-engineering-global/SKILL.md) | Context engineering for global rules files, focused on rules that remain valid across tasks, projects, and sessions |
+| [meta-context-engineering-project](skills/meta-context-engineering-project/SKILL.md) | Project-level context engineering for repo-local rules, task context packing, and project-specific drift diagnosis |
+| [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md) | Maintain and upgrade GPT-oriented prompt artifacts, including SKILL.md, AGENTS, system/developer prompts, agent workflows, evals, and grader prompts |
+| [ops-bear](skills/ops-bear/SKILL.md) | Read, search, create, edit, organize, and open Bear notes through the local Bear App CLI |
+| [ops-codex-session-maintenance](skills/ops-codex-session-maintenance/SKILL.md) | Maintain local Codex session state: inspect and back up first, then archive old sessions/worktrees, rotate logs, and generate handoffs |
+| [ops-url-reader](skills/ops-url-reader/SKILL.md) | Extract main content from arbitrary URLs through defuddle.md |
+| [writing-blog](skills/writing-blog/SKILL.md) | Create and improve blog posts with the SCQA method |
+| [writing-blog-illustration](skills/writing-blog-illustration/SKILL.md) | Generate illustration prompts for blog posts, especially workflow, architecture, and abstract-concept visuals |
+| [writing-humanizer](skills/writing-humanizer/SKILL.md) | Reduce AI-writing traces so generated docs and drafts read more naturally and human-authored |
+| [writing-reader-feedback](skills/writing-reader-feedback/SKILL.md) | Simulate a specified reader reading an article section by section and report raw reading-experience feedback |

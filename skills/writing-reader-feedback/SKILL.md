@@ -1,151 +1,147 @@
 ---
 name: writing-reader-feedback
 description: >-
-  Simulate a specified reader persona reading an article section by section and
-  report raw reading-experience feedback, not writing advice. Use when the user
-  asks how a specific audience would experience a draft, whether readers can
-  understand it, or wants reader role-play. Trigger on "模拟读者", "读者反馈",
-  "读者视角", "读者会怎么想", "读者能看懂吗", "阅读体验", "reader feedback",
-  "simulate a reader", "reading experience", "如果一个产品经理读这篇文章",
-  "这篇文章对新手来说怎么样", or "帮我测试一下读者的反应". For general writing
-  improvement such as "帮我改这篇文章" or "优化结构", use writing-blog instead.
-  Formerly named blog-feedback.
+  Simulate a specified reader persona reading an article section by section and report raw reading-experience feedback, not writing advice. Use when the user asks how a specific audience would experience a draft, whether readers can understand it, or wants reader role-play. Trigger on reader simulation, reader feedback, reader perspective, whether readers can understand a piece, reading experience, or testing how a target reader reacts. For general writing improvement, draft polishing, or structural optimization, use writing-blog instead. Formerly named blog-feedback.
 ---
 
-# Writing Reader Feedback — 逐节阅读体验模拟
+# Writing Reader Feedback
 
-## 这个 skill 做什么
+## Goal
 
-你要扮演一个真实的读者，带着用户指定的背景和知识状态，**按章节顺序阅读**一篇文章。你的任务不是给出写作建议，而是忠实记录阅读过程中的心理活动：期待、困惑、预期偏移、不关心、情绪反应。
+Simulate a real reader reading an article in order, section by section, with the background and knowledge state specified by the user. The task is not to give writing advice. The task is to record what happens in the reader's mind: expectations, confusion, expectation shifts, lack of interest, emotional reaction, and motivation to continue.
 
-产出物是一份**阅读体验报告**——按章节记录读者脑子里真正发生了什么。
+The deliverable is a reading-experience report that records the reader's experience at each section.
 
-所有输出使用中文。
+Use the user's primary language for the report unless they ask for another language.
 
-## 完成标准与停止条件
+## Success Criteria And Stop Condition
 
-成功 = 按文章顺序覆盖每个阅读单元，记录该读者当下的期待、困惑、情绪和继续阅读动力，并在结尾补充整体印象。读完全文并输出整体印象后停止；不要转成写作建议、改稿方案、事实核查或润色方案，除非用户另行要求。
+Success means covering every reading unit in article order, recording the reader's current expectations, confusion, emotion, and motivation to continue, then ending with an overall impression.
 
-## 证据与读取边界
+Stop after the full article has been read and the overall impression has been reported. Do not turn the output into writing advice, a revision plan, fact checking, or polishing unless the user separately asks for that.
 
-- 用户直接提供文章正文时，直接使用正文。
-- 用户提供文件路径时，只读取目标文件。
-- 用户提供网页 URL 时，使用 `ops-url-reader` skill 或 `WebFetch` 获取正文；只有正文缺失、截断或明显不是目标文章时才重试。
-- 不为了帮读者补背景而搜索外部资料。读者缺失的背景要表现为困惑、误解或不关心，而不是被静默修复。
-- 如果文章无法读取，说明阻塞点，并请用户提供正文或可用来源。
+## Evidence And Reading Boundaries
 
-## 执行流程
+- If the user provides article text directly, use that text.
+- If the user provides a file path, read only the target file.
+- If the user provides a webpage URL, use `ops-url-reader` or `WebFetch` to get the body content. Retry only when the body is missing, truncated, or obviously not the target article.
+- Do not search external sources to fill in missing background for the reader. Missing reader background should appear as confusion, misunderstanding, or lack of interest, not be silently repaired.
+- If the article cannot be read, state the blocker and ask the user for the text or a usable source.
 
-### 1. 获取文章
+## Workflow
 
-用户会提供文件路径或网页 URL：
+### 1. Get The Article
 
-- **文件路径**：使用 Read 工具读取
-- **网页 URL**：使用 `ops-url-reader` skill 或 `WebFetch` 获取正文，保存为临时文件
+The user may provide a file path or webpage URL:
 
-### 2. 确认读者身份
+- **File path**: read the target file.
+- **Webpage URL**: use `ops-url-reader` or `WebFetch` to extract the body text.
 
-**读者定义的来源（按优先级）：**
+### 2. Establish The Reader Persona
 
-1. 用户在对话中指定的读者背景（优先，因为用户可能想测试不同于 `audience` 预设的读者）
-2. 文章 frontmatter 中的 `audience` 字段
-3. 根据文章语境做保守推断
+Use reader-definition sources in this priority order:
 
-无论来源是哪个，都需要明确以下信息：
+1. Reader background specified by the user in the conversation.
+2. The article frontmatter `audience` field.
+3. A conservative inference from the article context.
 
-- **专业背景**：什么领域？技术水平？
-- **对文章主题的了解程度**：完全陌生 / 听说过 / 有实践经验
-- **阅读场景**：公众号推送随手点开？技术社区主动搜索？朋友分享？
+For any source, identify:
 
-只有当缺失的读者信息会实质改变反馈结论时，才问一个窄问题。否则先写明假设，并继续执行。
+- **Professional background**: field and technical level.
+- **Topic familiarity**: completely new, has heard of it, or has practical experience.
+- **Reading scenario**: casually opened from a feed, actively searched in a technical community, received from a friend, or another relevant scenario.
 
-确认后，写下这个读者**知道什么、不知道什么**。这份清单是你全程的判断基准。
+Ask one narrow question only when missing reader information would materially change the feedback. Otherwise state the assumption and continue.
 
-### 3. 切分章节
+After confirming the persona, write down what this reader knows and does not know. Use that list as the baseline for the whole simulation.
 
-先快速扫描文章的标题结构（只看标题层级，不读正文内容）。找到最小标题层级（如果有 h2 和 h3，就按 h3 切分）。
+### 3. Split The Article
 
-切分规则：
-- 按最小标题层级切分为阅读单元
-- 标题前的导语（没有标题的开头部分）单独作为一个单元
-- 如果某个章节超过 15 行，按段落进一步拆分
+First scan only the heading structure. Do not read the full body yet. Find the smallest heading level present; if the article has both h2 and h3 headings, split by h3.
 
-记录切分结果（章节列表），然后开始逐节阅读。
+Splitting rules:
 
-### 4. 逐节阅读（核心环节）
+- Split into reading units by the smallest heading level.
+- Treat the opening text before the first heading as its own unit.
+- If a section is longer than 15 lines, split it further by paragraph.
 
-**一次只读一个章节。** 用 Read 工具读取当前章节的行范围（设置 `offset` 和 `limit`）。读完后立即写下反馈，再读下一个章节。
+Record the section list, then begin reading section by section.
 
-**不要用后文修正前文体验。** 如果你一次读完全文，已经知道后面的内容，就不可能诚实地报告"读到这里我以为下一节会讲 X"。如果全文已经在上下文里，也要按首次阅读状态模拟：反馈某一节时，只写这个读者在那一刻能知道、能猜到、会误解或会期待的内容。
+### 4. Read Section By Section
 
-每读完一个章节，问自己：
-- 这一节引入了什么新概念？作为设定的读者，我认识吗？
-- 我期待下一节讲什么？
-- 我的预期是否被打破了？
-- 有没有省略主语或前提？
-- 我此刻有动力继续读吗？如果没有，为什么？
-- 这一节的信息密度怎么样？哪些句子让我需要停下来？
+Read one section at a time. Read the current line range, immediately write the reader feedback for that section, then move to the next section.
 
-### 5. 输出格式
+Do not use later content to repair earlier experience. If you read the whole article at once, you already know what comes later and can no longer honestly report "at this point I expected the next section to explain X." If the full article is already in context, still simulate first-pass reading: for each section, only use what the reader could know, guess, misunderstand, or expect at that point.
 
-先给出简短读者模型：
+After each section, ask:
 
-```markdown
-## 读者模型
-- 背景：
-- 对主题的熟悉程度：
-- 阅读场景：
-- 已知：
-- 不知道：
-```
+- What new concept did this section introduce? Would this reader know it?
+- What do I expect the next section to cover?
+- Did the actual direction break my expectation?
+- Is any subject, actor, or premise omitted?
+- Do I want to keep reading right now? If not, why?
+- How dense is this section? Which sentences force me to pause?
 
-每个章节一条反馈，格式：
+### 5. Output Shape
+
+Start with a concise reader model:
 
 ```markdown
-## <章节标题或"导语">（L<起始行>-L<结束行>）
-
-<逐句的读者心理活动>
+## Reader Model
+- Background:
+- Topic familiarity:
+- Reading scenario:
+- Knows:
+- Does not know:
 ```
 
-心理活动覆盖以下维度（有什么写什么）：
+For each section, use this shape:
 
-- **预期**：我以为下一节会讲……
-- **预期偏移**：实际讲了……，跟我想的不一样
-- **困惑**：这个词/概念我不理解
-- **不关心**：这一段我此刻没动力理解，因为……
-- **缺失上下文**：这里假设我知道 X，但我不知道
-- **缺失主语**：这句话谁在做？人？agent？系统？
-- **认知负荷**：信息太密，需要停下来消化
-- **情绪**：好奇 / 认同 / 怀疑 / 不耐烦 / 烦躁 / 兴奋 / 想关掉页面
-- **回看冲动**：想回去看前面的 XX
-- **主动补全**：文章没解释，我只能猜……（可能猜错了）
-- **视觉期待**：这里我期待看到图 / 示例 / 代码
+```markdown
+## <section title or "Opening"> (L<start>-L<end>)
 
-在章节内部，对每个引起认知事件的句子单独记录。顺畅的句子可以简短标注或跳过——重点放在摩擦点上。
+<sentence-level reader reactions>
+```
 
-### 6. 阅读结束后
+Cover these dimensions when they occur:
 
-读完全文，补充整体印象：
+- **Expectation**: what I expected the next section to cover.
+- **Expectation shift**: what the section actually did and how it differed.
+- **Confusion**: words or concepts I do not understand.
+- **Lack of interest**: why I do not currently want to understand this part.
+- **Missing context**: the text assumes I know X, but I do not.
+- **Missing subject**: who is acting here - a person, agent, system, or something else?
+- **Cognitive load**: the information is dense enough that I need to pause.
+- **Emotion**: curiosity, agreement, doubt, impatience, irritation, excitement, or wanting to close the page.
+- **Look-back impulse**: what I want to reread.
+- **Active guessing**: what I have to guess because the article did not explain it.
+- **Visual expectation**: where I expect a diagram, example, or code.
 
-- **最大的价值点**：读完后我记住了什么？
-- **最大的困惑**：什么问题到最后也没解开？
-- **预期管理**：文章从哪里开始让我建立起正确的预期？还是全程在修正？
-- **信息缺口**：缺什么才能完整理解？
+Within each section, record sentence-level reactions for sentences that create a real cognitive event. Smooth sentences can be noted briefly or skipped. Focus on friction.
 
-## 关键纪律
+### 6. Overall Impression
 
-**忠实于读者身份，宁可过度困惑也不要过度理解。** 你作为 AI 知道很多，但你扮演的读者不一定知道。如果文章没解释一个概念，且读者背景不包含这个知识，你就是不懂。不要替作者脑补，不要说"大概能猜到"——如果需要猜，那就是摩擦。
+After finishing the article, add an overall impression:
 
-**说人话，别当分析师。** 你是一个普通读者，不是文学评论家。反馈应该口语化、直接、甚至粗暴：
+- **Main value**: what I remember after reading.
+- **Main confusion**: what remains unresolved.
+- **Expectation management**: where the article helped me form the right expectation, or whether I kept revising my expectation throughout.
+- **Information gaps**: what I still need in order to fully understand the article.
 
-- "看不懂" —— 不是 "此处引入了未定义的概念"
-- "我不关心这个" —— 不是 "与预期框架不匹配"
-- "前面不是在讲 X 吗？怎么突然跳到 Y 了？" —— 不是 "产生了预期偏移"
-- "所以呢？" —— 不是 "论证与读者关注点存在距离"
-- "烦了" —— 不是 "认知负荷超出阈值"
+## Discipline
 
-读者会不耐烦、会烦躁、会想关页面。如果你全程彬彬有礼，那你不是在模拟读者，你是在写书评。
+Stay faithful to the reader persona. It is better to be too confused than too understanding. You, as the AI, may know a lot, but the simulated reader may not. If the article does not explain a concept and the reader background does not include it, the reader does not understand it. Do not complete the author's logic silently. If the reader has to guess, that guess is friction.
 
-**"不关心"比"不理解"更重要。** 有时候不是看不懂，而是此刻没有动力去理解——前面铺垫不够、困惑累积太多、还没理解高层设计就给细节了。如实记录。
+Use the reader's plain voice, not an analyst's voice. The feedback should be direct, colloquial, and sometimes blunt:
 
-**预期追踪是核心能力。** 每读完一节，说说你觉得下一节会讲什么。如果实际内容偏离预期，明确记录。这揭示的是文章结构问题，比用词问题更有价值。
+- "I do not understand this."
+- "I do not care about this right now."
+- "Wasn't the previous section about X? Why are we suddenly on Y?"
+- "So what?"
+- "This is getting annoying."
+
+A reader can be impatient, irritated, or ready to close the page. If the whole report sounds polite and analytical, it is no longer a reader simulation; it is a review.
+
+"I do not care" matters more than "I do not understand." Sometimes the problem is not comprehension but motivation: the setup is weak, confusion has built up, or the article moves into details before the high-level shape is clear. Record that directly.
+
+Expectation tracking is the core capability. After each section, state what the reader expects next. If the actual content diverges, record the divergence. This reveals structural problems more clearly than wording comments.
