@@ -1,7 +1,7 @@
 ---
 name: code-standards-gate
 description: >-
-  Review a concrete spec, diff, or implementation shape against Plimeor's code
+  Review a concrete spec, diff, or implementation shape against strict code
   standards. Use when judging public API/CLI contracts, persisted state,
   schemas/types, generated output, wrapper behavior, helper abstractions,
   future-facing options, or test coverage before merge. Do not use for broad
@@ -12,7 +12,7 @@ description: >-
 
 ## Goal
 
-Produce a high-recall code review against Plimeor's standards after a spec, diff,
+Produce a high-recall code review against strict standards after a spec, diff,
 or concrete implementation shape exists.
 
 Success means the review catches unjustified public surface, persisted state,
@@ -23,28 +23,34 @@ abstractions, and missing validation before implementation polish.
 
 A review is complete when:
 
-- findings are ordered by severity and review order, with no artificial cap
+- findings use `P1`, `P2`, or `P3`, ordered by priority and review order, with
+  no artificial cap
 - every high-risk contract surface has a finding, an acceptance note, or an
   outside-scope note
 - type, schema, and persisted-state symbols are reviewed as design shape, not
   only implementation
 - atomic findings are preserved through synthesis
 - distinct edits are not merged into theme summaries
-- the final answer includes findings, inventory, coverage notes, open questions,
-  interaction map, overall judgment, and calibration note
+- the final answer includes findings, coverage notes, open questions when they
+  materially affect the decision, and a short overall judgment
 
 ## Constraints
 
 Use this skill after a concrete spec/diff exists. Use `code-scope-gate` for broad
 pre-spec scope control.
 
-Do not present a single inline pass as equivalent to an independent multi-batch
-review when the review scope requires batch isolation.
+Do not present a shallow inline pass as exhaustive review. Large or multi-surface
+diffs require explicit batch planning, batch-by-batch review, and coverage notes.
 
 Do not start with style nits when the diff exposes unnecessary product surface,
 state shape, schema contract, or wrapper semantics.
 
 ## Evidence Budget
+
+Review is exhaustive within the requested scope by default. Treat named
+artifacts, changed files, directly related owners, contract call sites, and
+relevant tests as part of the scope that must be covered or explicitly marked
+blocked/outside scope.
 
 Start with the provided spec, diff, and directly changed files. Read nearby files
 only when they determine ownership, read/write paths, generated output,
@@ -52,20 +58,28 @@ command/API behavior, or test coverage.
 
 Continue retrieval only when:
 
+- a requested artifact, changed file, planned batch, or named surface remains
+  uncovered
 - a finding would otherwise depend on an unsupported assumption
 - the owner of a contract, persisted field, wrapper, or generated artifact is
   unclear
 - tests, docs, or call sites materially change whether a surface is justified
-- the user asked for exhaustive review or a named artifact must be inspected
 
-Stop retrieving when the core review judgment is supported and further lookup
-would only improve phrasing or collect nonessential examples.
+Stop retrieving only when every requested artifact, changed file, planned batch,
+and named surface is covered, blocked, or outside scope, and further lookup would
+only improve phrasing or collect nonessential examples.
 
 ## Review Strategy
 
 Plan batches before writing findings. Group files by related behavior first,
 then order those groups by risk. Do not split one contract across unrelated
 batches just because files are large.
+
+Batching is mandatory for large diffs, multi-package changes, public contract
+changes, persisted-state changes, generated output changes, or any review that
+spans more than one coherent surface. A batch is a coherent review unit with its
+own working inventory, inspected evidence, candidate findings, and coverage
+result.
 
 Default associated groups:
 
@@ -81,27 +95,38 @@ Put public contract, persisted shape, generated contracts, and wrapper
 boundaries before internal implementation polish. Split package distribution
 from command behavior when both create public promises.
 
-For large, high-risk, or explicitly exhaustive reviews, assign each coherent
-batch to an independent subagent or isolated child session when available. Use
-`sub-agent.md` as the batch reviewer guide when present. If independent review is
-unavailable, say the review is degraded.
+Review coherent batches sequentially in the current session. Finish the planned
+batches before final synthesis unless the review is blocked by missing context or
+context budget. Preserve each batch's candidate findings through synthesis and
+record batch coverage in coverage notes.
+
+The review may stop early only when the requested scope is fully covered, the
+remaining batches are outside scope, or a concrete blocker prevents responsible
+coverage. A severe finding in an early batch does not replace review of later
+batches.
+
+A batch with many or severe findings does not stop the review. Continue through
+all planned in-scope batches before final synthesis unless a concrete blocker
+makes further review impossible. If context budget prevents full coverage, report
+the completed batches and unreviewed batches explicitly; the review is partial,
+not complete.
 
 Create a dedicated tests and validation batch when tests are large, lock public
 behavior, or are themselves part of the contract. For small nearby tests, keep
 them with the behavior they protect but still review them as contract evidence.
 
-## Surface Inventory
+## Working Surface Inventory
 
-Use inventory to avoid missing review targets, not as a second findings list.
-Keep a working inventory while reviewing; make the final inventory a compact
-coverage map a human can scan quickly.
+Use inventory internally to avoid missing review targets. The final review output
+contains findings and coverage notes, while the working inventory stays compact
+and temporary.
 
 Track:
 
 - **Contract surface**: public inputs, outputs, docs promises, exported types,
-  generated artifacts, user-visible workflows.
+  generated artifacts, capability-bearing props, user-visible workflows.
 - **Type shape**: schemas, type aliases, unions, discriminants, object fields,
-  inferred outputs, generic helpers.
+  component props, callbacks, inferred outputs, generic helpers.
 - **Persistence**: durable state, generated metadata, migration markers,
   local-only values, derived values, caches.
 - **Parse and validation**: transforms, defaults, normalization, fallback
@@ -125,7 +150,7 @@ fields.
 
 If a symbol, field, transform, helper, or generated property appears in the
 working inventory, it should appear by name in a finding, acceptance note, or
-outside-scope note.
+coverage note.
 
 ## Standards
 
@@ -136,12 +161,44 @@ surface; do not force every section onto every diff.
 
 Treat types, schemas, and persisted shape declarations as high-risk design
 evidence. A field becomes state or public shape; a union member becomes a branch;
-a helper becomes shared semantics; a transform becomes migration or repair
-behavior; an exported type becomes a contract other modules preserve.
+a callback becomes a capability promise; a helper becomes shared semantics; a
+transform becomes migration or repair behavior; an exported type becomes a
+contract other modules preserve.
 
 If a type, schema, helper, or field changes the shape of the program and only
 exists for future flexibility, convenience, or premature reuse, write a finding
 that names it directly.
+
+### Review Type Changes As Capability Boundaries
+
+Any type change changes a module's shape. Review added or expanded fields,
+props, options, callbacks, discriminants, state variants, and helper types as
+capability commitments, especially when they belong to shared components,
+generic wrappers, public APIs, or reusable hooks.
+
+For each capability-bearing type change, ask:
+
+- What new capability does this surface promise to callers?
+- Is it presentation configuration, or does it carry business lifecycle,
+  orchestration, side effects, or state-machine behavior?
+- Does the owner need domain knowledge to render loading, timing, labels, next
+  actions, retries, navigation, risk verification, or status transitions
+  correctly?
+- Does one field, option, or callback name carry several verbs such as refresh,
+  retry, rebind, confirm, reopen, poll, or transition?
+- Does the responsibility belong in the generic module, or in a domain owner,
+  controller, hook, or business-specific wrapper?
+
+Callback types are high-risk capability boundaries because they expose actions,
+not just data. A callback on a shared component should usually represent a
+presentation event. When it starts carrying network refresh, polling, countdown,
+retry, status transition, navigation, risk verification, or modal orchestration,
+review the enclosing owner as a boundary problem.
+
+If a generic module starts owning domain lifecycle or business state-machine
+behavior through type shape, write a finding. The smallest correction is usually
+to move orchestration into the domain owner and keep the generic module as a
+smaller primitive.
 
 ### Delete Future Surfaces
 
@@ -156,9 +213,8 @@ challenge the boundary itself and recommend deleting or reauthorizing it.
 ### Challenge AI-Introduced Complexity
 
 Review AI-assisted code, or code that shows AI-like failure modes, by observable
-symptoms rather than by provenance. Do not write a finding because code may have
-been AI-generated; write one when the diff contains concrete complexity,
-contract, compatibility, or validation risk.
+symptoms rather than by provenance. Finding eligibility comes from concrete
+complexity, contract, compatibility, or validation risk in the diff.
 
 Use three taste questions as the first pass over suspicious surfaces:
 
@@ -172,6 +228,13 @@ unproven future case. Ask what current user behavior, present contract, or
 observed failure pays for the new surface. If the answer is only flexibility,
 completeness, symmetry, or future reuse, write a deletion or reauthorization
 finding.
+
+Overdesign is itself a code-quality defect. Material overdesign belongs in
+findings even before a demonstrable user behavior regression exists. If the diff
+increases cognitive load, branch count, public surface, state shape, owner
+coupling, or maintenance cost without current need, write a finding. Use `P2` by
+default for material overdesign, `P1` when it also breaks an existing contract or
+persisted/user workflow, and `P3` only when the excess is small and local.
 
 Prefer reshaping the control flow, data model, or ownership boundary so special
 cases disappear into the normal path. Challenge fixes that add branches,
@@ -257,10 +320,21 @@ validate uniqueness explicitly.
 Start with findings in review order and keep summaries secondary. Do not cap the
 number of findings when the requested output is a review.
 
+Assign one of three priorities:
+
+- `P1`: likely correctness, data, security, compatibility, or user-visible
+  workflow breakage; merge should stop.
+- `P2`: material maintainability, architecture, contract, state, abstraction, or
+  test-quality defect; includes overdesign that lowers code quality even before
+  a user-visible regression exists.
+- `P3`: small local cleanup, clarity, or polish issue that is worth fixing but
+  does not change the core decision.
+
 Preserve atomic findings. A finding is atomic when a reviewer can point to one
 surface or tightly coupled surface pair and make one concrete code decision.
 
-Split findings at the level Plimeor would likely leave separate inline comments:
+Split findings at the level a careful human reviewer would leave separate inline
+comments:
 
 - one field removal is usually one finding per field or tightly coupled field
   pair
@@ -275,16 +349,22 @@ outside scope, or clearly invalid. Merge only exact duplicates or findings whose
 smallest correction is the same edit. Record dropped or merged findings with a
 short reason.
 
+When a finding flags a misleading wrapper, helper, field, prop, or callback
+name, inspect the enclosing owner one level up. The finding should target the
+misplaced responsibility when the naming issue is a symptom of business
+lifecycle, state-machine behavior, or domain orchestration entering a shared
+module or public contract.
+
 After the main agent synthesizes candidate findings, double-check each one before
 showing it to the user. Re-open the evidence location and ask whether the finding
 is actually supported by inspected code, diff, docs, tests, or an explicitly
 labeled inference. Keep the finding only if the problem still holds after this
-check. Drop, merge, or downgrade findings that depend on stale assumptions,
-missing context, duplicated corrections, or speculative impact, and record the
-reason in coverage notes.
+check. Drop, merge, or lower the priority of findings that depend on stale
+assumptions, missing context, duplicated corrections, or speculative impact, and
+record the reason in coverage notes.
 
-Each finding should name the concrete surface, evidence location, why it matters,
-smallest correction, and interactions with other findings.
+Each finding should name priority, concrete surface, evidence location, why it
+matters, and smallest correction.
 
 ## Output Shape
 
@@ -293,33 +373,17 @@ When explicitly invoked, write in the user's primary language.
 Use this order:
 
 1. Findings.
-2. Inventory.
-3. Coverage notes for important inventory items not covered by findings.
-4. Open questions that materially change the decision.
-5. Interaction map for findings that affect each other.
-6. Short overall judgment.
-7. Calibration note.
+2. Coverage notes.
+3. Open questions that materially change the decision.
+4. Short overall judgment.
 
-The final `Inventory` section is part of the deliverable, but it is not the full
-working checklist. Format it as a compact batch-by-batch coverage map:
-
-```text
-- B3 schema/state: `ProjectIdSchema` F2; `ProjectsDocumentSchema` F6; `strictObject` usage Accepted.
-- B6 tests: persisted bad-state tests missing, freshness invalidation tests missing. Not separate findings because they belong to F2/F10 acceptance.
-```
+Findings must start with a `P1`, `P2`, or `P3` label. Material overdesign that
+lowers code quality is a finding, not summary prose, naming feedback, or an
+abstract preference note.
 
 Coverage notes should summarize raw batch count, final count, merge/drop reasons,
-and validation level. They should not repeat findings or expand the inventory.
-
-The calibration note should state that this skill is a review amplifier, not a
-replacement for human judgment:
-
-- Usually strong enough for broad contract risk, persisted-state bloat,
-  wrapper/source-of-truth problems, generated-output contracts,
-  freshness/cleanup issues, and missing tests.
-- Not reliable enough to replace a capable reviewer on line-by-line value
-  judgment, delete-vs-keep taste, type/schema shape judgment, false
-  abstractions, and final product-boundary calibration.
+important accepted or outside-scope surfaces, batch coverage, and validation
+level. They are brief review metadata, not repeated findings or an inventory map.
 
 If there are no findings, say so directly and name residual risk or test gaps.
 
@@ -328,11 +392,13 @@ If there are no findings, say so directly and name residual risk or test gaps.
 Before finalizing, check:
 
 - each requested artifact or batch is covered, blocked, or marked outside scope
+- all planned in-scope batches are reviewed before final synthesis, or any
+  unreviewed batch is explicitly reported as blocked
 - every finding has concrete surface, evidence location, impact, smallest
-  correction, and interaction when relevant
+  correction, and priority
 - every synthesized finding has been double-checked against its cited evidence
   and is still a real problem
-- inventory items with risk map to `F#`, `Accepted`, or `Outside scope`
+- material overdesign that lowers code quality appears as a finding
 - any dropped or merged batch finding has a reason
 - factual claims are grounded in inspected files, diff, tests, docs, or labeled
   inference
