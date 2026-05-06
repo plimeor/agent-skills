@@ -5,7 +5,7 @@
 - `skills/` contains one directory per skill.
 - Each skill directory must contain a `SKILL.md` entrypoint.
 - The skill directory name and the `name:` field in `SKILL.md` frontmatter must match exactly.
-- `README.md` is the public index. Update it whenever a skill is added, removed, or renamed.
+- `README.md` is the public index. Each skill entry must describe the current user-visible purpose of that skill. Update it whenever a skill is added, removed, renamed, or its functional behavior changes.
 
 ## Naming Convention
 
@@ -37,8 +37,9 @@ Choose by primary mode, not by secondary capability. For example, a skill that r
 
 ## Verification
 
-After adding, removing, or renaming skills:
+After adding, removing, renaming, or changing the functional behavior of a skill:
 
 - Run `rg --files -g 'SKILL.md'`.
 - Check that each `SKILL.md` frontmatter `name:` equals its parent directory.
-- Search for stale old names and confirm any remaining hits are intentional aliases.
+- Check that `README.md` lists the current skills and describes their current user-visible purpose.
+- For renames, search for stale old names and confirm any remaining hits are intentional aliases.
