@@ -157,43 +157,38 @@ coverage note.
 Use these standards as review lenses. Apply the lenses that match the changed
 surface; do not force every section onto every diff.
 
-### Review Types As Design Shape
+### Review Type Changes As Capability Boundaries
 
-Treat types, schemas, and persisted shape declarations as high-risk design
-evidence. A field becomes state or public shape; a union member becomes a branch;
-a callback becomes a capability promise; a helper becomes shared semantics; a
-transform becomes migration or repair behavior; an exported type becomes a
-contract other modules preserve.
+Any type change changes a module's shape. Treat types, schemas, persisted shape
+declarations, component props, callbacks, helper types, and exported types as
+high-risk design evidence. A field becomes state or public shape; a union member
+becomes a branch; a callback becomes a capability promise; a helper becomes
+shared semantics; a transform becomes migration or repair behavior; an exported
+type becomes a contract other modules preserve.
 
 If a type, schema, helper, or field changes the shape of the program and only
 exists for future flexibility, convenience, or premature reuse, write a finding
 that names it directly.
 
-### Review Type Changes As Capability Boundaries
-
-Any type change changes a module's shape. Review added or expanded fields,
-props, options, callbacks, discriminants, state variants, and helper types as
-capability commitments, especially when they belong to shared components,
-generic wrappers, public APIs, or reusable hooks.
+Review added or expanded fields, props, options, callbacks, discriminants, state
+variants, and helper types as capability commitments, especially when they belong
+to shared components, generic wrappers, public APIs, or reusable hooks.
 
 For each capability-bearing type change, ask:
 
 - What new capability does this surface promise to callers?
 - Is it presentation configuration, or does it carry business lifecycle,
   orchestration, side effects, or state-machine behavior?
-- Does the owner need domain knowledge to render loading, timing, labels, next
-  actions, retries, navigation, risk verification, or status transitions
-  correctly?
-- Does one field, option, or callback name carry several verbs such as refresh,
-  retry, rebind, confirm, reopen, poll, or transition?
+- Does the owner need domain knowledge to render transient UI, choose next
+  actions, or coordinate status transitions correctly?
+- Does one field, option, or callback name carry several business verbs?
 - Does the responsibility belong in the generic module, or in a domain owner,
   controller, hook, or business-specific wrapper?
 
 Callback types are high-risk capability boundaries because they expose actions,
 not just data. A callback on a shared component should usually represent a
-presentation event. When it starts carrying network refresh, polling, countdown,
-retry, status transition, navigation, risk verification, or modal orchestration,
-review the enclosing owner as a boundary problem.
+presentation event. When it starts carrying domain lifecycle, side effects, or
+state-machine orchestration, review the enclosing owner as a boundary problem.
 
 If a generic module starts owning domain lifecycle or business state-machine
 behavior through type shape, write a finding. The smallest correction is usually
@@ -210,7 +205,7 @@ The spec is reviewable. If faithful implementation spreads a low-value mode or
 future-facing concept across docs, commands, schemas, state, tests, and paths,
 challenge the boundary itself and recommend deleting or reauthorizing it.
 
-### Challenge AI-Introduced Complexity
+### Challenge Unjustified Complexity
 
 Review AI-assisted code, or code that shows AI-like failure modes, by observable
 symptoms rather than by provenance. Finding eligibility comes from concrete
@@ -381,9 +376,15 @@ Findings must start with a `P1`, `P2`, or `P3` label. Material overdesign that
 lowers code quality is a finding, not summary prose, naming feedback, or an
 abstract preference note.
 
-Coverage notes should summarize raw batch count, final count, merge/drop reasons,
-important accepted or outside-scope surfaces, batch coverage, and validation
-level. They are brief review metadata, not repeated findings or an inventory map.
+Coverage notes are brief review metadata, not repeated findings or an inventory
+map. Include:
+
+- planned batches
+- completed batches
+- blocked or outside-scope batches
+- raw candidate finding count and final finding count
+- merge/drop reasons
+- validation level
 
 If there are no findings, say so directly and name residual risk or test gaps.
 
