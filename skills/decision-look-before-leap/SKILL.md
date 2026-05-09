@@ -1,7 +1,7 @@
 ---
 name: decision-look-before-leap
 description: >-
-  Use before answering, recommending, reviewing, deciding, or finalizing a non-trivial response when shallow reasoning, context inertia, false framing, overconfidence, or obvious-but-missed defects could distort the result. Apply a look-before-you-leap sanity check, and prefer independent subagent scrutiny when the conversation context is large or inertia risk is high.
+  Use before answering, recommending, reviewing, deciding, or finalizing a non-trivial response when shallow reasoning, context inertia, false framing, overconfidence, unfit analogy transfer, or obvious-but-missed defects could distort the result. Trigger especially before applying external evidence, familiar frameworks, or comparisons to a user's specific request. Apply a look-before-you-leap sanity check, and prefer independent subagent scrutiny when the conversation context is large or inertia risk is high.
 ---
 
 # Look Before You Leap
