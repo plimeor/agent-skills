@@ -35,6 +35,21 @@ Choose by primary mode, not by secondary capability. For example, a skill that r
 - Use absolute terms like `always`, `never`, `must`, and `only` only for true invariants: safety, irreversible actions, exact output contracts, or tool syntax.
 - Keep frontmatter `description:` focused on trigger conditions and near-miss exclusions, not marketing copy or internal rationale.
 
+## Skill Authoring Hard Gates
+
+When creating or materially updating a `SKILL.md`, extract the user's hard requirements before drafting reusable instructions. A hard requirement is any condition that changes whether the skill output is acceptable, complete, safe, or faithful to the user's stated bar.
+
+Hard requirements belong in enforceable structure, not only in prose, examples, or advisory language. Each applicable hard requirement should appear in:
+
+- A named gate section with activation condition, required evidence or fields, prohibited substitutes, and incomplete or pause behavior.
+- The output contract as required fields or required artifacts.
+- A self-review check that tests whether an agent could skip the requirement while sounding compliant.
+- Stop rules that require the relevant evidence before completion.
+
+Acceptance and quality gates should name weak substitutes that do not satisfy the gate. Missing required evidence means the generated artifact is incomplete until the evidence, waiver, or user decision is present.
+
+Before finishing a skill, run an adversarial check: `Could an agent follow this skill and skip the user's hard requirement while still sounding compliant?` A yes answer means the requirement needs a stronger gate, output field, self-review check, or stop rule.
+
 ## Verification
 
 After adding, removing, renaming, or changing the functional behavior of a skill:

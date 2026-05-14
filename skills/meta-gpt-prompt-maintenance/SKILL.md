@@ -75,6 +75,8 @@ For `SKILL.md`, keep frontmatter `description:` focused on trigger conditions, n
 
 The body should start with outcome and constraints before process. Keep references, large examples, scripts, and domain-specific details outside `SKILL.md` when progressive disclosure would reduce context load.
 
+For skills with user-stated acceptance, safety, parity, quality, or evidence invariants, promote each invariant into a hard gate. A hard gate defines when it activates, what fields or artifacts are required, which weaker substitutes are insufficient, what self-review should catch, and what evidence is required before completion.
+
 When modifying existing skills, preserve name continuity and existing aliases that still help triggering. Do not rename directories, update indexes, or sync installed skills unless the user asked for those operations.
 
 ### Eval And Grader Prompts
@@ -95,6 +97,9 @@ Before rewriting, identify which defects actually matter for the user's goal:
 - formatting instructions that make simple answers too heavy
 - no validation path for code, data, visual, or document outputs
 - no stop condition after enough evidence is collected
+- hard acceptance requirements present only in examples, middle prose, or `should` language
+- output contracts that omit evidence required by a stated acceptance, parity, safety, or quality gate
+- stop rules that allow completion without required artifacts, measurements, approvals, or explicit waivers
 - prompt content that changes the artifact's product behavior without authorization
 
 Do not force every prompt into the same template. Add sections only when they change behavior or make maintenance safer.
