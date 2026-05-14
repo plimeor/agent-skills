@@ -38,6 +38,23 @@ High-impact missing facts include:
 - required verification commands, environments, browsers, viewports, fixtures, or scores
 - credentials, external side effects, destructive operations, deployment, or persistence changes
 
+## Visual Reference Gate
+
+If the user provides a Figma URL, screenshot, mock, design frame, or asks to match a design, the Goal contract is incomplete unless it includes a first-class visual acceptance result.
+
+Default threshold: 0 unapproved visual diffs.
+
+The visual acceptance result must name:
+
+- reference source: Figma node, screenshot, or mock
+- target surface, states, and viewport matrix
+- required evidence: reference screenshot, actual screenshot, pixel diff artifact, and mask list
+- allowed masks: dynamic text/data only; never mask layout, spacing, typography, colors, borders, radius, shadows, icons, selected state, empty state, or filled state
+- review rule: any nonzero diff must be fixed or explicitly approved as an allowed difference
+- stop gate: the goal is not complete without reference / actual / diff evidence and 0 unapproved diffs
+
+Do not treat `manual smoke`, `Figma inspect`, `screenshot comparison`, `visual review`, or `looks aligned` as substitutes for pixel diff evidence unless the user explicitly waives pixel comparison.
+
 ## Output Contract
 
 When the user asks for a goal, produce this shape. Keep the `Ready Goal` self-contained enough to paste into `/goal` or a long-running task prompt.
@@ -94,6 +111,8 @@ Progress report format:
 
 For small goals, keep the same fields but collapse empty or obvious sections. Keep `Acceptance results`, `Validation loop`, and `Stop condition` explicit.
 
+When the Visual Reference Gate applies, make the visual acceptance result the first Acceptance result.
+
 ## Quantification Rules
 
 Each acceptance result should be as measurable as the domain permits.
@@ -102,60 +121,27 @@ Prefer:
 
 - `All existing tests pass with [command]` over `works correctly`.
 - `No public API signatures, exported names, event payloads, or persisted formats change` over `compatible`.
-- `Screenshot diff has 0 unapproved changed pixels after masking declared dynamic content` over `looks the same`.
 - `Score reaches at least 0.90 on [eval command]` over `improves quality`.
 - `No new console errors, type errors, lint errors, accessibility violations, or failed network requests in [scope]` over `polished`.
 
 When exact automation is unavailable, define the manual acceptance evidence: who reviews, what artifact they inspect, which rubric they apply, and what result counts as pass.
 
-## Figma And Visual Parity
+## Migration Parity Gate
 
-When the user provides a Figma design, screenshot, mock, or visual reference, treat the expected result as near-100% visual parity unless the user gives a lower bar.
+If the user asks to migrate a component, module, workflow, framework, or implementation from a source project/path into the current project, the Goal contract is incomplete unless it includes a first-class migration parity acceptance result.
 
-The Goal contract should capture:
+Adapting imports, file layout, naming, formatting, framework conventions, local helpers, and design-system primitives does not permit observable behavior changes.
 
-- source of truth: Figma selection URL, frame name, screenshot path, or design artifact
-- target surface: route, page, component, state, or viewport
-- viewport matrix: design viewport plus required mobile, tablet, and desktop sizes
-- state matrix: default, hover, focus, active, disabled, loading, empty, error, and responsive states that apply
-- property parity: layout, spacing, typography, colors, borders, radius, backgrounds, shadows, icons, assets, cropping, and z-order
-- pixel comparison: screenshot or visual-regression command, diff threshold, masks for dynamic content, and review rule for any remaining diff
-- behavior text: interactions, validation, keyboard behavior, focus order, animations, and accessibility expectations that are not obvious from the static design
+The migration acceptance result must name:
 
-Default acceptance wording:
+- source baseline and target location
+- public contract surface: exports, props, inputs, outputs, errors, events, callbacks, API payloads, persisted data, accessibility/keyboard behavior, side effects, and timing behavior that apply
+- fixture matrix: representative inputs, states, permissions, loading, empty, error, and edge cases
+- parity evidence: existing tests, authorized characterization tests, side-by-side output/DOM/API/log comparison, manual smoke evidence, screenshots, or contract checks
+- allowed differences: explicit behavior, style, dependency, or framework-adaptation differences
+- stop gate: the goal is not complete if source baseline, contract surface, fixture matrix, parity evidence, or allowed differences are missing
 
-```markdown
-Acceptance results:
-- Result: The implemented UI matches the referenced Figma frame across the required viewport and state matrix.
-  Metric: Pixel diff, property parity, and interaction parity.
-  Threshold: 0 unapproved visual diffs; any nonzero diff must be either fixed or listed as an allowed difference with reason. Layout, colors, borders, backgrounds, typography, and assets match the reference source after declared dynamic content is masked.
-  Data source / verification: [Playwright, browser screenshot comparison, Chromatic, Figma inspect, or project visual test command].
-  Scope: [routes/components], [viewports], [states].
-```
-
-## Behavior-Preserving Migrations
-
-When the user asks to migrate a component, module, framework, stack, or implementation from another project into the current project, treat behavior parity as the acceptance default. Adapting to current project style covers code organization, naming, imports, formatting, linting, framework conventions, and local helper usage; it does not expand permission to change observable behavior.
-
-The Goal contract should capture:
-
-- source implementation and target location
-- public contracts: exports, props, inputs, outputs, errors, events, callbacks, accessibility roles, keyboard flows, API shapes, persisted data, side effects, and timing behavior
-- fixture matrix: representative inputs, states, permissions, errors, loading cases, empty cases, and edge cases
-- parity checks: existing tests, characterization tests, side-by-side output comparison, DOM state, screenshots, API requests, logs, or contract tests
-- allowed differences: explicitly authorized behavior, style, dependency, or framework adaptation differences
-- rollback or fallback expectation until parity checks pass
-
-Default acceptance wording:
-
-```markdown
-Acceptance results:
-- Result: The migrated component or module preserves all observable source behavior while conforming to current project conventions.
-  Metric: Public contract parity, fixture parity, test parity, and allowed-difference review.
-  Threshold: No user-visible behavior, public API, event payload, persisted format, accessibility behavior, keyboard flow, or error/loading behavior changes except items listed under Allowed differences.
-  Data source / verification: [existing tests], [new characterization or parity tests], [manual smoke flow], [screenshot or DOM comparison], [build/lint/typecheck].
-  Scope: [source module/component], [target module/component], [fixture matrix].
-```
+When a migration also has a Figma/screenshot/design reference, both the Visual Reference Gate and Migration Parity Gate apply. Make the visual acceptance result first, then the migration parity acceptance result.
 
 ## Clarification Rules
 
@@ -165,10 +151,11 @@ Useful narrow questions:
 
 - `Which Figma frame or selection URL is the source of truth?`
 - `What viewport and state matrix must count for acceptance?`
-- `What visual diff threshold should be treated as pass, or should every diff require review?`
 - `Which source project path is the behavior baseline for this migration?`
 - `Are any behavior differences allowed, or should parity be exact?`
 - `Which command is the authoritative validation check?`
+
+Ask about visual diff threshold only if the user explicitly wants a lower bar than the default. Default is 0 unapproved diffs.
 
 If the user says to proceed without the answer, write the conservative assumption into `Required context`, `Acceptance results`, or `Allowed differences`.
 
@@ -179,7 +166,7 @@ Before returning the Goal contract, check:
 - The contract has exactly one objective.
 - Acceptance results are observable and include metric, threshold, data source, and scope where possible.
 - Non-goals and allowed differences protect the user's boundary.
-- Figma or screenshot goals include pixel, property, viewport, and state parity.
+- If a visual reference exists, could an implementation agent claim completion without reference / actual / diff artifacts? If yes, rewrite the goal.
 - Migration goals include public contract, fixture, test, and allowed-difference parity.
 - The stop condition is concrete enough for an agent to stop without asking.
 - Pause conditions cover ambiguity, missing access, external side effects, destructive changes, and failed validation requiring product judgment.
