@@ -1,10 +1,10 @@
 ---
-name: code-goal-writer
+name: code-plan
 description: >-
-  Write complete, measurable Codex Goal contracts for coding work from user intent. Use when defining, clarifying, refining, or validating goals, /goal prompts, durable coding objectives, acceptance criteria, measurable outcomes, stop conditions, validation loops, Figma or design parity, behavior-preserving migrations, refactors, debugging, implementation tasks, or long-running code agent work. Produces intent, scope, non-goals, acceptance results, verification, checkpoints, pause conditions, and stop conditions before planning or execution.
+  Write complete, measurable Codex Goal contracts for coding work from user intent. Use when defining, clarifying, refining, or validating goals, /goal prompts, durable coding objectives, acceptance criteria, measurable outcomes, stop conditions, validation loops, Figma or design parity, behavior-preserving migrations, refactors, debugging, implementation tasks, or long-running code agent work. Clarifies ambiguous user intent and goal boundaries before drafting unless the objective, scope, exclusions, acceptance bar, and stop condition are already clear. Produces intent, scope, non-goals, acceptance results, verification, checkpoints, pause conditions, and stop conditions before planning or execution.
 ---
 
-# Code Goal Writer
+# Code Plan
 
 ## Goal
 
@@ -28,7 +28,7 @@ A strong Goal contract:
 
 Start from the user's request and any artifacts they provided. Inspect local files, screenshots, Figma references, docs, issues, tests, logs, or existing plans only when they affect the goal's acceptance bar, validation loop, boundary, or stop condition.
 
-Ask one narrow question when missing information would materially change acceptance. Otherwise proceed with a conservative assumption and label it in the contract.
+Ask as many focused questions as needed when missing information would materially change acceptance. Continue the clarification loop until the goal boundary is clear enough to draft, or until the user explicitly asks you to proceed with stated assumptions. Otherwise proceed with a conservative assumption and label it in the contract.
 
 High-impact missing facts include:
 
@@ -37,6 +37,31 @@ High-impact missing facts include:
 - allowed differences from current behavior or the reference design
 - required verification commands, environments, browsers, viewports, fixtures, or scores
 - credentials, external side effects, destructive operations, deployment, or persistence changes
+
+## Goal Boundary Clarification Gate
+
+Before writing the Goal contract, decide whether the user's request is clear enough to preserve intent, boundaries, acceptance, and stopping condition.
+
+The gate applies when any of these are missing, conflicting, or broad enough to change the contract:
+
+- objective: the durable outcome the agent should achieve
+- scope: target artifacts, routes, modules, workflows, states, or repositories
+- non-goals: adjacent work, behaviors, systems, or decisions that should stay out
+- acceptance bar: observable results, thresholds, evidence, review gate, or verification command
+- stop condition: the concrete state where the agent should stop
+- authorization boundary: external side effects, destructive actions, persistence changes, deployments, credentials, or shared contract changes
+
+Required evidence before drafting:
+
+- the request text and provided artifacts have been inspected
+- each unclear boundary is either answered by the user, made explicit as a conservative assumption, or listed as a blocker
+- clarification questions are specific, answerable, and ordered by impact on the contract
+
+Ask multiple questions when multiple boundary facts are needed before drafting. Group related questions together when that is more efficient for the user, and continue with follow-up questions across turns until the objective, scope, non-goals, acceptance bar, authorization boundary, and stop condition are clear enough to write.
+
+Do not replace clarification with weak substitutes such as a broad plan, a list of possible interpretations, hidden assumptions, or "we can adjust later" language. If the user wants to proceed without answering, write the assumptions into `Clarification status`, `Scope`, `Non-goals`, `Acceptance results`, `Allowed differences`, or `Pause conditions`.
+
+The Goal contract is incomplete while required boundary facts are missing and cannot be safely assumed. In that case, return the smallest useful blocker list or the next clarification question instead of drafting the contract.
 
 ## Visual Reference Gate
 
@@ -60,6 +85,9 @@ Do not treat `manual smoke`, `Figma inspect`, `screenshot comparison`, `visual r
 When the user asks for a goal, produce this shape. Keep the `Ready Goal` self-contained enough to paste into `/goal` or a long-running task prompt.
 
 ```markdown
+Clarification status:
+- [Clear enough to draft, or blocked on specific boundary questions. Include assumptions accepted by the user or made conservatively.]
+
 Ready Goal:
 [One complete goal statement. Include the objective, boundaries, acceptance bar, validation loop, and stop condition.]
 
@@ -145,7 +173,9 @@ When a migration also has a Figma/screenshot/design reference, both the Visual R
 
 ## Clarification Rules
 
-Ask at most one question at a time. Ask only when the answer changes the goal's objective, acceptance threshold, validation method, authorization boundary, or stop condition.
+Clarify before drafting when the user's target is under-specified. The goal is not to interview by default; it is to prevent an ambiguous request from becoming a false contract.
+
+Ask all questions needed to make the contract faithful enough to execute. Keep each question narrow, but do not limit the count when the user's target remains ambiguous. Ask only when the answer changes the goal's objective, scope, non-goals, acceptance threshold, validation method, authorization boundary, or stop condition.
 
 Useful narrow questions:
 
@@ -163,9 +193,11 @@ If the user says to proceed without the answer, write the conservative assumptio
 
 Before returning the Goal contract, check:
 
+- `Clarification status` shows the goal is clear enough to draft, or names the specific unresolved blockers.
 - The contract has exactly one objective.
 - Acceptance results are observable and include metric, threshold, data source, and scope where possible.
 - Non-goals and allowed differences protect the user's boundary.
+- Could an agent skip needed clarification, assume the user's boundary, and still sound compliant? If yes, ask the next boundary question or record the assumption explicitly before drafting.
 - If a visual reference exists, could an implementation agent claim completion without reference / actual / diff artifacts? If yes, rewrite the goal.
 - Migration goals include public contract, fixture, test, and allowed-difference parity.
 - The stop condition is concrete enough for an agent to stop without asking.
@@ -173,6 +205,6 @@ Before returning the Goal contract, check:
 
 ## Stop Rules
 
-The skill is complete when the user has either an approvable Goal contract or a short list of blockers that materially prevent writing one.
+The skill is complete when the user has either an approvable Goal contract whose boundary is clear enough to execute, the next narrow clarification question, or a short list of blockers that materially prevent writing one.
 
 The next phase is a separate action: setting `/goal`, planning, coding, writing documentation, running tests, or changing files requires the user's current request or an already active execution task.
