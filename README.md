@@ -26,7 +26,7 @@ Skills are grouped by primary mode.
 
 ### Code
 
-- [code-plan](skills/code-plan/SKILL.md): Clarify ambiguous coding goals and write complete, measurable Goal contracts with intent, scope, acceptance results, validation loops, and stop conditions.
+- [code-plan](skills/code-plan/SKILL.md): Write complete coding plans with background, objective, scope, iterative research, proposed approach, ordered work, acceptance results, regression evidence, test-gap decisions, verification, risks, pause conditions, and stop conditions.
 - [code-scope-gate](skills/code-scope-gate/SKILL.md): Scope gate before coding; prevent over-implementation and converge on the smallest correct change.
 - [code-standards-gate](skills/code-standards-gate/SKILL.md): Review specs, diffs, and implementation boundaries against personal code standards, with emphasis on public contracts, persisted state, and unnecessary abstractions.
 - [code-test-strategy](skills/code-test-strategy/SKILL.md): Test-strategy gate for coding tasks; avoid test-driven production complexity, premature tests, and implementation-detail tests.

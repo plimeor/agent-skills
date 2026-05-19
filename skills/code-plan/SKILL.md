@@ -1,210 +1,217 @@
 ---
 name: code-plan
 description: >-
-  Write complete, measurable Codex Goal contracts for coding work from user intent. Use when defining, clarifying, refining, or validating goals, /goal prompts, durable coding objectives, acceptance criteria, measurable outcomes, stop conditions, validation loops, Figma or design parity, behavior-preserving migrations, refactors, debugging, implementation tasks, or long-running code agent work. Clarifies ambiguous user intent and goal boundaries before drafting unless the objective, scope, exclusions, acceptance bar, and stop condition are already clear. Produces intent, scope, non-goals, acceptance results, verification, checkpoints, pause conditions, and stop conditions before planning or execution.
+  Write complete, evidence-backed coding plans for implementation, debugging, refactoring, migrations, design parity work, and long-running agent tasks. Use when defining, clarifying, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, test-gap decisions, verification strategy, or stop condition; also use when a serious plan should move from draft to final through bounded sub-agent research. Produces one cohesive plan with background, objective, required context, proposed approach, ordered work, acceptance and regression evidence, verification, risks, checkpoints, pause conditions, and stop conditions. Near miss: use a code review skill when judging an existing diff rather than drafting or revising a plan.
 ---
 
 # Code Plan
 
 ## Goal
 
-Produce a self-contained coding Goal contract that another agent can follow across a long-running engineering task without losing the user's intent, acceptance bar, boundaries, or stopping condition.
+Produce one self-contained engineering plan that another agent can execute without losing the user's intent, context, boundaries, validation bar, implementation strategy, ordering, or stopping condition.
 
-The contract emphasizes final acceptance results over implementation approach. It names what done means in observable, measurable terms, and it keeps design, planning, and execution as separate downstream work.
+A plan is not just a Goal contract and not just a task list. It should explain why the work matters, what must be true at the end, how the work should be approached, what order to use, how to verify it, which risks to watch, and when to pause or stop.
 
-## Success Criteria
+## Hard Requirements
 
-A strong Goal contract:
+The plan is incomplete unless it includes:
 
-- States one durable objective rather than a backlog or broad project wish.
-- Preserves the user's intent in the user's terms.
-- Separates scope, non-goals, constraints, and allowed differences.
-- Converts completion into measurable acceptance results with metric, threshold, data source, and scope.
-- Names the context the agent must inspect before acting, such as files, docs, issues, Figma links, screenshots, logs, commands, or plans.
-- Defines a validation loop, checkpoint evidence, stop condition, pause conditions, and compact progress-report format.
-- Makes subjective quality bars evaluable through examples, rubrics, score thresholds, or human review gates.
+- background/problem context in the user's terms
+- one durable objective and target outcome
+- scope, non-goals, constraints, and authorization boundaries
+- required context to inspect before implementation
+- for serious or uncertain plans, a draft and delegated research loop when independent evidence can improve the final plan
+- when delegated research is used, integration of findings into concrete scope, sequence, regression evidence, risks, checkpoints, pause conditions, or stop conditions
+- a recommended approach with the main tradeoff or rationale
+- ordered work slices with dependencies or sequencing reasons when order matters
+- acceptance results that distinguish outcomes from implementation tasks
+- regression surface and regression evidence for existing behavior that must keep working
+- a user decision question for unresolved regression gaps caused by insufficient project tests
+- verification commands, artifacts, review gates, or manual evidence
+- risks, rabbit holes, assumptions, and pause conditions
+- a concrete stop condition
+
+Do not split the artifact into separate goal, spec, and plan documents unless the user asks. Keep one cohesive plan.
 
 ## Evidence Budget
 
-Start from the user's request and any artifacts they provided. Inspect local files, screenshots, Figma references, docs, issues, tests, logs, or existing plans only when they affect the goal's acceptance bar, validation loop, boundary, or stop condition.
+Start from the user's request and provided artifacts. Inspect local files, docs, issues, screenshots, Figma links, logs, tests, or existing plans only when they affect objective, scope, implementation approach, sequencing, acceptance, verification, risk, or stop conditions.
 
-Ask as many focused questions as needed when missing information would materially change acceptance. Continue the clarification loop until the goal boundary is clear enough to draft, or until the user explicitly asks you to proceed with stated assumptions. Otherwise proceed with a conservative assumption and label it in the contract.
+Ask a focused question when a missing fact would materially change the plan or authorize external side effects. Otherwise proceed with a conservative assumption and label it in the plan.
 
-High-impact missing facts include:
+High-impact missing facts include target files or surfaces, source-of-truth behavior, allowed differences, required verification commands, credentials, deployment, destructive actions, persistent config changes, and public contract changes.
 
-- the target artifact, route, component, module, repository, or file set
-- the source of truth for expected behavior or visuals
-- allowed differences from current behavior or the reference design
-- required verification commands, environments, browsers, viewports, fixtures, or scores
-- credentials, external side effects, destructive operations, deployment, or persistence changes
+Use delegated research only for independent questions whose answers can materially improve the plan. The main session remains responsible for defining the planning frame and integrating the final plan.
 
-## Goal Boundary Clarification Gate
+## Planning Clarity Gate
 
-Before writing the Goal contract, decide whether the user's request is clear enough to preserve intent, boundaries, acceptance, and stopping condition.
-
-The gate applies when any of these are missing, conflicting, or broad enough to change the contract:
-
-- objective: the durable outcome the agent should achieve
-- scope: target artifacts, routes, modules, workflows, states, or repositories
-- non-goals: adjacent work, behaviors, systems, or decisions that should stay out
-- acceptance bar: observable results, thresholds, evidence, review gate, or verification command
-- stop condition: the concrete state where the agent should stop
-- authorization boundary: external side effects, destructive actions, persistence changes, deployments, credentials, or shared contract changes
+Activate this gate when the request is too broad, conflicting, or under-specified to produce a faithful plan.
 
 Required evidence before drafting:
 
-- the request text and provided artifacts have been inspected
-- each unclear boundary is either answered by the user, made explicit as a conservative assumption, or listed as a blocker
-- clarification questions are specific, answerable, and ordered by impact on the contract
+- the request and provided artifacts were inspected
+- unclear boundaries are answered, conservatively assumed, or listed as blockers
+- questions are specific and ordered by impact on the plan
 
-Ask multiple questions when multiple boundary facts are needed before drafting. Group related questions together when that is more efficient for the user, and continue with follow-up questions across turns until the objective, scope, non-goals, acceptance bar, authorization boundary, and stop condition are clear enough to write.
+Weak substitutes do not satisfy the gate: a broad checklist, multiple unchosen interpretations, hidden assumptions, or "adjust later" language.
 
-Do not replace clarification with weak substitutes such as a broad plan, a list of possible interpretations, hidden assumptions, or "we can adjust later" language. If the user wants to proceed without answering, write the assumptions into `Clarification status`, `Scope`, `Non-goals`, `Acceptance results`, `Allowed differences`, or `Pause conditions`.
+If the user wants to proceed without answers, record the assumptions under `Clarification status`, `Scope`, `Non-goals`, `Assumptions`, `Risks`, or `Pause conditions`.
 
-The Goal contract is incomplete while required boundary facts are missing and cannot be safely assumed. In that case, return the smallest useful blocker list or the next clarification question instead of drafting the contract.
+## Plan Shape
 
-## Visual Reference Gate
+Use the shortest structure that preserves the plan's executable value. For most coding plans, use these sections in this order:
 
-If the user provides a Figma URL, screenshot, mock, design frame, or asks to match a design, the Goal contract is incomplete unless it includes a first-class visual acceptance result.
+1. `Clarification status` - clear enough, assumptions, or blockers.
+2. `Background / problem` - why this work exists and what pain or requirement it addresses.
+3. `Objective` - one durable outcome.
+4. `Scope` - included files, modules, routes, workflows, states, users, data, or environments.
+5. `Non-goals` - adjacent work and boundary changes that stay out.
+6. `Required context` - specific files, docs, tests, screenshots, issues, commands, traces, or source baselines to read first.
+7. `Planning iteration` - only when useful: draft frame, delegated research used or skipped, and findings integrated.
+8. `Proposed approach` - recommended implementation direction and why it fits the constraints.
+9. `Work sequence` - ordered slices with purpose, likely touchpoints, dependencies, and proof expected after each slice.
+10. `Acceptance, regression evidence, and verification` - observable results, preserved behaviors, thresholds, data sources, commands, artifacts, review gates, coverage gaps, and scope.
+11. `Risks and rabbit holes` - likely traps, unknowns, tradeoffs, and how to avoid or contain them.
+12. `Checkpoints` - evidence to report before moving past risky or irreversible points.
+13. `Stop condition` - concrete state where work is done and the agent should stop.
+14. `Pause conditions` - conditions requiring user input or authorization.
+15. `Progress report format` - only for long-running tasks.
 
-Default threshold: 0 unapproved visual diffs.
+For small plans, collapse obvious sections, but keep objective, scope/non-goals, approach, work sequence, regression evidence, acceptance/verification, pause conditions, and stop condition explicit.
 
-The visual acceptance result must name:
+## Section Rules
 
-- reference source: Figma node, screenshot, or mock
-- target surface, states, and viewport matrix
-- required evidence: reference screenshot, actual screenshot, pixel diff artifact, and mask list
-- allowed masks: dynamic text/data only; never mask layout, spacing, typography, colors, borders, radius, shadows, icons, selected state, empty state, or filled state
-- review rule: any nonzero diff must be fixed or explicitly approved as an allowed difference
-- stop gate: the goal is not complete without reference / actual / diff evidence and 0 unapproved diffs
+### Objective And Acceptance
 
-Do not treat `manual smoke`, `Figma inspect`, `screenshot comparison`, `visual review`, or `looks aligned` as substitutes for pixel diff evidence unless the user explicitly waives pixel comparison.
+Write one objective. Do not turn milestones, tasks, or deliverables into separate objectives.
 
-## Output Contract
-
-When the user asks for a goal, produce this shape. Keep the `Ready Goal` self-contained enough to paste into `/goal` or a long-running task prompt.
-
-```markdown
-Clarification status:
-- [Clear enough to draft, or blocked on specific boundary questions. Include assumptions accepted by the user or made conservatively.]
-
-Ready Goal:
-[One complete goal statement. Include the objective, boundaries, acceptance bar, validation loop, and stop condition.]
-
-Intent:
-- [Why the user wants this outcome, in the user's terms.]
-
-Objective:
-- [One durable objective.]
-
-Scope:
-- [Included surfaces, artifacts, states, routes, modules, or workflows.]
-
-Non-goals:
-- [Explicitly excluded work, behaviors, files, systems, or decisions.]
-
-Required context:
-- [Files, docs, links, screenshots, Figma frames, logs, tests, commands, plans, or issues to read first.]
-
-Acceptance results:
-- Result: [Observable outcome.]
-  Metric: [What is measured.]
-  Threshold: [Pass/fail boundary.]
-  Data source / verification: [Command, screenshot diff, test, API response, rendered UI, log, artifact, or human review gate.]
-  Scope: [Browsers, viewports, fixtures, states, locales, modules, or inputs.]
-
-Allowed differences:
-- [Changes explicitly permitted by the user or existing project contract.]
-
-Validation loop:
-- [Exact checks to run, when to run them, and how to react to failure.]
-
-Checkpoints:
-- [Milestones and proof required at each checkpoint.]
-
-Stop condition:
-- [Concrete state where the agent should stop because the goal is met.]
-
-Pause conditions:
-- [Conditions requiring user input, such as ambiguous product judgment, missing access, failed validation needing scope choice, destructive action, deployment, or boundary conflict.]
-
-Progress report format:
-- Current checkpoint:
-- Changes made:
-- Verification run:
-- Result:
-- Remaining work:
-- Blockers:
-```
-
-For small goals, keep the same fields but collapse empty or obvious sections. Keep `Acceptance results`, `Validation loop`, and `Stop condition` explicit.
-
-When the Visual Reference Gate applies, make the visual acceptance result the first Acceptance result.
-
-## Quantification Rules
-
-Each acceptance result should be as measurable as the domain permits.
+Acceptance results should measure what changes or becomes true, not merely which actions were performed. Each acceptance result should name the observable outcome, verification source, pass/fail threshold, and applicable scope when the domain permits.
 
 Prefer:
 
 - `All existing tests pass with [command]` over `works correctly`.
 - `No public API signatures, exported names, event payloads, or persisted formats change` over `compatible`.
-- `Score reaches at least 0.90 on [eval command]` over `improves quality`.
-- `No new console errors, type errors, lint errors, accessibility violations, or failed network requests in [scope]` over `polished`.
+- `Rendered desktop and mobile screenshots match the approved reference with 0 unapproved diffs` over `looks aligned`.
+- `Manual review by [role] passes [rubric]` over `quality is good`.
 
-When exact automation is unavailable, define the manual acceptance evidence: who reviews, what artifact they inspect, which rubric they apply, and what result counts as pass.
+When automation is unavailable, define manual evidence: reviewer, artifact, rubric, and pass condition.
 
-## Migration Parity Gate
+### Planning Iteration And Delegation Gate
 
-If the user asks to migrate a component, module, workflow, framework, or implementation from a source project/path into the current project, the Goal contract is incomplete unless it includes a first-class migration parity acceptance result.
+Treat every serious plan as an artifact that should withstand scrutiny. Do not jump from first understanding to final plan when independent research or review could materially improve correctness.
 
-Adapting imports, file layout, naming, formatting, framework conventions, local helpers, and design-system primitives does not permit observable behavior changes.
+Activate this gate when a high-quality plan needs evidence that can be researched independently before the final plan is written, such as regression surface analysis, source-of-truth behavior, migration parity, public contract risk, visual reference review, test strategy, or implementation touchpoint discovery.
 
-The migration acceptance result must name:
+Before delegating, the main session must define a compact draft planning frame: `Objective`, `Scope`, `Non-goals`, known constraints, candidate approach, suspected regression surface, and the exact questions each delegated task must answer. The draft can be incomplete, but it must contain enough context for another agent to investigate without inventing the goal.
 
-- source baseline and target location
-- public contract surface: exports, props, inputs, outputs, errors, events, callbacks, API payloads, persisted data, accessibility/keyboard behavior, side effects, and timing behavior that apply
-- fixture matrix: representative inputs, states, permissions, loading, empty, error, and edge cases
-- parity evidence: existing tests, authorized characterization tests, side-by-side output/DOM/API/log comparison, manual smoke evidence, screenshots, or contract checks
-- allowed differences: explicit behavior, style, dependency, or framework-adaptation differences
-- stop gate: the goal is not complete if source baseline, contract surface, fixture matrix, parity evidence, or allowed differences are missing
+Use sub-agents when the host permits delegation and at least one independent task can run without blocking the main session, such as:
 
-When a migration also has a Figma/screenshot/design reference, both the Visual Reference Gate and Migration Parity Gate apply. Make the visual acceptance result first, then the migration parity acceptance result.
+- inspecting regression surface and existing test coverage
+- checking public API, schema, persistence, or migration compatibility
+- reviewing visual/design parity requirements
+- researching relevant code paths, prior plans, issues, logs, or docs
+- stress-testing the draft plan for missing constraints, unsafe order, or weak verification
 
-## Clarification Rules
+When delegating, load only the sub-agent prompt file needed for that task:
 
-Clarify before drafting when the user's target is under-specified. The goal is not to interview by default; it is to prevent an ambiguous request from becoming a false contract.
+- [subagents/regression-gate.md](subagents/regression-gate.md) for regression surface, existing behavior, coverage gaps, and test strategy
+- [subagents/implementation-surface.md](subagents/implementation-surface.md) for likely touchpoints, dependencies, sequencing, and risky code paths
+- [subagents/contract-parity.md](subagents/contract-parity.md) for public API, schema, persistence, migration, visual, or behavior parity
+- [subagents/plan-critic.md](subagents/plan-critic.md) for adversarial review of a draft plan before finalization
 
-Ask all questions needed to make the contract faithful enough to execute. Keep each question narrow, but do not limit the count when the user's target remains ambiguous. Ask only when the answer changes the goal's objective, scope, non-goals, acceptance threshold, validation method, authorization boundary, or stop condition.
+Delegated work is valid only when it has a bounded question, an expected evidence format, and an integration target in the final plan. Useful outputs include regression surfaces, baseline commands, affected files, public contracts, existing test coverage, coverage gaps, risks, and recommended verification evidence.
 
-Useful narrow questions:
+Weak substitutes do not satisfy this gate: asking a sub-agent to "review the plan", delegating broad planning ownership, pasting unintegrated findings, adding ceremonial parallel tasks, treating another agent's conclusion as accepted without source evidence, or delegating work the main session can answer from already inspected context.
 
-- `Which Figma frame or selection URL is the source of truth?`
-- `What viewport and state matrix must count for acceptance?`
-- `Which source project path is the behavior baseline for this migration?`
-- `Are any behavior differences allowed, or should parity be exact?`
-- `Which command is the authoritative validation check?`
+The final plan must integrate delegated findings into the relevant sections, especially `Required context`, `Proposed approach`, `Work sequence`, `Acceptance, regression evidence, and verification`, `Risks and rabbit holes`, `Checkpoints`, `Pause conditions`, and `Stop condition`. Keep only findings that change scope, order, evidence, risk, or completion criteria.
 
-Ask about visual diff threshold only if the user explicitly wants a lower bar than the default. Default is 0 unapproved diffs.
+### Regression Evidence
 
-If the user says to proceed without the answer, write the conservative assumption into `Required context`, `Acceptance results`, or `Allowed differences`.
+Regression evidence is usually more important than proving the new code path once. A plan must identify the existing behavior, public contract, workflow, data format, visual surface, or integration boundary that the change could accidentally break.
+
+For each material work slice, define both:
+
+- forward evidence: proof that the new or changed behavior works
+- regression evidence: proof that relevant existing behavior still works
+
+Regression evidence should use the smallest existing public boundary that protects real users or callers: existing tests, typecheck, lint, build, contract tests, E2E paths, CLI output, API responses, rendered UI states, persisted data checks, characterization tests, or a manual smoke matrix.
+
+Do not satisfy regression evidence with weak substitutes such as a new-code-only test, private helper assertions, mock call counts without user-visible proof, "no obvious issues", or a successful compile when behavior risk is outside compilation.
+
+For high-risk work, plan a baseline check before edits when feasible, so pre-existing failures are distinguished from new regressions. If full regression coverage is too expensive, stale, unavailable, or already failing, name the `Regression gap`, the accepted risk, and the next best evidence.
+
+If the project does not have enough tests to cover the regression surface, finish the plan with a `Test gap decision` question. Ask whether the remaining gaps should be covered by targeted behavior test cases or end-to-end tests. For web projects, recommend end-to-end tests unless a lower-level public-boundary test clearly gives equal confidence at lower cost.
+
+Do not silently choose to add broad tests, defer the gap, or treat manual smoke as enough when the user needs to decide the coverage strategy.
+
+For complex or high-risk changes, a delegated Regression Gate analysis may identify existing behavior, public contracts, baseline checks, coverage gaps, and the smallest useful regression evidence. The final plan must still choose the accepted evidence and name unresolved gaps.
+
+### Proposed Approach
+
+Name the recommended path, not every possible path. Include alternatives only when the choice is material to risk, user authorization, or implementation cost.
+
+The approach should explain the reasoning boundary: why this is the smallest sufficient path, what it preserves, and what it intentionally leaves out.
+
+### Work Sequence
+
+The work sequence is an execution map, not a backlog dump. Each slice should have:
+
+- purpose
+- likely files, modules, surfaces, or commands involved
+- dependency on earlier slices when relevant
+- forward and regression evidence that the slice is complete
+
+Order risky discovery, characterization, or contract checks before broad edits. Put irreversible actions, external side effects, deployments, and destructive operations behind explicit pause conditions.
+
+### Risks And Rabbit Holes
+
+Call out details that could derail execution: hidden coupling, stale docs, migration parity gaps, visual mismatch, unclear product judgment, flaky tests, missing credentials, schema or API compatibility, and generated-file churn.
+
+For each meaningful risk, either state the containment plan or mark it as a pause condition.
+
+## Specialized Gates
+
+### Visual Reference Gate
+
+Activate when the user provides a Figma URL, screenshot, mock, design frame, or asks to match a visual reference.
+
+The plan is incomplete unless the first acceptance result names the reference source, target surface, states, viewport matrix, required evidence, allowed masks, and review rule.
+
+Default threshold: 0 unapproved visual diffs. Dynamic text or data may be masked; layout, spacing, typography, colors, borders, radius, shadows, icons, selected states, empty states, and filled states may not be masked unless the user explicitly approves.
+
+Weak substitutes do not satisfy this gate: `looks aligned`, `manual smoke`, `Figma inspect`, or an uncaptured screenshot comparison.
+
+### Migration Parity Gate
+
+Activate when migrating a component, module, workflow, framework, or implementation from a source project/path into a target.
+
+The plan is incomplete unless it names the source baseline, target location, public contract surface, fixture/state matrix, parity evidence, allowed differences, and stop gate.
+
+Adapting imports, file layout, naming, formatting, framework conventions, local helpers, and design-system primitives does not authorize observable behavior changes.
 
 ## Self-Review
 
-Before returning the Goal contract, check:
+Before returning the plan, check:
 
-- `Clarification status` shows the goal is clear enough to draft, or names the specific unresolved blockers.
-- The contract has exactly one objective.
-- Acceptance results are observable and include metric, threshold, data source, and scope where possible.
-- Non-goals and allowed differences protect the user's boundary.
-- Could an agent skip needed clarification, assume the user's boundary, and still sound compliant? If yes, ask the next boundary question or record the assumption explicitly before drafting.
-- If a visual reference exists, could an implementation agent claim completion without reference / actual / diff artifacts? If yes, rewrite the goal.
-- Migration goals include public contract, fixture, test, and allowed-difference parity.
-- The stop condition is concrete enough for an agent to stop without asking.
-- Pause conditions cover ambiguity, missing access, external side effects, destructive changes, and failed validation requiring product judgment.
+- Could an agent execute the plan without inventing the background, objective, boundaries, or order?
+- For serious or uncertain plans, did the main session draft enough context and use or explicitly skip useful delegated research?
+- If delegated research was used, did the main session define the objective, scope, non-goals, and exact research questions before delegation?
+- Did each delegated finding change a concrete part of the final plan: scope, sequence, regression evidence, risk, checkpoint, pause condition, or stop condition?
+- Are any delegated tasks ceremonial, broad, unbounded, or pasted without integration? If yes, remove them or rewrite them into bounded evidence questions.
+- Does the final plan remain one cohesive executable plan rather than a bundle of sub-agent notes?
+- Does the plan explain why the recommended approach fits better than obvious alternatives?
+- Are acceptance results outcomes, not task completions?
+- Does every risky slice protect existing behavior with regression evidence, not only prove the new path?
+- If project tests are insufficient, does the plan ask the user to choose targeted behavior tests or end-to-end tests, with E2E recommended for web projects?
+- Is every risky work slice tied to evidence, containment, or a pause condition?
+- Could an agent claim completion without running or reporting the stated verification? If yes, rewrite the stop condition.
+- If a hard gate applies, does the output contract require the gate's evidence rather than burying it in prose?
+- Is any section low-signal filler that should be removed or collapsed?
 
 ## Stop Rules
 
-The skill is complete when the user has either an approvable Goal contract whose boundary is clear enough to execute, the next narrow clarification question, or a short list of blockers that materially prevent writing one.
+Stop when the user has one executable plan, the required `Test gap decision` question for any unresolved regression gaps, the next narrow clarification question, or a blocker list explaining which missing facts prevent a faithful plan.
 
-The next phase is a separate action: setting `/goal`, planning, coding, writing documentation, running tests, or changing files requires the user's current request or an already active execution task.
+When delegated research is used, stop only after the final plan integrates the relevant findings and names unresolved evidence gaps, waived risks, or user decisions. Do not stop with unintegrated delegated notes unless the user explicitly asked for raw research output.
+
+The next phase is separate unless already authorized: implementation, file edits, documentation changes, test execution, commits, pushes, deployment, or external side effects require the user's current request or an active execution task.
