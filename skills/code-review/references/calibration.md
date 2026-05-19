@@ -1,16 +1,10 @@
----
-name: meta-code-standards-calibration
-description: >-
-  Evaluate `code-standards-gate` against human PR/MR review evidence or explicit conversation-history corrections. Use when the user asks to benchmark, score, validate, calibrate, or improve the review skill; compare human findings with skill findings; diagnose missed review standards; or decide whether evidence belongs in `code-standards-gate`, project rules, tooling, or should stay local. Do not use for ordinary code review; use `code-standards-gate` for reviewing code directly.
----
-
-# Code Standards Calibration
+# Code Review Calibration
 
 ## Goal
 
-Evaluate `code-standards-gate` against human review evidence and recommend the smallest durable improvement, without promoting sample-specific rules into global skill behavior.
+Evaluate `code-review` against human review evidence and recommend the smallest durable improvement, without promoting sample-specific rules into global skill behavior.
 
-This skill replaces standalone standards extraction for review evidence. Use `code-standards-gate` when the task is only to run a review.
+This resource is loaded by `code-review` only for calibration work. Use the main `code-review` workflow when the task is only to run a review.
 
 ## Success Criteria
 
@@ -22,14 +16,14 @@ A good evaluation:
 - Classifies every human finding as `matched`, `partial`, `missed`, `not-reviewable`, or `out-of-scope`.
 - Classifies every skill-only finding as `valid-extra`, `weak-extra`, `invalid-extra`, or `duplicate`.
 - Diagnoses misses by failure type.
-- Separates recommendations for `code-standards-gate`, project rules, tooling/checks, and keep-local evidence.
+- Separates recommendations for `code-review`, project rules, tooling/checks, and keep-local evidence.
 
 ## Constraints
 
 Keep all evaluation artifacts under a local workspace, for example:
 
 ```text
-code-standards-gate-workspace/
+code-review-workspace/
   <case-id>/
     human-review/
     skill-run/
@@ -37,7 +31,7 @@ code-standards-gate-workspace/
     iterations/
 ```
 
-Do not write sample-specific findings into `code-standards-gate/SKILL.md` or `code-standards-gate/sub-agent.md`. Use sample evidence only in evaluation artifacts and iteration summaries.
+Do not write sample-specific findings into `code-review/SKILL.md` or reusable `code-review` resources. Use sample evidence only in evaluation artifacts and iteration summaries.
 
 Do not paste tokens into artifacts. If evaluating hosted review evidence, use an authenticated `gh` / `glab` session or equivalent local credentials without recording secrets.
 
@@ -50,7 +44,7 @@ Every evaluation needs:
 - local project path
 - review target: GitHub PR URL, GitLab MR URL, local review evidence, or conversation evidence
 - branch/range when it is not obvious from PR/MR metadata
-- current installed skill path, usually `~/.agents/skills/code-standards-gate`
+- current installed skill path, usually `~/.agents/skills/code-review`
 - output directory for artifacts
 
 Ask one narrow question only when a missing input changes target, risk, authorization, or comparability.
@@ -244,12 +238,12 @@ Do not edit `SKILL.md` for collection, scope, or tooling misses unless the skill
 
 Use the smallest durable home:
 
-- `code-standards-gate`: reusable cross-project review standards, batching, output granularity, or subagent guidance.
+- `code-review`: reusable cross-project review standards, batching, output granularity, or subagent guidance.
 - Project rules: repo-specific recurring expectations.
 - Tooling/checks: deterministic formatting, naming, schema, or test requirements.
 - Keep local: one-off findings, weak signals, or implementation-specific lessons.
 
-Do not treat every human comment as a reason to edit `code-standards-gate`.
+Do not treat every human comment as a reason to edit `code-review`.
 
 Write `comparison/recommendations.md` with `Keep`, `Change`, `Do Not Add`, `Placement`, and `Next Eval`.
 

@@ -1,7 +1,7 @@
 ---
 name: code-plan
 description: >-
-  Write complete, evidence-backed coding plans for implementation, debugging, refactoring, migrations, design parity work, and long-running agent tasks. Use when defining, clarifying, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, test-gap decisions, verification strategy, or stop condition; also use when a serious plan should move from draft to final through bounded sub-agent research. Produces one cohesive plan with background, objective, required context, proposed approach, ordered work, acceptance and regression evidence, verification, risks, checkpoints, pause conditions, and stop conditions. Near miss: use a code review skill when judging an existing diff rather than drafting or revising a plan.
+  Write complete, evidence-backed coding plans for implementation, debugging, refactoring, migrations, design parity work, and long-running agent tasks. Use when defining, clarifying, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, test-gap decisions, verification strategy, or stop condition; also use when a serious plan should move from draft to final through bounded sub-agent research or code-review design critique. Produces one cohesive plan with background, objective, required context, proposed approach, ordered work, acceptance and regression evidence, verification, risks, checkpoints, pause conditions, and stop conditions. Near miss: use code-review when judging an existing diff, spec, or already drafted plan rather than drafting or revising a plan.
 ---
 
 # Code Plan
@@ -22,6 +22,8 @@ The plan is incomplete unless it includes:
 - required context to inspect before implementation
 - for serious or uncertain plans, a draft and delegated research loop when independent evidence can improve the final plan
 - when delegated research is used, integration of findings into concrete scope, sequence, regression evidence, risks, checkpoints, pause conditions, or stop conditions
+- for plans with material design-shape risk, a draft-to-review loop through `code-review` or an explicit reason the design review was skipped
+- when design review is used, integration of findings into the final approach rather than leaving them as a separate review appendix
 - a recommended approach with the main tradeoff or rationale
 - ordered work slices with dependencies or sequencing reasons when order matters
 - acceptance results that distinguish outcomes from implementation tasks
@@ -67,7 +69,7 @@ Use the shortest structure that preserves the plan's executable value. For most 
 4. `Scope` - included files, modules, routes, workflows, states, users, data, or environments.
 5. `Non-goals` - adjacent work and boundary changes that stay out.
 6. `Required context` - specific files, docs, tests, screenshots, issues, commands, traces, or source baselines to read first.
-7. `Planning iteration` - only when useful: draft frame, delegated research used or skipped, and findings integrated.
+7. `Planning iteration` - only when useful: draft frame, delegated research or design review used or skipped, and findings integrated.
 8. `Proposed approach` - recommended implementation direction and why it fits the constraints.
 9. `Work sequence` - ordered slices with purpose, likely touchpoints, dependencies, and proof expected after each slice.
 10. `Acceptance, regression evidence, and verification` - observable results, preserved behaviors, thresholds, data sources, commands, artifacts, review gates, coverage gaps, and scope.
@@ -112,6 +114,8 @@ Use sub-agents when the host permits delegation and at least one independent tas
 - researching relevant code paths, prior plans, issues, logs, or docs
 - stress-testing the draft plan for missing constraints, unsafe order, or weak verification
 
+Use `code-review` rather than `plan-critic` when the draft plan needs design critique: implementation approach, module boundaries, public API shape, schema or persisted-state shape, wrapper behavior, abstraction choice, error ownership, or information hiding. `plan-critic` is for executability, scope, sequencing, and verification weaknesses.
+
 When delegating, load only the sub-agent prompt file needed for that task:
 
 - [subagents/regression-gate.md](subagents/regression-gate.md) for regression surface, existing behavior, coverage gaps, and test strategy
@@ -124,6 +128,25 @@ Delegated work is valid only when it has a bounded question, an expected evidenc
 Weak substitutes do not satisfy this gate: asking a sub-agent to "review the plan", delegating broad planning ownership, pasting unintegrated findings, adding ceremonial parallel tasks, treating another agent's conclusion as accepted without source evidence, or delegating work the main session can answer from already inspected context.
 
 The final plan must integrate delegated findings into the relevant sections, especially `Required context`, `Proposed approach`, `Work sequence`, `Acceptance, regression evidence, and verification`, `Risks and rabbit holes`, `Checkpoints`, `Pause conditions`, and `Stop condition`. Keep only findings that change scope, order, evidence, risk, or completion criteria.
+
+### Design Review Gate
+
+Activate this gate when the plan chooses or changes module boundaries, shared abstractions, public APIs, CLI contracts, schemas, persisted state, wrapper semantics, generated artifacts, error handling, or cross-module ownership. Also activate it when a small-looking change could push complexity onto future callers or maintainers.
+
+Before the final plan, create a draft planning frame and run `code-review` as a design critique when the host can apply another skill. If skill chaining is unavailable, perform the same design-shape review locally and record that in `Planning iteration`.
+
+The final plan is incomplete unless it names:
+
+- the proposed design shape: module or API boundary, owner, callers, and changed contract surface
+- the complexity target: what future maintainers should not need to know after the change, and which complexity symptom the plan is avoiding: change amplification, cognitive load, or unknown-unknown risk
+- the hidden knowledge: invariants, ordering constraints, derived state, error rules, or special cases the design keeps behind the right boundary
+- the invariant and error owner: where invalid states are prevented or rejected
+- at least one plausible alternative when the design choice is material, plus why the chosen shape reduces current complexity
+- design-review findings that changed approach, scope, work sequence, acceptance evidence, risks, checkpoints, pause conditions, or stop condition
+
+Weak substitutes do not satisfy the gate: "keep it simple", style-only critique, listing alternatives without choosing, adding generic abstractions for future flexibility, calling a broad review without design questions, or leaving review findings unintegrated.
+
+If design review surfaces unresolved ownership, API, schema, persistence, or compatibility risk, the final plan must either choose the conservative no-boundary-change path, ask one user decision question, or mark a pause condition.
 
 ### Regression Evidence
 
@@ -198,6 +221,8 @@ Before returning the plan, check:
 - If delegated research was used, did the main session define the objective, scope, non-goals, and exact research questions before delegation?
 - Did each delegated finding change a concrete part of the final plan: scope, sequence, regression evidence, risk, checkpoint, pause condition, or stop condition?
 - Are any delegated tasks ceremonial, broad, unbounded, or pasted without integration? If yes, remove them or rewrite them into bounded evidence questions.
+- If the plan has design-shape risk, did `code-review` or an equivalent design critique inspect interface depth, information hiding, invariant/error ownership, and complexity pushed to callers?
+- Did design-review findings change the final plan, or does `Planning iteration` explain why no plan change was needed?
 - Does the final plan remain one cohesive executable plan rather than a bundle of sub-agent notes?
 - Does the plan explain why the recommended approach fits better than obvious alternatives?
 - Are acceptance results outcomes, not task completions?

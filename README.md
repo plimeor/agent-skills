@@ -27,8 +27,8 @@ Skills are grouped by primary mode.
 ### Code
 
 - [code-plan](skills/code-plan/SKILL.md): Write complete coding plans with background, objective, scope, iterative research, proposed approach, ordered work, acceptance results, regression evidence, test-gap decisions, verification, risks, pause conditions, and stop conditions.
+- [code-review](skills/code-review/SKILL.md): Review plan drafts, specs, diffs, and implementation shapes through focused design, contract, test, implementation-fit, and synthesis lenses.
 - [code-scope-gate](skills/code-scope-gate/SKILL.md): Scope gate before coding; prevent over-implementation and converge on the smallest correct change.
-- [code-standards-gate](skills/code-standards-gate/SKILL.md): Review specs, diffs, and implementation boundaries against personal code standards, with emphasis on public contracts, persisted state, and unnecessary abstractions.
 - [code-test-strategy](skills/code-test-strategy/SKILL.md): Test-strategy gate for coding tasks; avoid test-driven production complexity, premature tests, and implementation-detail tests.
 
 ### Decision
@@ -37,7 +37,6 @@ Skills are grouped by primary mode.
 
 ### Meta
 
-- [meta-code-standards-calibration](skills/meta-code-standards-calibration/SKILL.md): Calibrate code-standards-gate against human PR/MR reviews and decide whether rules belong in a global skill, project rules, tooling, or local context.
 - [meta-context-engineering-global](skills/meta-context-engineering-global/SKILL.md): Context engineering for global rules files, focused on rules that remain valid across tasks, projects, and sessions.
 - [meta-context-engineering-project](skills/meta-context-engineering-project/SKILL.md): Project-level context engineering for repo-local rules, task context packing, and project-specific drift diagnosis.
 - [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md): Maintain and upgrade GPT-oriented prompt artifacts, including SKILL.md, AGENTS, system/developer prompts, agent workflows, evals, and grader prompts.
