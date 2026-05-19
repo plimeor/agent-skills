@@ -35,10 +35,6 @@ Skills are grouped by primary mode.
 
 - [decision-look-before-leap](skills/decision-look-before-leap/SKILL.md): Look-before-you-leap check before answers, recommendations, or decisions; use independent subagent scrutiny when context-inertia risk is high.
 
-### Knowledge
-
-- [knowledge-project-docs-maintenance](skills/knowledge-project-docs-maintenance/SKILL.md): Maintain project docs layering, language, naming, and living-spec cleanup strategy.
-
 ### Meta
 
 - [meta-code-standards-calibration](skills/meta-code-standards-calibration/SKILL.md): Calibrate code-standards-gate against human PR/MR reviews and decide whether rules belong in a global skill, project rules, tooling, or local context.
