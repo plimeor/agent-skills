@@ -1,7 +1,7 @@
 ---
 name: code-plan
 description: >-
-  Write complete, evidence-backed coding plans for implementation, debugging, refactoring, migrations, design parity work, and long-running agent tasks. Use when defining, clarifying, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, test-gap decisions, verification strategy, or stop condition; also use when a serious plan should move from draft to final through bounded sub-agent research or code-review design critique. Produces one cohesive plan with background, objective, required context, proposed approach, ordered work, acceptance and regression evidence, verification, risks, checkpoints, pause conditions, and stop conditions. Near miss: use code-review when judging an existing diff, spec, or already drafted plan rather than drafting or revising a plan.
+  Write evidence-backed coding plans for implementation, debugging, refactoring, migrations, design parity work, and long-running agent tasks. Use when defining, clarifying, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, verification strategy, or stop condition. Near miss: use code-review when judging an existing diff, spec, or already drafted plan rather than drafting or revising a plan.
 ---
 
 # Code Plan
@@ -14,24 +14,26 @@ A plan is not just a Goal contract and not just a task list. It should explain w
 
 ## Hard Requirements
 
-The plan is incomplete unless it includes:
+Every plan is incomplete unless it includes:
 
 - background/problem context in the user's terms
 - one durable objective and target outcome
 - scope, non-goals, constraints, and authorization boundaries
 - required context to inspect before implementation
-- for serious or uncertain plans, a draft and delegated research loop when independent evidence can improve the final plan
-- when delegated research is used, integration of findings into concrete scope, sequence, regression evidence, risks, checkpoints, pause conditions, or stop conditions
-- for plans with material design-shape risk, a draft-to-review loop through `code-review` or an explicit reason the design review was skipped
-- when design review is used, integration of findings into the final approach rather than leaving them as a separate review appendix
 - a recommended approach with the main tradeoff or rationale
 - ordered work slices with dependencies or sequencing reasons when order matters
 - acceptance results that distinguish outcomes from implementation tasks
 - regression surface and regression evidence for existing behavior that must keep working
-- a user decision question for unresolved regression gaps caused by insufficient project tests
 - verification commands, artifacts, review gates, or manual evidence
 - risks, rabbit holes, assumptions, and pause conditions
 - a concrete stop condition
+
+Serious, uncertain, or design-risk plans also require:
+
+- `Planning iteration` status: independent research, delegated research, design review, local review, or explicit skip reason
+- integration of any research or review findings into concrete scope, sequence, regression evidence, risks, checkpoints, pause conditions, or stop conditions
+- for material design-shape risk, a design critique through `code-review` or an equivalent local review, plus an explicit reason if the critique was skipped
+- a user decision question for unresolved regression gaps caused by insufficient project tests
 
 Do not split the artifact into separate goal, spec, and plan documents unless the user asks. Keep one cohesive plan.
 
@@ -43,7 +45,7 @@ Ask a focused question when a missing fact would materially change the plan or a
 
 High-impact missing facts include target files or surfaces, source-of-truth behavior, allowed differences, required verification commands, credentials, deployment, destructive actions, persistent config changes, and public contract changes.
 
-Use delegated research only for independent questions whose answers can materially improve the plan. The main session remains responsible for defining the planning frame and integrating the final plan.
+Use independent research only for questions whose answers can materially improve the plan. When sub-agents might help, use `meta-subagent-orchestration` to decide whether delegation is authorized and worth the overhead. If delegation is not used, keep the research local and record the skip reason only when it affects coverage, risk, or trust.
 
 ## Planning Clarity Gate
 
@@ -69,7 +71,7 @@ Use the shortest structure that preserves the plan's executable value. For most 
 4. `Scope` - included files, modules, routes, workflows, states, users, data, or environments.
 5. `Non-goals` - adjacent work and boundary changes that stay out.
 6. `Required context` - specific files, docs, tests, screenshots, issues, commands, traces, or source baselines to read first.
-7. `Planning iteration` - only when useful: draft frame, delegated research or design review used or skipped, and findings integrated.
+7. `Planning iteration` - only when useful: draft frame, independent research, delegated research, or design review used or skipped, and findings integrated.
 8. `Proposed approach` - recommended implementation direction and why it fits the constraints.
 9. `Work sequence` - ordered slices with purpose, likely touchpoints, dependencies, and proof expected after each slice.
 10. `Acceptance, regression evidence, and verification` - observable results, preserved behaviors, thresholds, data sources, commands, artifacts, review gates, coverage gaps, and scope.
@@ -98,15 +100,15 @@ Prefer:
 
 When automation is unavailable, define manual evidence: reviewer, artifact, rubric, and pass condition.
 
-### Planning Iteration And Delegation Gate
+### Planning Iteration And Independent Evidence Gate
 
 Treat every serious plan as an artifact that should withstand scrutiny. Do not jump from first understanding to final plan when independent research or review could materially improve correctness.
 
 Activate this gate when a high-quality plan needs evidence that can be researched independently before the final plan is written, such as regression surface analysis, source-of-truth behavior, migration parity, public contract risk, visual reference review, test strategy, or implementation touchpoint discovery.
 
-Before delegating, the main session must define a compact draft planning frame: `Objective`, `Scope`, `Non-goals`, known constraints, candidate approach, suspected regression surface, and the exact questions each delegated task must answer. The draft can be incomplete, but it must contain enough context for another agent to investigate without inventing the goal.
+Before delegated or independent review, the main session must define a compact draft planning frame: `Objective`, `Scope`, `Non-goals`, known constraints, candidate approach, suspected regression surface, and the exact questions the research or review must answer. The draft can be incomplete, but it must contain enough context for another agent or local review pass to investigate without inventing the goal.
 
-Use sub-agents when the host permits delegation and at least one independent task can run without blocking the main session, such as:
+Use `meta-subagent-orchestration` before any sub-agent operation. Delegate only when that skill classifies delegation as authorized and useful. Useful independent tasks include:
 
 - inspecting regression surface and existing test coverage
 - checking public API, schema, persistence, or migration compatibility
@@ -116,16 +118,16 @@ Use sub-agents when the host permits delegation and at least one independent tas
 
 Use `code-review` rather than `plan-critic` when the draft plan needs design critique: implementation approach, module boundaries, public API shape, schema or persisted-state shape, wrapper behavior, abstraction choice, error ownership, or information hiding. `plan-critic` is for executability, scope, sequencing, and verification weaknesses.
 
-When delegating, load only the sub-agent prompt file needed for that task:
+When delegation is authorized, load only the sub-agent prompt file needed for that task:
 
 - [subagents/regression-gate.md](subagents/regression-gate.md) for regression surface, existing behavior, coverage gaps, and test strategy
 - [subagents/implementation-surface.md](subagents/implementation-surface.md) for likely touchpoints, dependencies, sequencing, and risky code paths
 - [subagents/contract-parity.md](subagents/contract-parity.md) for public API, schema, persistence, migration, visual, or behavior parity
 - [subagents/plan-critic.md](subagents/plan-critic.md) for adversarial review of a draft plan before finalization
 
-Delegated work is valid only when it has a bounded question, an expected evidence format, and an integration target in the final plan. Useful outputs include regression surfaces, baseline commands, affected files, public contracts, existing test coverage, coverage gaps, risks, and recommended verification evidence.
+Delegated or local independent work is valid only when it has a bounded question, an expected evidence format, and an integration target in the final plan. Useful outputs include regression surfaces, baseline commands, affected files, public contracts, existing test coverage, coverage gaps, risks, and recommended verification evidence.
 
-Weak substitutes do not satisfy this gate: asking a sub-agent to "review the plan", delegating broad planning ownership, pasting unintegrated findings, adding ceremonial parallel tasks, treating another agent's conclusion as accepted without source evidence, or delegating work the main session can answer from already inspected context.
+Weak substitutes do not satisfy this gate: asking a sub-agent to "review the plan", delegating broad planning ownership, bypassing `meta-subagent-orchestration`, pasting unintegrated findings, adding ceremonial parallel tasks, treating another agent's conclusion as accepted without source evidence, or delegating work the main session can answer from already inspected context.
 
 The final plan must integrate delegated findings into the relevant sections, especially `Required context`, `Proposed approach`, `Work sequence`, `Acceptance, regression evidence, and verification`, `Risks and rabbit holes`, `Checkpoints`, `Pause conditions`, and `Stop condition`. Keep only findings that change scope, order, evidence, risk, or completion criteria.
 
@@ -133,7 +135,7 @@ The final plan must integrate delegated findings into the relevant sections, esp
 
 Activate this gate when the plan chooses or changes module boundaries, shared abstractions, public APIs, CLI contracts, schemas, persisted state, wrapper semantics, generated artifacts, error handling, or cross-module ownership. Also activate it when a small-looking change could push complexity onto future callers or maintainers.
 
-Before the final plan, create a draft planning frame and run `code-review` as a design critique when the host can apply another skill. If skill chaining is unavailable, perform the same design-shape review locally and record that in `Planning iteration`.
+Before the final plan, create a draft planning frame and run `code-review` as a design critique when the host can apply another skill within the current authorization boundary. If skill chaining or delegation is unavailable, perform the same design-shape review locally and record that in `Planning iteration`.
 
 The final plan is incomplete unless it names:
 
@@ -217,8 +219,9 @@ Adapting imports, file layout, naming, formatting, framework conventions, local 
 Before returning the plan, check:
 
 - Could an agent execute the plan without inventing the background, objective, boundaries, or order?
-- For serious or uncertain plans, did the main session draft enough context and use or explicitly skip useful delegated research?
+- For serious or uncertain plans, did the main session draft enough context and use or explicitly skip useful independent research?
 - If delegated research was used, did the main session define the objective, scope, non-goals, and exact research questions before delegation?
+- If delegation was considered, did the plan rely on `meta-subagent-orchestration` for authorization and coordination?
 - Did each delegated finding change a concrete part of the final plan: scope, sequence, regression evidence, risk, checkpoint, pause condition, or stop condition?
 - Are any delegated tasks ceremonial, broad, unbounded, or pasted without integration? If yes, remove them or rewrite them into bounded evidence questions.
 - If the plan has design-shape risk, did `code-review` or an equivalent design critique inspect interface depth, information hiding, invariant/error ownership, and complexity pushed to callers?
@@ -237,6 +240,6 @@ Before returning the plan, check:
 
 Stop when the user has one executable plan, the required `Test gap decision` question for any unresolved regression gaps, the next narrow clarification question, or a blocker list explaining which missing facts prevent a faithful plan.
 
-When delegated research is used, stop only after the final plan integrates the relevant findings and names unresolved evidence gaps, waived risks, or user decisions. Do not stop with unintegrated delegated notes unless the user explicitly asked for raw research output.
+When independent or delegated research is used, stop only after the final plan integrates the relevant findings and names unresolved evidence gaps, waived risks, or user decisions. Do not stop with unintegrated notes unless the user explicitly asked for raw research output.
 
 The next phase is separate unless already authorized: implementation, file edits, documentation changes, test execution, commits, pushes, deployment, or external side effects require the user's current request or an active execution task.

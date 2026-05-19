@@ -42,7 +42,9 @@ Use this house style unless the user asks for a more serious, technical, editori
 
 Use the user's provided text, article draft, title, notes, screenshot, or conversation as the source of truth.
 
-If the user provides a URL, file, screenshot, or named article and its contents are needed, read only enough to identify the visual thesis, components, relationships, and required labels.
+If the user provides a URL and its contents are needed, use `ops-url-reader` or an explicitly authorized domain-specific/local method to retrieve the body content. Do not duplicate URL privacy or fallback rules in this skill.
+
+If the user provides a file, screenshot, or named article and its contents are needed, read only enough to identify the visual thesis, components, relationships, and required labels.
 
 Stop reading once the core visual structure and labels are clear. Do not search or elaborate just to make the scene sound richer.
 

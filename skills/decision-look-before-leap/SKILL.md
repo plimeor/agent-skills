@@ -1,7 +1,7 @@
 ---
 name: decision-look-before-leap
 description: >-
-  Use before answering, recommending, reviewing, deciding, or finalizing a non-trivial response when shallow reasoning, context inertia, false framing, overconfidence, unfit analogy transfer, or obvious-but-missed defects could distort the result. Trigger especially before applying external evidence, familiar frameworks, or comparisons to a user's specific request. Apply a look-before-you-leap sanity check, and prefer independent subagent scrutiny when the conversation context is large or inertia risk is high.
+  Use before answering, recommending, reviewing, deciding, or finalizing a non-trivial response when shallow reasoning, context inertia, false framing, overconfidence, unfit analogy transfer, or obvious-but-missed defects could distort the result. Trigger especially before applying external evidence, familiar frameworks, or comparisons to a user's specific request. Apply a look-before-you-leap sanity check and use independent scrutiny only when it is useful and authorized.
 ---
 
 # Look Before You Leap
@@ -26,7 +26,7 @@ A good look-before-you-leap pass:
 
 Use this skill for non-trivial explanations, recommendations, critiques, decisions, final answers after long work, and moments where the user asks for careful thought, skepticism, "look before you leap", sanity checking, or an answer that can withstand scrutiny.
 
-Prioritize an independent subagent when:
+Consider independent scrutiny when:
 
 - the conversation context is large, compressed, or full of previous attempts
 - the main agent has already drafted a conclusion and may be anchored to it
@@ -44,7 +44,7 @@ Use the strongest evidence needed for the answer's risk:
 2. Memory or prior thread context.
 3. Current local files, command output, logs, screenshots, or tool results.
 4. Current authoritative external sources.
-5. Independent review from a subagent or separate session.
+5. Authorized independent review from a subagent or separate session.
 
 Treat memory and prior context as clues, not proof, unless verified in the current turn. If a fact could have changed and correctness matters, refresh it from the most direct source. If refresh is impossible or out of scope, label the claim as unverified and state what would change the conclusion.
 
@@ -61,9 +61,9 @@ Before answering, run this compact pass:
 
 ## Independent Scrutiny
 
-When context is large or inertia risk is high, prefer a subagent before finalizing. Use it as an independent challenger, not as a rubber stamp.
+When context is large or inertia risk is high, prefer an independent challenger before finalizing. Use `meta-subagent-orchestration` before any sub-agent operation; if delegation is not authorized or not worth the overhead, run the same challenge locally and record the skip reason only when it affects confidence.
 
-Use `fork_context=false` when available so the subagent receives the normal system and project context plus the task packet, but not the main thread's full conversation history or draft bias. Do not describe this as a completely clean context: global instructions, project rules, workspace state, and tool definitions may still be visible.
+When an authorized sub-agent is used, use `fork_context=false` when available so the subagent receives the normal system and project context plus the task packet, but not the main thread's full conversation history or draft bias. Do not describe this as a completely clean context: global instructions, project rules, workspace state, and tool definitions may still be visible.
 
 Give the subagent only:
 
@@ -95,7 +95,7 @@ Stop when:
 - the current request is separated from stale context
 - evidence and assumptions are clear enough for the answer's risk level
 - the strongest obvious objection has been handled or disclosed
-- independent scrutiny has been used when context inertia risk is high and the environment allows it
+- independent scrutiny was used or explicitly skipped with reason when context inertia risk is high
 - the output is no larger than the request requires
 
 Do not keep searching, caveating, or spawning agents after the answer is sufficiently defensible.

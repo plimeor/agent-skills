@@ -26,9 +26,9 @@ Skills are grouped by primary mode.
 
 ### Code
 
-- [code-plan](skills/code-plan/SKILL.md): Write complete coding plans with background, objective, scope, iterative research, proposed approach, ordered work, acceptance results, regression evidence, test-gap decisions, verification, risks, pause conditions, and stop conditions.
+- [code-plan](skills/code-plan/SKILL.md): Write tiered, evidence-backed coding plans with objective, scope, proposed approach, ordered work, acceptance, regression evidence, verification, risks, pause conditions, and stop conditions.
 - [code-review](skills/code-review/SKILL.md): Review plan drafts, specs, diffs, and implementation shapes through APOSD-style complexity, contract, test, implementation-fit, and synthesis lenses.
-- [code-scope-gate](skills/code-scope-gate/SKILL.md): Scope gate before coding; prevent over-implementation and converge on the smallest correct change.
+- [code-scope-gate](skills/code-scope-gate/SKILL.md): Scope gate before coding; question requirements, delete unnecessary scope, and converge on the smallest correct change.
 - [code-test-strategy](skills/code-test-strategy/SKILL.md): Test-strategy gate for coding tasks; avoid test-driven production complexity, premature tests, and implementation-detail tests.
 
 ### Decision
@@ -40,13 +40,13 @@ Skills are grouped by primary mode.
 - [meta-context-engineering-global](skills/meta-context-engineering-global/SKILL.md): Context engineering for global rules files, focused on rules that remain valid across tasks, projects, and sessions.
 - [meta-context-engineering-project](skills/meta-context-engineering-project/SKILL.md): Project-level context engineering for repo-local rules, task context packing, and project-specific drift diagnosis.
 - [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md): Maintain and upgrade GPT-oriented prompt artifacts, including SKILL.md, AGENTS, system/developer prompts, agent workflows, evals, and grader prompts.
-- [meta-subagent-orchestration](skills/meta-subagent-orchestration/SKILL.md): Orchestrate focused sub-agents for parallel investigation, delegated implementation, and verification while keeping the main agent responsible for integration.
+- [meta-subagent-orchestration](skills/meta-subagent-orchestration/SKILL.md): Decide whether and how to use authorized sub-agents, then coordinate delegation, non-overlap, report verification, and integration.
 
 ### Ops
 
 - [ops-bear](skills/ops-bear/SKILL.md): Read, search, create, edit, organize, and open Bear notes through the local Bear App CLI.
 - [ops-codex-session-maintenance](skills/ops-codex-session-maintenance/SKILL.md): Maintain local Codex session state: inspect and back up first, then archive old sessions/worktrees, rotate logs, and generate handoffs.
-- [ops-url-reader](skills/ops-url-reader/SKILL.md): Extract main content from arbitrary URLs through defuddle.md.
+- [ops-url-reader](skills/ops-url-reader/SKILL.md): Extract main content from public URLs with centralized URL safety, defuddle.md extraction, and one authorized fallback path.
 
 ### Writing
 

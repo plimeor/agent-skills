@@ -33,7 +33,8 @@ Choose by primary mode, not by secondary capability. For example, a skill that r
 - For `SKILL.md` prompts, define the outcome, constraints, success criteria, and stop rules before adding process.
 - Prefer short decision rules over step-by-step procedure unless the order is required for correctness.
 - Use absolute terms like `always`, `never`, `must`, and `only` only for true invariants: safety, irreversible actions, exact output contracts, or tool syntax.
-- Keep frontmatter `description:` focused on trigger conditions and near-miss exclusions, not marketing copy or internal rationale.
+- Keep frontmatter `description:` focused on routing: trigger conditions, near-miss exclusions, and short alias continuity when useful.
+- Put behavior contracts, output formats, validation rules, workflow details, examples, internal rationale, and historical framing in the `SKILL.md` body or bundled resources, not in frontmatter `description:`.
 
 ## Skill Authoring Hard Gates
 

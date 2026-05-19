@@ -10,7 +10,7 @@ description: >-
 
 Act as the main reviewer and final integrator.
 
-Sub-agents or lens files collect focused evidence and candidate findings. The main reviewer owns the review boundary, batch plan, evidence quality, conflict resolution, priority, deduplication, final findings, and coverage notes.
+Lens files and authorized sub-agents collect focused evidence and candidate findings. The main reviewer owns the review boundary, batch plan, evidence quality, conflict resolution, priority, deduplication, final findings, and coverage notes.
 
 The goal is high-recall review without diluting attention. Load only the lenses needed for the reviewed surface.
 
@@ -26,7 +26,7 @@ For calibration, benchmarking, or improving this review skill against human revi
 
 ## Lens Dispatch
 
-For small single-surface reviews, run the relevant lens locally. For large, noisy, high-risk, or multi-surface reviews, dispatch focused sub-agents when the host permits delegation.
+For small single-surface reviews, run the relevant lens locally. For large, noisy, high-risk, or multi-surface reviews, use `meta-subagent-orchestration` to decide whether focused sub-agent dispatch is authorized and worth the overhead. If delegation is not authorized or not useful, batch the lenses locally and report the coverage limit when it affects confidence.
 
 Use only the lenses that match the surface:
 
@@ -38,7 +38,7 @@ Use only the lenses that match the surface:
 
 For `code-plan` draft review, use `design-shape` by default. Add `contract-surface` when the plan changes API, CLI, schema, persistence, wrappers, generated output, migration parity, or compatibility. Add `test-validation` when regression evidence or test-gap decisions are material.
 
-Do not dispatch multiple agents to "review everything." Each assignment needs a bounded surface, allowed artifacts, expected return format, and integration target.
+Do not dispatch multiple agents to "review everything." Each assignment needs a bounded surface, allowed artifacts, expected return format, and integration target. Do not redefine sub-agent authorization, packet shape, non-overlap, or report-handling rules here; those are owned by `meta-subagent-orchestration`.
 
 When dispatching `design-shape`, include [references/aposd-complexity-review.md](references/aposd-complexity-review.md), [references/review-lens-contract.md](references/review-lens-contract.md), and [references/finding-contract.md](references/finding-contract.md) with the lens prompt.
 

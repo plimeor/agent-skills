@@ -1,7 +1,7 @@
 ---
 name: meta-subagent-orchestration
 description: >-
-  Plan and coordinate explicitly authorized or host-permitted sub-agent work while preserving the main agent's context. Use when the user asks to act as an orchestrator, use parallel agents, delegate to sub-agents, keep the main context clean, avoid duplicated agent work, or coordinate multiple agent sessions. Also use when the current host policy permits delegation and a task has independent research, codebase exploration, implementation slices, background verification, or worker/explorer agents. Do not use to bypass tool policy, infer user authorization for sub-agents, or add coordination overhead to simple single-threaded tasks.
+  Decide whether and how to use authorized sub-agents, then coordinate delegated work while preserving the main agent's context. Use when the user asks for orchestration, parallel agents, delegation, background workers, context isolation, or when another skill needs delegated research, review, implementation, or verification. Owns host-policy checks, delegation packets, non-overlap, report verification, and stop rules. Do not use to bypass tool policy, infer user authorization, or add coordination overhead to simple single-threaded tasks.
 ---
 
 # Meta Subagent Orchestration
@@ -11,6 +11,8 @@ Use this skill to coordinate sub-agents without turning the main agent into a du
 The goal is not to maximize the number of sub-agents. The goal is to protect the main agent's context and attention while still completing the user's requested work. Delegate bounded work that can run independently, then integrate the returned evidence.
 
 This skill is tool-neutral. "Sub-agent" may mean a worker, explorer, background agent, forked agent, delegated session, agent thread, or any equivalent capability provided by the current coding or agent tool.
+
+This skill owns reusable sub-agent policy. Other skills may state that independent evidence, review, or verification would be useful, but they should defer authorization checks, delegation packet shape, non-overlap rules, report handling, and stop conditions to this skill.
 
 Multi-agent work has real overhead: duplicated setup context, coordination messages, report synthesis, and more failure modes. Use sub-agents when they buy one of three things:
 
@@ -24,10 +26,12 @@ If none of those apply, prefer a single agent.
 
 Follow the current host and tool policy before applying any orchestration rule in this skill.
 
+- Before any `spawn`, `message`, `resume`, or `wait` operation, classify delegation status as `explicitly authorized`, `host-authorized`, or `not authorized`.
 - If sub-agent calls require explicit user authorization, treat benefit signals as planning inputs only. Do not spawn, message, resume, or wait on sub-agents unless the user explicitly asked for sub-agents, delegation, parallel agents, or equivalent agent work.
 - If the host permits autonomous delegation, use the use/not-use rules below to decide whether delegation is worth the coordination cost.
 - Do not create external infrastructure, durable state, issue trackers, queues, files, commits, branches, or other side effects for coordination unless the user authorized that surface or the artifact already exists inside the requested work.
 - If delegation would change the authorization boundary, ask one narrow question or keep the work local.
+- If delegation is not authorized or not worth the overhead, record the skip reason in the final output only when that reason affects user trust, coverage, or verification.
 
 ## Core Principle
 
@@ -57,6 +61,7 @@ The main agent may verify returned work, but verification starts after the relev
 Use this skill to decide whether to delegate, and to coordinate delegation only when the current host policy permits it. Delegation is worth considering when at least one of these is true:
 
 - The user explicitly asks for sub-agents, parallel agents, orchestration, delegation, background workers, or context isolation.
+- Another active skill requires an authorization-aware decision about independent research, review, implementation, or verification.
 - The task naturally decomposes into independent research, analysis, review, or implementation slices.
 - A subtask may produce large logs, search results, file reads, or exploratory context that should not pollute the main conversation.
 - Multiple files, modules, systems, sources, or hypotheses can be investigated in parallel.
@@ -378,6 +383,7 @@ When this skill triggers, keep the visible orchestration note short unless the u
 
 ```markdown
 Orchestration:
+- Delegation status: [explicitly authorized / host-authorized / not authorized, with brief reason]
 - Main thread: [critical-path work kept local]
 - Delegated: [sub-agent tasks and ownership]
 - Non-overlap: [what the main agent will not duplicate while agents run]

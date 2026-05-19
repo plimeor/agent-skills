@@ -1,7 +1,7 @@
 ---
 name: code-scope-gate
 description: >-
-  Scope gate for coding, debugging, refactoring, automation, implementation planning, requirement design, and code review when the task may grow beyond the requested outcome. Use it to separate the actual request from candidate solutions, delete unnecessary scope, avoid unauthorized boundary changes, and choose the smallest sufficient path before work proceeds. Show a visible gate when the user asks for minimal scope or when scope risk affects the plan; otherwise apply it silently. Formerly framed around the first three steps of the Musk five-step method.
+  Scope gate for coding, debugging, refactoring, automation, implementation planning, requirement design, and code review when the task may grow beyond the requested outcome. Use it to separate the actual request from candidate solutions, delete unnecessary scope, avoid unauthorized boundary changes, and choose the smallest sufficient path before work proceeds. Show a visible gate when the user asks for minimal scope or when scope risk affects the plan; otherwise apply it silently.
 ---
 
 # Code Scope Gate
@@ -24,7 +24,7 @@ A good scope gate:
 
 ## Constraints
 
-This skill implements only the first three steps of the Musk-style five-step algorithm:
+This skill implements only a question-delete-simplify pass:
 
 1. Question requirements.
 2. Delete unnecessary parts, process steps, and scope.
