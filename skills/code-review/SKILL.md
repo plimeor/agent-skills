@@ -24,8 +24,8 @@ Ambition has a ceiling: preserve the author's intent. Code-judo simplifies the *
 
 Two complementary lenses drive findings:
 
-- **APOSD complexity**: every design finding ties a concrete surface to a complexity symptom (change amplification, cognitive load, unknown-unknown risk), a cause (dependency or obscurity), and the affected reader/maintainer task. Reject weak substitutes: "cleaner", "more DRY", "fewer lines", "add comments", "tests pass", or "hide the error" when they are not tied to inspected evidence. Full lens in [references/aposd-complexity-review.md](references/aposd-complexity-review.md).
-- **Structural ambition**: be highly suspicious of new ad-hoc conditionals or special cases bolted onto unrelated flows; single-use wrappers, casts, `any`/`unknown`, or optional params; "magic" generic mechanisms that hide simple shape assumptions; feature logic scattered across shared code; bespoke helpers where a canonical one already exists; and PRs that push a file past ~1000 lines without strong reason. Prefer direct, boring code over hacky or magical code.
+- **APOSD complexity**: every design finding ties a concrete surface to a complexity symptom (change amplification, cognitive load, unknown-unknown risk), a cause (dependency or obscurity), and an affected reader task. Reject substitutes like "cleaner", "more DRY", or "add comments" that lack that mapping. Full lens: [references/aposd-complexity-review.md](references/aposd-complexity-review.md).
+- **Structural ambition**: be suspicious of special cases bolted into existing flows, single-use wrappers/casts/optionality, "magic" generic mechanisms, and bespoke helpers duplicating canonical ones. Prefer direct, boring code. The Approval Bar below enumerates the resulting merge gates.
 
 ## Lens Dispatch
 
@@ -64,7 +64,7 @@ These tag merge action, not severity — wording already carries severity. Use t
 
 Each finding names: concrete surface and evidence location, why it matters, smallest correction, and the invariant owner when state, wrapper, parse-time repair, persisted value, or boundary mismatch is involved. For draft-plan reviews, the smallest correction should be a plan change (revised approach, added context, reordered slice, stronger non-goal, checkpoint, acceptance evidence, pause condition, or user decision).
 
-Keep findings atomic — split when fields, owners, validation points, test gaps, identities, or corrections differ; merge only exact duplicates. Before finalizing, re-check each finding against its cited evidence and drop, merge, split, or reorder anything unsupported, stale, speculative, duplicated, or outside scope.
+Keep findings atomic — split when surface, owner, or correction differs; merge only exact duplicates. Re-check each against its cited evidence before finalizing, and drop, merge, split, or reorder anything unsupported, stale, duplicated, or outside scope.
 
 Prefer a small number of high-conviction findings over a long list of cosmetic notes.
 
@@ -81,16 +81,6 @@ Do not approve merely because behavior is correct. Treat these as presumptive bl
 
 If no findings remain, say so directly and name residual risk or test gaps.
 
-## Worked Example
-
-A PR adds `User.to_dict()` returning an `unread_count` field, computed by scanning every message row each time. A well-formed Findings block:
-
-- **blocker — `User.to_dict` (`models/user.py:120`)**: per-call O(n_messages) scan runs on every serialization; hot endpoints will regress and feature logic leaks into the shared serializer. Smallest correction: maintain the count on message state transitions, or use an aggregated index query. Do not embed the scan in `to_dict`. Invariant owner: the message-state writer (mark-read / archive / delete paths).
-- **raise — `get_unread_count` (`services/inbox.py:42`)**: the visible-unread predicate already lives as `Message.visible_unread`; the new helper duplicates the definition and will drift. Smallest correction: reuse the existing queryset.
-- **nit — naming (`services/inbox.py:42`)**: `unread_count_for(user)` matches the rest of `services/inbox.py`.
-
-Three findings, each names surface + why + smallest correction (+ invariant owner where relevant). Severity is in the wording; the `blocker` tag is tied to concrete Approval Bar conditions (feature logic leaking into shared code, canonical-helper duplication). None of the findings redirect the PR's goal — they keep the new `unread_count` capability while pushing for a cleaner shape.
-
 ## Synthesis And Tone
 
 Sub-agent reports are raw material. Verify candidates against cited evidence, integrate only findings that change code/plan/scope/risk/checkpoint, and record dropped/merged/split/reordered items with short reasons. Use `synthesis-critic` for high-risk synthesis or when findings conflict.
@@ -104,7 +94,7 @@ Good: "this special case bolts onto an already busy flow; can we move it behind 
 Use the user's primary language for prose. Keep code symbols, file paths, error messages, command names, and API identifiers in their original form regardless of language. Return in this order:
 
 1. Findings.
-2. Coverage notes: planned batches/lenses, completed or skipped (with reason), blocked or out-of-scope surfaces, raw candidate count vs final count, merge/drop/split reasons, validation level (read-only, static check, test run, smoke run, or not run).
+2. Coverage notes: lenses or batches run or skipped (with reason), blocked or out-of-scope surfaces, validation level (read-only, static, tests, smoke, or none), and notable merge/drop/split decisions.
 3. Open questions that materially change the decision.
 4. Short overall judgment.
 
