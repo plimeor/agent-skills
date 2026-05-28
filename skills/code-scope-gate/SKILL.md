@@ -1,165 +1,54 @@
 ---
 name: code-scope-gate
 description: >-
-  Cross-workflow scope triage for coding, debugging, refactoring, automation, implementation planning, requirement design, and code review when work may grow beyond the requested outcome. Use it before planning, implementation, debugging, review, or automation to separate the actual request from candidate solutions, delete unnecessary scope, classify boundary changes, and choose the next authorized action. Not a full planning skill; use code-plan when the requested output is a complete executable plan. Show a visible gate when the user asks for minimal scope or when scope risk affects the next action; otherwise apply it silently.
+  Pre-work scope triage for coding, debugging, refactoring, automation, planning, and review. Separate the actual request from candidate implementations, delete unrequested surface, classify boundary changes, choose the next narrow action. Use silently for low-risk work; show a visible gate when the user asks for minimal scope or scope risk affects the next action. Use code-plan for full executable plans, code-review for diff/spec critique.
 ---
 
 # Code Scope Gate
 
-## Goal
+## Stance
 
-Keep coding work from expanding beyond the user's authorized outcome.
+Hunt unrequested scope. Read the request adversarially: separate the *outcome* the user needs from any *candidate implementation* they handed you. Default to deleting, deferring, reusing, or doing nothing before adding files, abstractions, or process.
 
-Use this skill as a small pre-work triage before requirements design, planning, code work, debugging, refactoring, automation, or review when scope risk could change the result. It can feed `code-plan`, `code-review`, or `code-test-strategy`, but it does not replace those skills.
+Ceiling: question → delete → simplify. Stop there. Hand off to `code-plan` for full plans, `code-review` for diff critique, `code-test-strategy` for coverage decisions.
 
-## Success Criteria
+## The Three Moves
 
-A good scope gate:
+1. **Question** — name the actual outcome and its evidence; mark which items are requirements vs candidate implementations; name what must stay unchanged. Untethered requirements get downgraded or dropped. Ask one narrow question only if a missing fact would change the path.
+2. **Delete** — cut features not requested, hypothetical-future options, single-use abstractions, new deps/config/persistence/CI, adjacent refactors, and any public-behavior / API / schema / security / deployment / cross-module change without authorization. Keep an item only if removing it harms correctness, maintainability, or verification.
+3. **Simplify** — for what survived: smallest coherent file set, existing patterns and boundaries, boring direct code. Add abstraction only when it removes real duplication *now*.
 
-- Separates the actual requested outcome from candidate implementations.
-- Names explicit constraints, inferred assumptions, and the Definition of Done.
-- Deletes, defers, reuses, or avoids at least one unnecessary surface when scope risk exists.
-- Chooses the smallest coherent path that still satisfies correctness, maintainability, and verification.
-- Classifies boundary changes as avoided, authorized, or blocked pending user confirmation.
-- Returns one narrow next action: proceed locally, hand off to a more specific skill, ask one question, or stop for authorization.
+## Boundary Rule
 
-## Constraints
+Public behavior, shared contracts, APIs, schemas, persistence, security, deployment, cross-module ownership = **Boundary Change**. Unauthorized → offer the best local alternative; if none exists, stop and ask.
 
-This skill implements only a question-delete-simplify pass:
+## When To Show The Gate
 
-1. Question requirements.
-2. Delete unnecessary parts, process steps, and scope.
-3. Simplify or optimize only what still needs to exist.
+Visible when: user asks for minimal scope; request mixes outcome with implementation; work could add surface (features, deps, persistence, schemas, workflows, APIs); a boundary change looks necessary or tempting.
 
-Stop there. Do not move into acceleration or automation unless the user explicitly asks for it or the current task already requires it.
+Silent for: low-risk obvious work, typo fixes, single requested commands, authorized large rewrites, emergencies.
 
-Do not expand this skill into a complete implementation plan, design review, or test strategy. Use `code-plan` for complete executable plans, `code-review` for concrete plan/spec/diff critique, and `code-test-strategy` for test coverage decisions.
-
-Treat changes to public behavior, shared contracts, APIs, schemas, persistence, security posture, deployment, or cross-module ownership as `Boundary Change`. If a boundary change is not authorized, provide the best local alternative. If no local alternative can satisfy the request, stop and ask for confirmation.
-
-## Trigger And Visibility
-
-Use the reasoning whenever the request involves requirement design, PRD shaping, implementation planning, coding, debugging, refactoring, scripting, automation, or review and the work could expand beyond the requested outcome.
-
-Use `code-plan` instead when the user's requested artifact is a full coding plan. In that case, apply the scope triage logic through `code-plan`'s scope gate and write the result into the plan's `Scope`, `Non-goals`, `Proposed approach`, and `Pause conditions`.
-
-Show a visible `Scope Gate` when:
-
-- The user explicitly asks for minimal scope, minimal code, a scope gate, simplicity, or avoidance of overengineering.
-- The request mixes a desired outcome with a proposed implementation and the distinction affects the plan.
-- The work may add features, roles, states, screens, fields, abstractions, dependencies, configuration, persistence, schemas, workflows, APIs, or cross-module behavior.
-- A boundary change appears necessary or tempting.
-
-Apply the reasoning silently for ordinary low-risk work where the correct scope is clear. Skip a visible gate for typo fixes, wording tweaks, a single requested command, fully authorized large rewrites, or emergencies where immediate containment matters more than up-front design.
-
-## Evidence Budget
-
-Start with the user's request, specified files, failure output, nearby code, and existing project constraints.
-
-Continue reading or searching only when a missing fact would change:
-
-- the Definition of Done
-- whether a boundary change is authorized
-- ownership of the requirement
-- runtime behavior or user-visible behavior
-- schema, API, persistence, deployment, or security impact
-- the verification needed to trust the result
-
-Stop retrieval once you can state the actual request, the unnecessary scope to delete or defer, the boundary status, and concrete verification. Do not continue looking for phrasing, generic examples, or nonessential background.
-
-## Scope Decision
-
-### Question
-
-Recover the actual request before improving the proposed solution.
-
-Ask:
-
-- What outcome does the user need?
-- What evidence supports the need: user statement, bug report, failing test, runtime behavior, product requirement, customer workflow, or existing code contract?
-- Which constraints are explicit?
-- Which assumptions are invented?
-- Which items are requirements, and which are candidate implementations?
-- Who owns the requirement or can answer for it?
-- What must remain unchanged?
-
-If a requirement cannot be tied to a concrete outcome, downgrade it to a candidate or remove it from the current scope. If missing information would materially change the result, ask one narrow question before continuing. If it does not change the main path, proceed with a conservative assumption and state it briefly.
-
-### Delete
-
-Before adding features, files, abstractions, process, or code, identify what can be removed, avoided, reused, delayed, or left unchanged.
-
-Default cuts:
-
-- Features not requested by the user.
-- Requirements that do not map to the actual outcome.
-- Options, fields, states, screens, flows, or roles that only serve hypothetical future cases.
-- Single-use abstractions.
-- New dependencies, configuration, persistence, schemas, scripts, CI jobs, or automation not required for the current Definition of Done.
-- Refactors of adjacent code.
-- Public behavior, API, data-model, security, deployment, or cross-module boundary changes without explicit authorization.
-
-Prefer no-op, documentation, existing behavior, a local fix, or reuse of an existing path when any of them satisfies the actual request. Keep an item only when deleting it would harm correctness, maintainability, or verification, and state why.
-
-### Simplify
-
-Only simplify work that survived deletion.
-
-For requirement or plan design, reduce the deliverable to one clear goal, keep only necessary constraints, state non-goals explicitly, define checkable completion criteria, and move unvalidated expansions to `Optional` or `Future`.
-
-For code work, use existing patterns, helpers, APIs, and boundaries; change the smallest coherent file set; prefer boring direct code over generic infrastructure; and add an abstraction only when it removes real duplication or reduces real complexity now.
+When `code-plan` owns the artifact, write the gate result into its `Scope` / `Non-goals` / `Proposed approach` / `Pause conditions` instead of emitting a separate gate.
 
 ## Output
-
-When the user explicitly invokes this skill, or when the task has clear scope risk, start with a compact gate:
 
 ```markdown
 ## Scope Gate
 
-Actual request:
-- [The real outcome to deliver]
-
-Requirement check:
-- [Confirmed facts, assumptions, and candidate solutions]
-
-Deletes:
-- [What is removed, deferred, reused, or kept out of scope]
-
-Smallest sufficient path:
-- [The smallest next action, handoff, plan path, or implementation path that still satisfies the request]
-
-Boundary:
-- [No boundary change / Authorized boundary change / Unauthorized boundary change with local alternative]
-
-Verification:
-- [Concrete checks or evidence needed to trust the result]
-
-Next action:
-- [Proceed / Hand off to code-plan, code-review, or code-test-strategy / Ask one question / Stop for authorization]
+Actual request: [the real outcome]
+Deletes: [what's cut, deferred, reused, or left out]
+Smallest sufficient path: [smallest next action that satisfies the request]
+Boundary: [none / authorized / unauthorized — local alternative or pause]
+Verification: [concrete checks needed to trust the result]
+Next: [proceed / hand off to code-plan|code-review|code-test-strategy / ask one question / stop]
 ```
 
-After the gate, continue only if the next step is within scope and authorized. For code work, implement the smallest sufficient path and verify it. For full planning, hand the gate result into `code-plan` instead of expanding this skill into a full plan. For review, report scope creep, unnecessary abstractions, or unauthorized boundary changes before style nits.
+After the gate, act only within scope. Don't slide into acceleration, automation, platform work, or adjacent refactors without explicit authorization.
 
-## Common Rationalizations
+## Common Traps
 
-| Rationalization | Reality |
-|---|---|
-| "This will be useful later." | Future usefulness is not current scope. Put it in `Future` unless required now. |
-| "It's cleaner if we make it generic." | Generic code is only cleaner when the extra abstraction pays rent immediately. |
-| "While I'm here, I can refactor this." | Adjacent cleanup is a separate change unless necessary for the request. |
-| "Automation will save time." | Automating the wrong or unnecessary process preserves waste. Delete and simplify first. |
-| "The requirement came from someone senior." | Seniority is not evidence. The requirement still needs an owner, rationale, and success criteria. |
-| "This is too small for a gate." | Then the gate should be tiny or silent, not skipped when scope risk exists. |
-
-## Stop Rules
-
-Stop the gate when the actual request, Definition of Done, deletion choices, smallest sufficient path or handoff, boundary status, and verification are clear enough to act.
-
-Do not keep expanding the plan after that point. Do not continue into acceleration, automation, platform work, adjacent refactors, or future options unless the user explicitly authorizes that larger boundary.
-
-Before treating the gate as complete, confirm:
-
-- Requirements are separated from candidate implementations.
-- At least one deletion, reuse, no-op, or deferral option was considered when scope risk exists.
-- Boundary changes are avoided, authorized, or blocked pending confirmation.
-- Verification is proportional to risk and names concrete checks, such as targeted tests, type checks, lint, build, smoke checks, requirement-to-step trace, or file/line review evidence.
+- "Useful later" → `Future`, not now.
+- "Cleaner if generic" → only when the abstraction pays rent immediately.
+- "While I'm here" → adjacent cleanup is a separate change.
+- "Senior asked for it" → seniority isn't evidence; still needs owner and rationale.
+- "Too small for a gate" → then the gate is tiny, not skipped.
