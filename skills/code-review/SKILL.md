@@ -12,9 +12,15 @@ Act as the main reviewer. Sub-agents and lenses gather candidate findings; the m
 
 Use this skill once there is a concrete draft plan, spec, diff, or implementation. Do not use it to create the plan from scratch — use `code-plan` for that. For calibration against human review evidence, load [references/calibration.md](references/calibration.md) and follow that workflow instead.
 
+Before reviewing, scan for project-local conventions (`AGENTS.md`, `CONTRIBUTING.md`, `.cursorrules`, repo-root style guides, ADRs) and treat them as hard constraints that override this skill's defaults when they conflict.
+
+For docs-only, config-only, generated-code-only, or pure i18n PRs, narrow to that surface or decline the review explicitly — do not hunt for code-judo opportunities in code that was not touched.
+
 ## Review Stance
 
 Be ambitious about structure. Do not stop at "this could be a bit cleaner". Actively look for a *code-judo* move: a restructuring that preserves behavior while deleting whole branches, helpers, modes, layers, or special cases — not merely rearranging them. Prefer the version that makes the change feel inevitable in hindsight. If working code leaves the codebase messier, say so clearly; do not rubber-stamp "it works".
+
+Ambition has a ceiling: preserve the author's intent. Code-judo simplifies the *same* change; it does not redirect the PR. If the cleanest path requires changing the goal, expanding the diff scope, or splitting the work across PRs, raise that as a finding — do not silently rewrite scope.
 
 Two complementary lenses drive findings:
 
@@ -23,7 +29,7 @@ Two complementary lenses drive findings:
 
 ## Lens Dispatch
 
-For small single-surface reviews, run the relevant lens inline. For large, noisy, high-risk, or multi-surface reviews, use `meta-subagent-orchestration` to decide whether sub-agent dispatch is worth the overhead. If not delegating, batch lenses locally and report the coverage limit when it affects confidence.
+For small single-surface reviews, run the relevant lens inline. Rough trigger to consider sub-agent dispatch: ≥4 files touched, OR a public API/CLI/schema/migration/persisted-state change, OR multiple high-risk surfaces in one diff. When the trigger fires, use `meta-subagent-orchestration` to decide whether dispatch is worth the overhead; if not delegating, batch lenses locally and report the coverage limit when it affects confidence.
 
 - [subagents/design-shape.md](subagents/design-shape.md): design, modules, abstractions, error models, APOSD-style complexity.
 - [subagents/contract-surface.md](subagents/contract-surface.md): public API/CLI, schemas, persisted state, generated artifacts, wrappers, migrations, compatibility.
@@ -48,7 +54,13 @@ Do not lead with style nits when structural, contract, or state risk exists.
 
 ## Findings
 
-List findings in severity-descending order. Use the **Priority Order** above as the categorical sort; within a category, let the wording — "merge should not proceed", "consider", and so on — carry the weight. Call out merge blockers explicitly and tie them to the Approval Bar below.
+List findings in severity-descending order. Use the **Priority Order** above as the categorical sort. Tag each finding with its expected action:
+
+- **blocker**: matches an Approval Bar condition; merge should not proceed until addressed or justified.
+- **raise**: real issue worth fixing, acceptable as a follow-up; not a merge gate on its own.
+- **nit**: small polish, take or leave.
+
+These tag merge action, not severity — wording already carries severity. Use the tags honestly: over-blocking erodes trust; under-blocking is dishonest.
 
 Each finding names: concrete surface and evidence location, why it matters, smallest correction, and the invariant owner when state, wrapper, parse-time repair, persisted value, or boundary mismatch is involved. For draft-plan reviews, the smallest correction should be a plan change (revised approach, added context, reordered slice, stronger non-goal, checkpoint, acceptance evidence, pause condition, or user decision).
 
@@ -69,15 +81,27 @@ Do not approve merely because behavior is correct. Treat these as presumptive bl
 
 If no findings remain, say so directly and name residual risk or test gaps.
 
+## Worked Example
+
+A PR adds `User.to_dict()` returning an `unread_count` field, computed by scanning every message row each time. A well-formed Findings block:
+
+- **blocker — `User.to_dict` (`models/user.py:120`)**: per-call O(n_messages) scan runs on every serialization; hot endpoints will regress and feature logic leaks into the shared serializer. Smallest correction: maintain the count on message state transitions, or use an aggregated index query. Do not embed the scan in `to_dict`. Invariant owner: the message-state writer (mark-read / archive / delete paths).
+- **raise — `get_unread_count` (`services/inbox.py:42`)**: the visible-unread predicate already lives as `Message.visible_unread`; the new helper duplicates the definition and will drift. Smallest correction: reuse the existing queryset.
+- **nit — naming (`services/inbox.py:42`)**: `unread_count_for(user)` matches the rest of `services/inbox.py`.
+
+Three findings, each names surface + why + smallest correction (+ invariant owner where relevant). Severity is in the wording; the `blocker` tag is tied to concrete Approval Bar conditions (feature logic leaking into shared code, canonical-helper duplication). None of the findings redirect the PR's goal — they keep the new `unread_count` capability while pushing for a cleaner shape.
+
 ## Synthesis And Tone
 
-Sub-agent reports are raw material. Verify candidates against cited evidence, integrate only findings that change code/plan/scope/risk/checkpoint, and record dropped/merged/split/repriortized items with short reasons. Use `synthesis-critic` for high-risk synthesis or when findings conflict.
+Sub-agent reports are raw material. Verify candidates against cited evidence, integrate only findings that change code/plan/scope/risk/checkpoint, and record dropped/merged/split/reordered items with short reasons. Use `synthesis-critic` for high-risk synthesis or when findings conflict.
 
-Be direct, serious, and demanding about quality. Not rude. Do not soften major maintainability issues into mild suggestions.
+Be direct, serious, and demanding about quality. Not rude. Do not soften major maintainability issues into mild suggestions, and do not dress up small smells as serious problems.
+
+Good: "this special case bolts onto an already busy flow; can we move it behind its own abstraction?" Bad: "this is sloppy", or "this could maybe be a bit cleaner."
 
 ## Output
 
-Use the user's primary language. Return in this order:
+Use the user's primary language for prose. Keep code symbols, file paths, error messages, command names, and API identifiers in their original form regardless of language. Return in this order:
 
 1. Findings.
 2. Coverage notes: planned batches/lenses, completed or skipped (with reason), blocked or out-of-scope surfaces, raw candidate count vs final count, merge/drop/split reasons, validation level (read-only, static check, test run, smoke run, or not run).
@@ -86,6 +110,6 @@ Use the user's primary language. Return in this order:
 
 ## Stop Rules
 
-Stop when every requested artifact, planned batch, and named surface is covered, blocked, or out of scope; findings are evidence-backed, atomic, prioritized, and actionable; sub-agent outputs are integrated, challenged, or dropped with reason; factual claims are grounded in inspected files/diff/tests/docs or labeled inference; validation level is stated.
+Stop when every requested artifact, planned batch, and named surface is covered, blocked, or out of scope; findings are evidence-backed, atomic, ordered, and actionable; sub-agent outputs are integrated, challenged, or dropped with reason; factual claims are grounded in inspected files/diff/tests/docs or labeled inference; validation level is stated.
 
 Do not continue into implementation, edits, tests, commits, pushes, or deployment without separate user authorization.
