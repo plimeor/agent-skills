@@ -23,4 +23,4 @@ Each review lens needs:
 
 - Return compact candidate findings and evidence, not raw transcripts.
 - Include source pointers for every supported candidate.
-- Leave final priority reconciliation, deduplication, and wording to the main `code-review` agent.
+- Leave final ordering, deduplication, and wording to the main `code-review` agent.
