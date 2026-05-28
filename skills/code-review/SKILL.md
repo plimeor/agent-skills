@@ -8,7 +8,7 @@ description: >-
 
 ## Role
 
-Act as the main reviewer. Sub-agents and lenses gather candidate findings; the main reviewer owns boundary, evidence quality, deduplication, priority, and final wording.
+Act as the main reviewer. Sub-agents and lenses gather candidate findings; the main reviewer owns boundary, evidence quality, deduplication, ordering, and final wording.
 
 Use this skill once there is a concrete draft plan, spec, diff, or implementation. Do not use it to create the plan from scratch — use `code-plan` for that. For calibration against human review evidence, load [references/calibration.md](references/calibration.md) and follow that workflow instead.
 
@@ -48,15 +48,11 @@ Do not lead with style nits when structural, contract, or state risk exists.
 
 ## Findings
 
-Use `P1`/`P2`/`P3`:
+List findings in severity-descending order. Use the **Priority Order** above as the categorical sort; within a category, let the wording — "merge should not proceed", "consider", and so on — carry the weight. Call out merge blockers explicitly and tie them to the Approval Bar below.
 
-- `P1`: correctness, data, security, compatibility, or user-visible workflow breakage; merge should stop.
-- `P2`: material maintainability, architecture, contract, state, abstraction, or test-quality defect — including overdesign that lowers code quality before visible regression.
-- `P3`: small local cleanup, clarity, or polish.
+Each finding names: concrete surface and evidence location, why it matters, smallest correction, and the invariant owner when state, wrapper, parse-time repair, persisted value, or boundary mismatch is involved. For draft-plan reviews, the smallest correction should be a plan change (revised approach, added context, reordered slice, stronger non-goal, checkpoint, acceptance evidence, pause condition, or user decision).
 
-Each finding names: concrete surface and evidence location, why it matters, smallest correction, priority, and the invariant owner when state, wrapper, parse-time repair, persisted value, or boundary mismatch is involved. For draft-plan reviews, the smallest correction should be a plan change (revised approach, added context, reordered slice, stronger non-goal, checkpoint, acceptance evidence, pause condition, or user decision).
-
-Keep findings atomic — split when fields, owners, validation points, test gaps, identities, or corrections differ; merge only exact duplicates. Before finalizing, re-check each finding against its cited evidence and drop, merge, split, or reprioritize anything unsupported, stale, speculative, duplicated, or outside scope.
+Keep findings atomic — split when fields, owners, validation points, test gaps, identities, or corrections differ; merge only exact duplicates. Before finalizing, re-check each finding against its cited evidence and drop, merge, split, or reorder anything unsupported, stale, speculative, duplicated, or outside scope.
 
 Prefer a small number of high-conviction findings over a long list of cosmetic notes.
 

@@ -6,10 +6,9 @@ Use this contract for candidate findings returned by review sub-agents.
 
 Each candidate finding should name:
 
-- priority: `P1`, `P2`, or `P3`
 - surface: exact plan section, file, symbol, interface, schema, behavior, test, command, generated artifact, persisted value, wrapper, owner, or module boundary
 - evidence: source pointer, command output, inspected fact, or explicitly labeled inference
-- impact: why this matters for correctness, compatibility, user workflow, data, maintainability, architecture, contract, state, abstraction, or test quality
+- impact: why this matters for correctness, compatibility, user workflow, data, maintainability, architecture, contract, state, abstraction, or test quality; flag merge-blocker impact explicitly when it applies
 - smallest correction: the smallest code, plan, test, contract, owner, representation, validation, documentation, or user-decision change that resolves the issue
 - invariant owner when relevant: the data source, state writer, shared contract, call boundary, tool/protocol owner, or presentation layer that should make the bad state impossible
 
@@ -28,4 +27,4 @@ Do not return findings that are only:
 
 ## Return Discipline
 
-Return candidate findings, not final findings. The main `code-review` agent owns deduplication, priority changes, final wording, and whether a candidate appears in the final review.
+Return candidate findings, not final findings. The main `code-review` agent owns deduplication, ordering, final wording, and whether a candidate appears in the final review.

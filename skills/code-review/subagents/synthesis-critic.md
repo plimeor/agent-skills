@@ -31,8 +31,8 @@ Catch unsupported findings, duplicates, incorrect priorities, missing higher-sev
 - Is any finding speculative, stale, outside scope, or based on an uninspected assumption?
 - Are two findings duplicates or the same smallest correction in disguise?
 - Did synthesis merge atomic findings that need separate corrections?
-- Is any priority too high or too low based on impact and likelihood?
 - Does each finding name the concrete surface, why it matters, invariant owner when relevant, and smallest correction?
+- Is severity ordering and merge-blocker labelling honest given impact and likelihood?
 - For APOSD-style design findings, does the finding name the reader task, complexity symptom, cause, and evidence, or is it only a slogan such as "cleaner", "deeper", "more DRY", "add comments", or "hide the error"?
 - Does any APOSD-style correction smuggle in public contract, schema, persistence, security posture, error-semantic, or validation changes that needed another review lens?
 - Did the main review drop a severe sub-agent candidate without a defensible reason?
@@ -44,15 +44,15 @@ Catch unsupported findings, duplicates, incorrect priorities, missing higher-sev
 Return challenges, not final findings. A challenge should name:
 
 - target finding id or missing area
-- issue: unsupported, duplicate, priority mismatch, merged incorrectly, missing owner, weak correction, outside scope, or coverage gap
+- issue: unsupported, duplicate, mis-ordered, mis-labelled merge-blocker, merged incorrectly, missing owner, weak correction, outside scope, or coverage gap
 - evidence: source pointer or sub-agent report pointer
-- recommended action: keep, drop, merge, split, lower/raise priority, reword, verify evidence, or add coverage note
+- recommended action: keep, drop, merge, split, reorder, relabel blocker status, reword, verify evidence, or add coverage note
 
 ## Return Format
 
 - Finding challenges:
 - Dropped or merged finding concerns:
-- Priority corrections:
+- Ordering or blocker-label corrections:
 - Missing coverage:
 - Final-output fixes:
 - Source pointers:
