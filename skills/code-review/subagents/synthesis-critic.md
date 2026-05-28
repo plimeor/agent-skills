@@ -16,7 +16,7 @@ Catch unsupported findings, duplicates, incorrect priorities, missing higher-sev
 
 - User request and review boundary.
 - Candidate final findings from the main reviewer.
-- Coverage notes or batch/sub-agent reports.
+- Batch plan, sub-agent reports, and notes on what was blocked, skipped, or unreviewed.
 - Key source pointers used as evidence.
 
 ## Scope
@@ -36,7 +36,7 @@ Catch unsupported findings, duplicates, incorrect priorities, missing higher-sev
 - For APOSD-style design findings, does the finding name the reader task, complexity symptom, cause, and evidence, or is it only a slogan such as "cleaner", "deeper", "more DRY", "add comments", or "hide the error"?
 - Does any APOSD-style correction smuggle in public contract, schema, persistence, security posture, error-semantic, or validation changes that needed another review lens?
 - Did the main review drop a severe sub-agent candidate without a defensible reason?
-- Are coverage notes honest about completed, blocked, outside-scope, and unreviewed surfaces?
+- Does the judgment honestly acknowledge any blocked, outside-scope, or unreviewed surfaces?
 - Is any finding only style preference rather than correctness, compatibility, architecture, contract, state, abstraction, maintainability, or test-quality risk?
 
 ## Challenge Contract
@@ -46,13 +46,13 @@ Return challenges, not final findings. A challenge should name:
 - target finding id or missing area
 - issue: unsupported, duplicate, mis-ordered, mis-labelled merge-blocker, merged incorrectly, missing owner, weak correction, outside scope, or coverage gap
 - evidence: source pointer or sub-agent report pointer
-- recommended action: keep, drop, merge, split, reorder, relabel blocker status, reword, verify evidence, or add coverage note
+- recommended action: keep, drop, merge, split, reorder, relabel blocker status, reword, verify evidence, or surface an unreviewed area in the judgment
 
 ## Return Format
 
 - Finding challenges:
 - Dropped or merged finding concerns:
 - Ordering or blocker-label corrections:
-- Missing coverage:
+- Unreviewed surfaces:
 - Final-output fixes:
 - Source pointers:

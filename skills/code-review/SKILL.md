@@ -29,7 +29,7 @@ Two complementary lenses drive findings:
 
 ## Lens Dispatch
 
-For small single-surface reviews, run the relevant lens inline. Rough trigger to consider sub-agent dispatch: ≥4 files touched, OR a public API/CLI/schema/migration/persisted-state change, OR multiple high-risk surfaces in one diff. When the trigger fires, use `meta-subagent-orchestration` to decide whether dispatch is worth the overhead; if not delegating, batch lenses locally and report the coverage limit when it affects confidence.
+For small single-surface reviews, run the relevant lens inline. Rough trigger to consider sub-agent dispatch: ≥4 files touched, OR a public API/CLI/schema/migration/persisted-state change, OR multiple high-risk surfaces in one diff. When the trigger fires, use `meta-subagent-orchestration` to decide whether dispatch is worth the overhead; if not delegating, batch lenses locally and flag the coverage limit in the judgment when it affects confidence.
 
 - [subagents/design-shape.md](subagents/design-shape.md): design, modules, abstractions, error models, APOSD-style complexity.
 - [subagents/contract-surface.md](subagents/contract-surface.md): public API/CLI, schemas, persisted state, generated artifacts, wrappers, migrations, compatibility.
@@ -94,12 +94,11 @@ Good: "this special case bolts onto an already busy flow; can we move it behind 
 Use the user's primary language for prose. Keep code symbols, file paths, error messages, command names, and API identifiers in their original form regardless of language. Return in this order:
 
 1. Findings.
-2. Coverage notes: lenses or batches run or skipped (with reason), blocked or out-of-scope surfaces, validation level (read-only, static, tests, smoke, or none), and notable merge/drop/split decisions.
-3. Open questions that materially change the decision.
-4. Short overall judgment.
+2. Open questions that materially change the decision.
+3. Short overall judgment — include any blocked, out-of-scope, or unreviewed surfaces and the validation level if it affects confidence.
 
 ## Stop Rules
 
-Stop when every requested artifact, planned batch, and named surface is covered, blocked, or out of scope; findings are evidence-backed, atomic, ordered, and actionable; sub-agent outputs are integrated, challenged, or dropped with reason; factual claims are grounded in inspected files/diff/tests/docs or labeled inference; validation level is stated.
+Stop when every requested artifact, planned batch, and named surface is covered, blocked, or out of scope; findings are evidence-backed, atomic, ordered, and actionable; sub-agent outputs are integrated, challenged, or dropped with reason; factual claims are grounded in inspected files/diff/tests/docs or labeled inference.
 
 Do not continue into implementation, edits, tests, commits, pushes, or deployment without separate user authorization.
