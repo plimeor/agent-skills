@@ -25,7 +25,7 @@ Ambition has a ceiling: preserve the author's intent. Code-judo simplifies the *
 Two complementary lenses drive findings:
 
 - **APOSD complexity**: every design finding ties a concrete surface to a complexity symptom (change amplification, cognitive load, unknown-unknown risk), a cause (dependency or obscurity), and an affected reader task. Reject substitutes like "cleaner", "more DRY", or "add comments" that lack that mapping. Full lens: [references/aposd-complexity-review.md](references/aposd-complexity-review.md).
-- **Structural ambition**: be suspicious of special cases bolted into existing flows, single-use wrappers/casts/optionality, "magic" generic mechanisms, and bespoke helpers duplicating canonical ones. Prefer direct, boring code. The Approval Bar below enumerates the resulting merge gates.
+- **Structural ambition**: surface, with clear severity, any of — a missed code-judo simplification; ad-hoc branching tangling an existing flow; single-use wrappers/casts/optionality or "magic" generic mechanisms obscuring the design; feature-specific logic scattered across shared code; bespoke helpers duplicating canonical ones; logic living in the wrong layer; or a file pushed past ~1000 lines without strong reason. Prefer direct, boring code.
 
 ## Lens Dispatch
 
@@ -54,36 +54,21 @@ Do not lead with style nits when structural, contract, or state risk exists.
 
 ## Findings
 
-List findings in severity-descending order. Use the **Priority Order** above as the categorical sort. Tag each finding with its expected action:
+List findings in severity-descending order. Use the **Priority Order** above as the categorical sort. Tag each finding with the action you think the human reviewer should take:
 
-- **blocker**: matches an Approval Bar condition; merge should not proceed until addressed or justified.
-- **raise**: real issue worth fixing, acceptable as a follow-up; not a merge gate on its own.
+- **blocker**: structural, contract, or correctness issue the reviewer should weigh before merging.
+- **raise**: real issue worth fixing, acceptable as a follow-up.
 - **nit**: small polish, take or leave.
 
-These tag merge action, not severity — wording already carries severity. Use the tags honestly: over-blocking erodes trust; under-blocking is dishonest.
+Use the tags honestly: inflating a nit to a blocker erodes trust; under-flagging real issues is dishonest.
 
-Each finding names: concrete surface and evidence location, why it matters, smallest correction, and the invariant owner when state, wrapper, parse-time repair, persisted value, or boundary mismatch is involved. For draft-plan reviews, the smallest correction should be a plan change (revised approach, added context, reordered slice, stronger non-goal, checkpoint, acceptance evidence, pause condition, or user decision).
+Each finding names: surface and evidence location, why it matters, smallest correction, and the invariant owner when relevant. For draft-plan reviews, the smallest correction should be a plan change (revised approach, added context, stronger non-goal, checkpoint, or a user decision).
 
 Keep findings atomic — split when surface, owner, or correction differs; merge only exact duplicates. Re-check each against its cited evidence before finalizing, and drop, merge, split, or reorder anything unsupported, stale, duplicated, or outside scope.
 
-Prefer a small number of high-conviction findings over a long list of cosmetic notes.
+Prefer a small number of high-conviction findings over a long list of cosmetic notes. If no findings remain, say so directly and name residual risk or test gaps.
 
-## Approval Bar
-
-Do not approve merely because behavior is correct. Treat these as presumptive blockers unless the author justifies them clearly:
-
-- A plausible code-judo simplification was missed.
-- A file crosses ~1000 lines without a compelling reason.
-- Ad-hoc branching tangles an existing flow.
-- Feature-specific logic scatters across shared code.
-- An unnecessary wrapper, cast, optionality, or "magic" mechanism obscures the real design.
-- A canonical helper is duplicated, or logic lives in the wrong layer.
-
-If no findings remain, say so directly and name residual risk or test gaps.
-
-## Synthesis And Tone
-
-Sub-agent reports are raw material. Verify candidates against cited evidence, integrate only findings that change code/plan/scope/risk/checkpoint, and record dropped/merged/split/reordered items with short reasons. Use `synthesis-critic` for high-risk synthesis or when findings conflict.
+## Tone
 
 Be direct, serious, and demanding about quality. Not rude. Do not soften major maintainability issues into mild suggestions, and do not dress up small smells as serious problems.
 
@@ -99,6 +84,6 @@ Use the user's primary language for prose. Keep code symbols, file paths, error 
 
 ## Stop Rules
 
-Stop when every requested artifact, planned batch, and named surface is covered, blocked, or out of scope; findings are evidence-backed, atomic, ordered, and actionable; sub-agent outputs are integrated, challenged, or dropped with reason; factual claims are grounded in inspected files/diff/tests/docs or labeled inference.
+The review is done when the requested surfaces are covered or explicitly out of scope, findings meet the requirements above, and every factual claim is grounded in inspected files/diff/tests/docs or labeled inference.
 
-Do not continue into implementation, edits, tests, commits, pushes, or deployment without separate user authorization.
+Do not continue into edits, tests, commits, pushes, or deployment without separate user authorization.
