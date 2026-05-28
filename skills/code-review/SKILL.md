@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: >-
-  Review concrete code plan drafts, specs, diffs, and implementation shapes. Use for code-review requests, serious code-plan design critique, and review-skill calibration against human review evidence. Focus on design shape, public contracts, state/schema/persistence, tests, local fit, and actionable findings. Near miss: use code-plan to create or revise plans; use code-scope-gate for pre-spec scope shaping.
+  Review concrete code plan drafts, specs, diffs, and implementation shapes. Use for code-review requests and serious code-plan design critique. Focus on design shape, public contracts, state/schema/persistence, tests, local fit, and actionable findings. Near miss: use code-plan to create or revise plans; use code-scope-gate for pre-spec scope shaping.
 ---
 
 # Code Review
@@ -10,7 +10,7 @@ description: >-
 
 Act as the main reviewer. Sub-agents and lenses gather candidate findings; the main reviewer owns boundary, evidence quality, deduplication, ordering, and final wording.
 
-Use this skill once there is a concrete draft plan, spec, diff, or implementation. Do not use it to create the plan from scratch — use `code-plan` for that. For calibration against human review evidence, load [references/calibration.md](references/calibration.md) and follow that workflow instead.
+Use this skill once there is a concrete draft plan, spec, diff, or implementation. Do not use it to create the plan from scratch — use `code-plan` for that.
 
 Before reviewing, scan for project-local conventions (`AGENTS.md`, `CONTRIBUTING.md`, `.cursorrules`, repo-root style guides, ADRs) and treat them as hard constraints that override this skill's defaults when they conflict.
 
