@@ -4,16 +4,10 @@ Use this reference with `subagents/design-shape.md` when a review needs APOSD-st
 
 ## Source Basis
 
-This reference is distilled from John Ousterhout's APOSD/CS190 material and recurring reader takeaways from practitioner reviews and notes. Public sources repeatedly emphasize the same practical lessons: manage apparent complexity, prefer deep modules, design common-case interfaces, hide information, compare alternatives, document interfaces, and avoid turning heuristics into slogans.
-
-Useful source anchors:
+Distilled from John Ousterhout's APOSD/CS190 material. Anchors:
 
 - Official APOSD page: https://web.stanford.edu/~ouster/cgi-bin/aposd.php
-- CS190 complexity notes: https://web.stanford.edu/~ouster/cgi-bin/cs190-winter18/lecture.php?topic=complexity
-- CS190 modular design notes: https://web.stanford.edu/~ouster/cgi-bin/cs190-winter18/lecture.php%3Ftopic%3DmodularDesign
-- CS190 comments notes: https://web.stanford.edu/~ouster/cgi-bin/cs190-winter18/lecture.php?topic=comments
 - APOSD vs Clean Code: https://github.com/johnousterhout/aposd-vs-clean-code
-- Practitioner takeaway examples: Pragmatic Engineer, Matt Duck, Leo Robinovitch, Path-Sensitive, Brian's Notes, Hacker News discussion, Viget, Capucho, Brikman.
 
 ## Core Review Model
 
@@ -33,8 +27,6 @@ Complexity causes:
 Review rule: every APOSD-style finding must connect a concrete surface to at least one symptom and one cause. Style preferences, naming opinions, "cleaner" advice, and generic simplification do not qualify without that mapping.
 
 ## What Readers Commonly Take Away
-
-Use these as review probes, not automatic findings.
 
 ### Complexity Is Incremental
 
@@ -79,7 +71,7 @@ Review probes:
 
 ### General-Purpose, Not Speculative
 
-Many readers remember APOSD as "make code a little generic", not "build a platform". The useful version is general enough for known nearby needs, while avoiding special-purpose leakage into reusable code.
+The useful version is general enough for known nearby needs, while avoiding special-purpose leakage into reusable code. Not "build a platform".
 
 Review probes:
 
@@ -141,7 +133,7 @@ Review probes:
 
 ### Comments Are Interface And Design Tools
 
-Readers repeatedly pick up that APOSD defends useful comments, especially interface comments. A comment should capture information not obvious from code: contract, units, boundaries, invariants, rationale, side effects, concurrency assumptions, or cross-module coupling. Comments that narrate code are weak substitutes.
+A comment should capture information not obvious from code: contract, units, boundaries, invariants, rationale, side effects, concurrency assumptions, or cross-module coupling. Comments that narrate code are weak substitutes.
 
 Review probes:
 
@@ -164,7 +156,7 @@ Review probes:
 
 ### Design It Twice For Material Choices
 
-APOSD readers frequently remember the habit of considering more than one design. For review, require alternatives only when the design choice is material; do not require ceremonial alternatives for trivial changes.
+Require alternatives only when the design choice is material; do not demand ceremonial alternatives for trivial changes.
 
 Review probes:
 
@@ -184,26 +176,22 @@ Review probes:
 
 ## Candidate Finding Pattern
 
-Prefer findings shaped like this:
+In addition to the shared finding contract, APOSD findings name:
 
-- Surface: exact plan section, file, symbol, module boundary, interface, error model, or docs contract.
 - Reader task: the future change, review, debugging, or call-site usage made harder.
 - Symptom: change amplification, cognitive load, or unknown-unknown risk.
 - Cause: dependency, obscurity, or both.
-- Evidence: inspected code, diff, plan text, call sites, docs, tests, or labeled inference.
-- Correction: owner change, boundary change, representation change, interface narrowing, special-case removal, comment contract, consistency fix, measurement requirement, or plan revision.
+- Correction type: owner change, boundary change, representation change, interface narrowing, special-case removal, comment contract, consistency fix, measurement requirement, or plan revision.
 
 ## Weak Substitutes To Reject
 
-- "This is cleaner" without symptom and cause.
+APOSD-specific traps beyond the generic substitutes named in `SKILL.md`:
+
 - "Fewer lines" or "fewer files" as simplicity proof.
 - "More DRY" when it creates the wrong shared dependency.
 - "It follows a pattern" when the pattern is not local or semantically justified.
-- "Tests pass" as proof of good design.
-- "Add comments" when the interface remains weak.
 - "Move complexity down" when callers still must know the details.
-- "Large module" as a proxy for deep module.
-- "Short function" as a proxy for shallow module.
+- "Large module" as a proxy for deep module; "short function" as a proxy for shallow module.
 - "Generalize it" without current repeated pressure.
 
 ## Limits
