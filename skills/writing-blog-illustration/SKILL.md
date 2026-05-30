@@ -1,7 +1,8 @@
 ---
 name: writing-blog-illustration
 description: >-
-  Generate English image-model prompts for blog or article illustrations in a colorful cartoon infographic style. Use when the user asks for an illustration prompt, image prompt, concept diagram prompt, system-architecture visual prompt, comparison visual prompt, or blog/article illustration prompt, including requests to draw, illustrate, create an image prompt, make an illustration, create an infographic, or write an image prompt. This skill returns text prompts, not generated images; if the user asks Codex to directly create or edit a bitmap image, use image generation instead unless they explicitly want a prompt.---
+  Generate English image-model prompts for blog or article illustrations in a colorful cartoon infographic style. Use when the user asks for an illustration prompt, image prompt, concept diagram prompt, system-architecture visual prompt, comparison visual prompt, or blog/article illustration prompt, including requests to draw, illustrate, create an image prompt, make an illustration, create an infographic, or write an image prompt. This skill returns text prompts, not generated images; if the user asks Codex to directly create or edit a bitmap image, use image generation instead unless they explicitly want a prompt.
+---
 
 # Blog Illustration Prompt Generator
 

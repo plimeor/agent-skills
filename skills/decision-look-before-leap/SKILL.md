@@ -78,7 +78,7 @@ Use a separate `codex exec --ephemeral` or equivalent isolated run only when a s
 
 ## Output
 
-The final answer should usually be direct prose. Do not show long chain-of- thought. Show the result of the check only when it helps the user trust the answer:
+The final answer should usually be direct prose. Do not show long chain-of-thought. Show the result of the check only when it helps the user trust the answer:
 
 - `Observed:` facts inspected in this turn.
 - `Inference:` conclusions drawn from those facts.
