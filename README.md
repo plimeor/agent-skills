@@ -33,7 +33,7 @@ Skills are grouped by primary mode.
 
 ### Decision
 
-- [decision-look-before-leap](skills/decision-look-before-leap/SKILL.md): Look-before-you-leap check before answers, recommendations, or decisions; use independent subagent scrutiny when context-inertia risk is high.
+- [reconsider](skills/reconsider/SKILL.md): Reconsider a non-trivial answer before finalizing; challenge stale context, premature compromise, hidden uncertainty, and context-inertia risk to raise answer quality.
 
 ### Meta
 

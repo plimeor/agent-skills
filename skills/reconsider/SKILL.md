@@ -1,30 +1,31 @@
 ---
-name: decision-look-before-leap
+name: reconsider
 description: >-
-  Use before answering, recommending, reviewing, deciding, or finalizing a non-trivial response when shallow reasoning, context inertia, false framing, overconfidence, unfit analogy transfer, or obvious-but-missed defects could distort the result. Trigger especially before applying external evidence, familiar frameworks, or comparisons to a user's specific request. Apply a look-before-you-leap sanity check and use independent scrutiny only when it is useful and authorized.
+  Use before finalizing a non-trivial answer, recommendation, review, or decision to reconsider it and raise its quality, especially when shallow reasoning, context inertia, false framing, overconfidence, unfit analogy transfer, or an obvious-but-missed defect could distort the result. Trigger especially before applying external evidence, familiar frameworks, or comparisons to the user's specific request, and when the user asks to reconsider, double-check, take a second look, or sanity-check an answer. Reconsider the draft against its most likely failure mode, and use independent scrutiny only when it is useful and authorized.
 ---
 
-# Look Before You Leap
+# Reconsider
 
 ## Goal
 
 Produce answers that survive scrutiny before they are delivered. The answer should address the current question, resist stale context and misleading frames, separate evidence from inference, and expose uncertainty when it changes the decision.
 
-Use this as a pre-answer quality gate. It improves judgment before responding; it is not permission to expand the user's requested work.
+Use this to reconsider a draft answer and raise its quality before responding. It improves judgment before responding; it is not permission to expand the user's requested work.
 
 ## Success Criteria
 
-A good look-before-you-leap pass:
+A good reconsider pass:
 
 - Answers the current request, not an older thread goal or the assistant's momentum.
 - Distinguishes observed facts, source-supported conclusions, memory-derived clues, inferences, and value judgments when trust depends on the distinction.
 - Finds the most likely failure mode before output: missing decisive evidence, false premise, overconfident claim, ignored counterexample, wrong scope, or contradiction.
+- Surfaces the strongest decision-relevant conclusion before lower-cost mitigations, workarounds, or compromise paths.
 - Uses external evidence, tools, or independent scrutiny when intrinsic self-correction would be too weak.
 - Keeps the final answer no larger than the user's request requires.
 
 ## When To Use
 
-Use this skill for non-trivial explanations, recommendations, critiques, decisions, final answers after long work, and moments where the user asks for careful thought, skepticism, "look before you leap", sanity checking, or an answer that can withstand scrutiny.
+Use this skill for non-trivial explanations, recommendations, critiques, decisions, final answers after long work, and moments where the user asks for careful thought, skepticism, reconsideration, a second look, sanity checking, or an answer that can withstand scrutiny.
 
 Consider independent scrutiny when:
 
@@ -56,7 +57,10 @@ Before answering, run this compact pass:
 2. **Choose verification level.** Decide whether the answer only needs local sanity checking, source/tool verification, or independent scrutiny.
 3. **Locate evidence.** Mark which claims come from observed facts, cited sources, memory, user statements, or inference.
 4. **Challenge the frame.** Check whether the question assumes an unproven fact, imports stale context, or forces a false binary.
-5. **Attack the answer.** Ask one to three targeted challenge questions against the most likely failure mode.
+5. **Attack the answer.** Ask one to three targeted challenge questions against the most likely failure mode:
+   - Am I leading with a cheaper compromise while a stronger evidence-backed conclusion should come first?
+   - Am I preserving prior work, current implementation, or conversational momentum instead of answering the current question?
+   - Am I hiding uncertainty or judgment strength behind pragmatic wording?
 6. **Tighten output.** Remove generic background, decorative options, and claims that do not help answer the current request.
 
 ## Independent Scrutiny
@@ -87,6 +91,8 @@ The final answer should usually be direct prose. Do not show long chain-of-thoug
 - `Scrutiny:` what an independent subagent or separate check challenged, if one was used.
 
 If the frame was wrong, correct it briefly before answering. If the answer is uncertain, lower confidence instead of smoothing over the gap.
+
+When a high-cost conclusion and a compromise path both exist, state the conclusion first, then label the compromise path and its tradeoffs separately.
 
 ## Stop Rules
 
