@@ -35,6 +35,10 @@ Skills are grouped by primary mode.
 
 - [reconsider](skills/reconsider/SKILL.md): Reconsider a non-trivial answer before finalizing; challenge stale context, premature compromise, hidden uncertainty, and context-inertia risk to raise answer quality.
 
+### Knowledge
+
+- [workbench](skills/workbench/SKILL.md): Run a self-contained autonomous-loop workbench for long-horizon, multi-session tasks — loop driver, plan, decision table, ledger, and one numbered evidence doc per iteration, with machine vs human gates, uniform honesty labels, and an on-request supervised manual mode.
+
 ### Meta
 
 - [context-engineering](skills/context-engineering/SKILL.md): Route durable rules and context to the right layer — task, project, skill, tooling, MCP, or global — and produce the smallest directly applicable edit.
