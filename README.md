@@ -37,7 +37,7 @@ Skills are grouped by primary mode.
 
 ### Knowledge
 
-- [workbench](skills/workbench/SKILL.md): Run a self-contained autonomous-loop workbench for long-horizon, multi-session tasks — loop driver, plan, decision table, ledger, and one numbered evidence doc per iteration, with machine vs human gates, uniform honesty labels, and an on-request supervised manual mode.
+- [workbench](skills/workbench/SKILL.md): Set up, resume, or repair a compact active workbench for long-horizon, multi-session or checkpointed work: loop entry, boundaries, gates, verification, decisions, numbered evidence, human-gate stops, and active-vs-archive routing. Avoid for one-session tasks; complete those directly.
 
 ### Meta
 

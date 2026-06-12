@@ -1,107 +1,221 @@
 ---
 name: workbench
 description: >-
-  Set up and run a self-contained autonomous-loop workbench for long-horizon, multi-session tasks: a numbered document directory with a loop driver, plan, decision table, ledger, and one evidence doc per iteration, so a fresh agent with zero context can orient, advance one gate, and stop cleanly at human approval gates. Use when a task spans multiple sessions or checkpoints, when setting up unattended iteration, or when resuming a long-running project. Do not use for tasks finishable in one session — do those directly.
+  Set up, resume, or repair a compact active execution workbench for long-horizon,
+  multi-session or checkpointed work. Use when a task needs durable handoff,
+  unattended iteration, human gates, auditable evidence, or active-vs-archive
+  routing that keeps a current packet separate from stale historical context.
+  Do not use for one-session tasks, ordinary plans/reviews/audits, one-session
+  bug fixes, direct code edits, or simple docs cleanup; complete those directly.
 ---
 
 # Workbench
 
 ## Outcome
 
-The workbench directory is the single hand-off. A fresh agent with no prior context must be able to orient from its files alone, execute exactly one open gate, emit auditable evidence, and either continue or stop cleanly at a human gate. Decisions are never re-litigated, unverified claims never pass as verified, and the loop never does silent work.
+The active execution packet is the single handoff. A fresh agent with no prior context can orient from the active files alone, execute exactly one open gate, emit auditable evidence, and either continue or stop cleanly at a human gate. Historical evidence remains traceable, but it does not compete with the current entrypoint. Decisions are not re-litigated, unverified claims do not pass as verified, and the loop does not do silent work.
 
 ## Activation
 
-- Task finishable in one session → no workbench; this skill does not apply.
-- Task spans sessions → full loop workbench from the first file. There is no lighter starter mode that upgrades later; the loop IS the default shape.
+Activate only when at least one condition is true:
+
+- the task is expected to span multiple sessions or checkpoints;
+- a future agent must resume from files without chat history;
+- unattended iteration needs gates, evidence, and stop rules;
+- an existing workbench, plan, or evidence set has stale historical context in the default route and needs an active packet plus archive map.
+
+Complete the work directly when it is completable and verifiable now: one-session coding tasks, audits, reviews, simple plans, single-doc cleanup, ordinary handoff notes, or direct edits. If direct work becomes multi-session, open the full loop then; there is no lighter starter mode.
 
 ## Modes
 
-Autonomous loop is the default: iterate continuously, stopping only at human gates and stop conditions. Manual mode is entered only when the user asks for it (e.g. "manual", "手动", "one step at a time", or as an invocation argument) and changes pacing and authority ONLY:
+Autonomous loop is the default: run complete iterations continuously, stopping only at human gates and stop conditions. Manual mode is entered only when the user asks for it (for example, "manual", "手动", "one step at a time", or an invocation argument) and changes pacing only:
 
 - propose the selected gate and wait for a go-ahead before executing;
 - run exactly one iteration per go-ahead, then yield after the record step.
 
-Everything else — directory, artifacts, honesty labels, evidence rules, gate protocol, no self-certification — is identical in both modes. Record the active mode in the cursor; switching is per-request and reversible.
+Everything else - active packet, artifacts, honesty labels, evidence rules, gate protocol, and no self-certification - is identical in both modes. Record the active mode in the cursor; switching is per-request and reversible.
 
-## Directory
+## Lifecycle Intake
 
-`docs/workbench/<YYYYMMDD>-<task>/` (follow the repo's existing convention if one exists), flat, numbered:
+Before creating, resuming, or repairing a workbench, classify the packet state:
+
+- **New active packet** - no current packet exists; create one from the approved intent.
+- **Continue existing** - the active packet has a clear cursor, current authority, open gate, and verification route; use it as-is.
+- **Consolidate** - the active packet is current but too many same-objective evidence docs obscure the cursor; consolidate within the active packet.
+- **Archive plus new active packet** - stale drivers, old phases, failed loops, or preserved wording sit in the default route; move them under `archives/` and create a small current packet.
+- **Close or archive only** - the work is done, abandoned, or historical; close the active loop and keep lookup routes.
+
+A takeover packet created from existing files or a current user request starts as `Needs approval`. The first execution iteration does not start until the decision authority records `D00` with an ISO date, timezone when relevant, and a verbatim user approval quote for the new active loop. Self-authored boundaries, gate classes, stop conditions, or archive routes are drafts until that row exists.
+
+Consolidation is for same-objective evidence where the original wording does not need to remain inspectable. Archive routing is for stale instructions, failed drivers, superseded packets, human approvals, or historical wording that must remain intact.
+
+## Active Packet Contract
+
+Choose one active packet root. Follow the repo's existing convention if one exists; if none exists, use `docs/workbench/<YYYYMMDD>-<task>/`.
+
+The packet is valid by roles, not filenames. Every role has one clear home. A file may host multiple small roles only under explicit headings; a large role may split only when the entry file names every part.
+
+Required roles:
+
+- **Entry/cursor** - current checkpoint, next single action, minimum active read set, gate protocol, active mode, stop conditions, and evidence-ID reservation.
+- **Intent authority** - user-approved plan, stable contract, or confirmed transcript pointer.
+- **Boundary and gate contract** - scope fences, exit criteria, machine gates, human gates, and ownership.
+- **Execution ledger** - current status, open gates, closed gates, evidence pointers, and append-only iteration history.
+- **Verification contract** - required checks, thresholds, environment blockers, freshness expectations, and whether prior or archive evidence can satisfy each gate.
+- **Decision authority** - either the owning decision table or a pointer index to that table; never copied decision rows.
+- **Evidence stream** - append-only, numbered, machine-sortable evidence records.
+- **Archive map** - historical lookup route, or explicit `Archive route: none`.
+- **Artifacts store** - oversized outputs cited by path.
+
+Fallback file map when no repo convention exists:
 
 ```
-000-loop.md       driver: loop algorithm, gate protocol, scope fences, cursor
-001-plan.md       the goal and approach — the workbench's reason to exist
-002-decisions.md  decision table with stable IDs
-003-ledger.md     per-iteration ledger + open-gate checklist
-004+              one numbered evidence doc per iteration, NNN-kebab-name.md
-artifacts/        oversized command outputs, cited by path from evidence docs
+docs/workbench/<YYYYMMDD>-<task>/
+  00-current-loop.md      -> Entry/cursor
+  01-intent.md            -> Intent authority
+  02-boundaries.md        -> Boundary and gate contract
+  03-ledger.md            -> Execution ledger
+  04-verification.md      -> Verification contract
+  05-decisions.md         -> Decision authority or pointer index
+  06-archive-map.md       -> Archive map
+  10+ or evidence/        -> Evidence stream
+  artifacts/              -> Artifacts store
 ```
 
-Self-containment rule: if the plan already lives elsewhere (e.g. a repo `docs/plans/` convention), move it in as `001-plan.md` when the workbench is created. A fresh agent must need nothing outside the directory and the repo itself.
+Archive packet follows the repo's workbench convention. Default:
 
-`000-loop.md` carries, written BEFORE the loop starts: the cursor (current checkpoint, next single action, settled items that must not be reopened — decision IDs only, no prose restatement, pruned to empty at each checkpoint exit); the required read order; exit criteria per checkpoint split into agent-closeable vs human gate; a boundary declaration stating once what the workbench does NOT authorize; and a named list of stop conditions. The cursor sits at the top of the file — a fresh agent reads its position and next action before anything else. Other docs reference these instead of restating them.
+```
+docs/workbench/archives/<old-task-or-packet>/
+```
 
-Authorship: the human writes the plan — `001-plan.md` is the user's intent, authored by them or transcribed from their words and confirmed; the agent never invents it. The agent then derives `000-loop.md` from the plan — compiling intent into mechanism: read order, exit criteria, gate classes, boundary declaration, stop conditions. That derived draft is the loop's first human gate: iteration does not start until the user reviews and approves it, recorded as the decision table's first row (dated verbatim quote, as always). Thereafter the cursor stays agent-writable every iteration; the authority sections — boundary, exit criteria, gate classes, stop conditions — change only through a human gate. An agent never loops on a self-authored, unapproved boundary.
+The active packet owns current routing. Archive paths keep historical traceability and are not part of the default fresh-agent read set.
 
-## The loop — one iteration
+## Authorship And Approval
 
-1. **Orient.** Read `000-loop.md`, the ledger, and the evidence docs written since the last consolidation — never the full evidence set. Do not act from memory; the docs are authoritative over any recalled state.
-2. **Select.** Pick the single lowest-risk open gate within the current checkpoint. Never jump checkpoints. Classify the owner: agent-executable, or requires human / external resources (then the action is "assemble and hand off", not "attempt it").
-3. **Execute** within the scope fences.
-4. **Record.** Write the evidence doc at the next free number: status header (task / date / status), evidence as command + output, what closed, what remains. "What remains" lists only items newly discovered this iteration plus one pointer to the ledger checklist — never a re-listing of already-open items. Then update the ledger and cursor, and record any model or decision adjustment in the decision table — superseding rows where needed; adjustments never become new documents.
-5. **Evaluate.** All exit criteria of the current checkpoint met → consolidate, write the checkpoint exit report, and STOP for human sign-off. A stop condition or human-gate item hit → STOP with a decision request. Otherwise loop.
+The human owns intent. The plan or intent file is authored by the user, transcribed from their words and confirmed, or points to an already-stable contract. The agent derives the active loop from that intent: read set, exit criteria, gate classes, boundary declaration, stop conditions, and archive routing.
 
-No silent work: every iteration produces exactly one numbered evidence doc plus a ledger update — including iterations that only discover a blocker. Two exceptions: re-confirming an already-documented blocker with no new observation records a dated one-line ledger entry pointing at the existing blocker doc and emits no new doc (any new observation → new doc, as always); a consolidation iteration produces the consolidated docs it folds into, in place of the single doc.
+That derived loop is a human gate. Iteration starts only after `D00` records the user's dated verbatim approval. Thereafter the cursor and ledger are agent-writable every iteration; authority sections - intent, boundaries, gate classes, exit criteria, stop conditions, verification thresholds, and archive routing - change only through a human gate.
 
-## Gate protocol
+When repairing or replacing an existing packet, summarize only currently authorized facts in the new active packet. Stale claims enter as cited historical evidence, decision IDs, or `Needs approval` inferences. Promote them to current authority only through a decision row or current evidence that the verification contract accepts.
 
-Two gate classes, declared per item in the exit criteria:
+## Archive Routing
 
-- **Machine gates** — deterministic, reproducible checks (tests pass, exit codes, match counts, byte-identical outputs). The agent self-certifies these and proceeds.
-- **Human gates** — checkpoint exits, scope/boundary changes, anything the plan marks "needs approval", and any capability the agent lacks. The agent assembles the evidence, lists what is closed and what remains open with owners, and STOPS. It never self-certifies a human gate and never fabricates the missing result.
+The archive map is a lookup table, not a summary. It points from current needs to exact historical targets without restating old decisions, checklists, evidence excerpts, or obsolete instructions.
 
-Approval exists in exactly one form: a dated verbatim quote of the user in the decision table. "They probably approved this" does not satisfy the gate.
+Each archive-map row records:
 
-A stop report contains: which gate is blocking, what evidence is closed (with pointers), what remains open (with honesty labels and owners), and the exact decision or action requested. Stop reports and checkpoint exit reports may re-list the open items they put before the human — they are the exception to the no-re-listing rule.
+- current need or gate;
+- exact target: file path plus section, decision ID, evidence doc ID, command name, or line range;
+- historical fact the target can answer;
+- current authority that may import or reject the fact;
+- when to read it;
+- when to stop reading;
+- whether the target may close a current gate, and under what freshness rule.
 
-## Honesty labels
+An archive read requires an exact target. A directory, archived driver name, phase packet, or broad search need is insufficient. If the archive map says `Archive route: none`, archive files are out of scope until a human gate changes the map.
 
-Every claim in every doc carries one label, uniformly:
+Search active files and current repo sources first. When using `rg`, exclude the archive path, defaulting to `docs/workbench/archives/**`, until the archive map authorizes an exact target.
 
-`Observed` (the check ran; command + output recorded) | `Inferred` (engineering reasoning) | `Recommended` (target state) | `Needs approval` | `Blocked` | `Not run`
+Archived evidence can explain history. It closes a current gate only when the verification contract explicitly accepts it as fresh enough, or current evidence revalidates it. Archive-derived claims become current status only after the ledger cites a current evidence record or the decision authority imports them.
 
-- Evidence = a command plus its output. An assertion without a reproducible command is not evidence.
-- Inline output is the decisive excerpt — at most ~20 lines plus the exit code. Longer output is written once to `artifacts/` and cited by path; pasting more proves nothing extra and buries the claim.
-- `Not run` / `Blocked` items may never be presented, summarized, or counted as verified — this rule is itself a gate.
-- Once a golden value (hash, frozen output, approved figure) is recorded, reuse it by reference; never re-derive it as new progress.
+Preserve archive wording when exact historical text matters. Put archive status in the archive map or a parent index; prepend banners to archived files only when the user has approved changing the preserved text.
 
-## Document roles
+## The Loop - One Iteration
 
-Roles are typed and never mixed:
+1. **Orient.** Read the entry/cursor and its exact minimum active read set. Read archived material only through an archive-map row with an exact target. Do not act from memory; active packet roles own current routing.
+2. **Select.** Pick the single lowest-risk open gate within the current checkpoint. Never jump checkpoints. Classify the owner: agent-executable, human, or external resource. For non-agent gates, assemble evidence and hand off.
+3. **Reserve.** Reserve the next evidence ID in the cursor or ledger before execution. A fresh agent must see which record is in progress after interruption.
+4. **Execute.** Work within the scope fences and gate owner.
+5. **Record.** Write the evidence record at the reserved ID: status header, observed sources with reproducible pointers, iteration delta, what closed in this iteration, and newly discovered remaining work. The evidence record does not own current status; it points to the ledger. Then update the ledger and cursor. The cursor advances only after the ledger line cites the exact evidence record or a named exception.
+6. **Evaluate.** All exit criteria for the current checkpoint met -> consolidate if needed, write the checkpoint exit report, and stop for human sign-off. A stop condition or human-gate item hit -> stop with a decision request. Otherwise, self-review and continue.
 
-- **Plan** — intent; frozen at the first Execute step. Mid-loop approach changes are decision-table rows, never plan edits; the plan is rewritten only at a human-approved replan gate and at close, when it is reconciled with the frozen outcomes, including reversed decisions.
-- **Decision table** — authority. Sequential IDs, never renumbered or reused. Before adding a row, search for an existing row on the same question — at any time exactly one row per question is active. Superseding stamps the old row `superseded by Dnn` in the same edit; status stamps are the only edit existing rows accept. Failed approaches are settled decisions: record each as a row with why it failed, so no later session re-attempts the dead end. Reopening a settled row requires new `Observed` evidence contradicting its recorded basis, cited in the superseding row — and a human gate if the row carries a human approval; absent new evidence, settled stays settled.
-- **Evidence docs** — append-only records of what happened; never retro-edited, even when later proven incomplete. Corrections are new docs opening with `Supersedes: NNN-name.md`; the superseded doc receives one prepended line — `SUPERSEDED by NNN — do not cite` — as the sole permitted retro-edit. No claim is current in more than one doc. Deletion at consolidation is the sole exception to append-only.
-- **Ledger** — the only status record. Exactly one current-state block (per-axis verdicts and the open-gate checklist, each item marked closed/open with an evidence pointer), rewritten in place every iteration, plus an append-only history of one line per iteration: number, date, gate touched, evidence pointer.
-- Workbench docs are never public interface contracts. When the deliverable's permanent home materializes (a package README, code docs), migrate the stable contract there and keep pointers; declare this destination in `000-loop.md` up front.
+Autonomous mode may run multiple iterations only after each previous iteration has completed record, ledger, cursor, and self-review steps.
 
-## Write regimes
+No silent work: every iteration produces exactly one numbered evidence record plus a ledger update, including iterations that only discover a blocker. Two exceptions exist: re-confirming an already-documented blocker with no new observation records a dated one-line ledger entry pointing at the existing blocker record; a consolidation iteration produces the consolidated docs it folds into instead of the single evidence record.
 
-Every doc lives in exactly one regime, fixed by its type:
+## Gate Protocol
 
-- **Append-only** — evidence docs, ledger history lines. Growth is allowed here because orientation never loads the full set.
-- **Rewrite-in-place** — loop driver, ledger state block, decision-row status stamps, the plan at its gates. A correction rewrites the affected lines; amendment markers (`UPDATE:`, `CORRECTION:`, `Revised:`, dated addenda) never appear in these docs — a fresh agent reads only current truth, and history lives in git, the ledger history, and the evidence trail.
+Declare every exit item as one of two gate classes:
 
-One home per fact: gate status lives only in the ledger, the cursor only in the loop driver, decisions only in the decision table, intent only in the plan. Every other doc cites the ID (`D07`, a ledger line, `012-name.md`) instead of restating the content. When a finding is promoted from an evidence doc into the plan or decision table, the fact's home moves with it — later docs cite the row, not the original passage.
+- **Machine gates** - deterministic, reproducible checks such as tests, exit codes, match counts, byte-identical outputs, or schema validation. The agent self-certifies these only with evidence.
+- **Human gates** - checkpoint exits, scope or boundary changes, any item marked `Needs approval`, and any capability the agent lacks. The agent assembles evidence, lists closed and open items with owners, and stops.
 
-## Sprawl and consolidation — a pair
+Approval exists in exactly one form: a decision row with ISO date, timezone when relevant, and a verbatim user quote. "They probably approved this" does not satisfy the gate.
 
-Per-iteration evidence docs are the loop's audit trail: let them accumulate during a burst of iterations. Consolidation triggers are mechanical, not judged: at every checkpoint exit, AND whenever more than 8 evidence docs have accumulated since the last consolidation — then the next iteration is a consolidation iteration before any new gate is selected. To consolidate: fold iteration reports into thematic evidence docs plus a checkpoint exit report, re-deriving from the original docs (never from prior summaries), delete the originals in the same operation, rewrite every pointer in rewrite-in-place docs, and record the consolidation in the ledger with the old→new doc mapping — append-only history lines and stamped decision rows keep their original pointers, resolved through that mapping (git holds the deleted originals). A summary may exist only where the docs it covers are gone — never summary-plus-originals. Prohibiting sprawl kills the audit trail; skipping consolidation buries the cursor. The pattern requires both halves.
+A stop report contains: blocking gate, closed evidence pointers, open items with honesty labels and owners, and the exact decision or action requested. Stop reports and checkpoint exit reports may re-list the open items they put before the human; they are the exception to the no-re-listing rule.
+
+Each verification-gated item states the required source or command, expected evidence, whether prior or archive evidence is acceptable, freshness requirement, and `Blocked` / `Not run` fallback label.
+
+## Honesty Labels And Evidence
+
+Every claim in every doc carries one label:
+
+`Observed` (the check ran; source and result recorded) | `Inferred` (engineering reasoning) | `Recommended` (target state) | `Needs approval` | `Blocked` | `Not run`
+
+Evidence is an observed source plus a reproducible pointer: command output with exit code, file path plus line range, screenshot or artifact path, tool output, or external result with timestamp. A bare assertion is not evidence.
+
+Inline output is the decisive excerpt - at most about 20 lines plus the exit code. Longer output is written once to `artifacts/` and cited by path.
+
+`Not run` and `Blocked` items may never be presented, summarized, or counted as verified. Once a golden value such as a hash, frozen output, or approved figure is recorded, reuse it by reference; never re-derive it as new progress.
+
+## Document Authority
+
+- **Intent authority** owns the task's approved goal and approach. Mid-loop approach changes are decision rows, not plan edits; the plan is rewritten only at a human-approved replan gate and final reconciliation.
+- **Decision authority** owns decisions. Sequential IDs are never renumbered or reused. At any time exactly one row per question is active. Superseding stamps the old row `superseded by Dnn` in the same edit; status stamps are the only edit existing rows accept. Failed approaches are settled decisions. Reopening a settled row requires new `Observed` evidence contradicting its recorded basis, cited in the superseding row, and a human gate when the row carries human approval.
+- **Decision pointers** are allowed. A new active packet may point to an existing owning table, or move the whole table while preserving IDs, dates, statuses, and supersession. It does not copy selected rows into a second authority.
+- **Execution ledger** owns current status. It has exactly one current-state block plus append-only history lines. Evidence docs record iteration deltas; they do not own current open/closed status.
+- **Evidence records** are append-only records of what happened. Corrections are new records opening with `Supersedes: NNN-name.md`; the superseded record receives only one permitted retro-edit: `SUPERSEDED by NNN - do not cite as current authority`. Deletion at consolidation is the sole exception to append-only.
+- **Archive map** owns historical lookup routing. It does not summarize archived authority.
+- **Workbench docs** are not public interface contracts. When the deliverable's permanent home materializes, such as a package README or code docs, migrate the stable contract there and keep pointers.
+
+One home per fact: gate status lives only in the ledger, the cursor only in the active loop, decisions only in the decision authority, intent only in the intent authority, verification thresholds only in the verification contract, and archive routing only in the archive map. Every other doc cites IDs or paths instead of restating content.
+
+## Write Regimes
+
+Every doc lives in exactly one regime:
+
+- **Append-only** - evidence records and ledger history lines. Growth is allowed here because orientation never loads the full set.
+- **Rewrite-in-place** - entry/cursor, ledger state block, decision-row status stamps, and intent at its gates. A correction rewrites the affected current lines; amendment markers such as `UPDATE:`, `CORRECTION:`, `Revised:`, or dated addenda do not appear in these docs.
+
+When a finding is promoted from evidence into intent, decision, verification, or ledger authority, the fact's home moves with it. Later docs cite the authority row, not the original passage.
+
+## Consolidation And Archive Split
+
+Per-iteration evidence is the audit trail during active work. Consolidation triggers are mechanical: at every checkpoint exit, and whenever more than 8 evidence records have accumulated since the last consolidation. The next iteration is then a consolidation iteration before any new gate is selected.
+
+To consolidate, fold iteration records into thematic evidence docs plus a checkpoint exit report, re-derive from original records, remove the originals from the active read path, rewrite active pointers, and record the old-to-new mapping in the ledger. Append-only history lines and stamped decision rows keep their original pointers, resolved through that mapping.
+
+Deleting originals during consolidation requires reliable durable history, such as git. If durable history is unavailable or uncertain, move originals to archive or preserve a manifest before removing them from the active path.
+
+A summary may exist only where the records it covers are gone from the active path. Keep summary-plus-originals only when originals are archived and routed by the archive map.
+
+Use archive split, not consolidation, when the problem is stale historical authority in the default route: stale drivers, multiple competing phases, preserved wording, failed loops, or a current objective that can be stated in a much smaller packet with archive lookups.
 
 ## Closing
 
-At the final exit: consolidate, write the final-state doc, reconcile the originating plan, distill cross-task conclusions to the memory layer (the workbench is per-task and disposable; never duplicate the same fact across workbench, memory, and project conventions), set the `000-loop.md` status to closed, and stop touching the directory.
+At final exit: consolidate or archive as needed, write the final-state doc, reconcile the originating intent, move stable contracts to their permanent project home, set the active loop status to closed, and stop touching the directory. Memory receives retrieval cues and reusable lessons only; it does not duplicate workbench authority or project contracts.
 
-## Self-review
+## Self-Review
 
-Before yielding any iteration, check: did this iteration produce its numbered doc and ledger update (or what its named exception permits — a blocker one-line ledger entry, or consolidated docs)? Could a reader mistake an `Inferred`/`Not run` claim for `Observed`? Is there a decision made this iteration without a table row? Does the cursor name the exact next action and the settled items not to reopen? Was any human gate treated as passed without a dated quote — including the loop-driver approval that lets iteration start at all? Does any rewrite-in-place doc contain an amendment marker? Does any doc restate a fact whose home is elsewhere instead of citing its ID? Do two active decision rows answer the same question? If more than 8 evidence docs are unconsolidated, does the cursor name consolidation as the next action? Does any doc paste more than ~20 consecutive output lines? Did the plan change outside a replan gate or close? Any yes means the iteration is not done.
+Required confirmations - any `no` means the iteration is not done:
+
+- Did the iteration produce its numbered evidence record and ledger update, or a named exception?
+- Does the active loop name the exact next action, active mode, minimum read set, and stop conditions?
+- Does the ledger cite exact evidence for every current closed gate?
+- Is every active decision represented by exactly one authority row or one pointer to the owning table?
+- If the loop is new or repaired, does `D00` contain dated verbatim human approval before execution?
+- If archive material was used, did the archive map name the exact target and current authority that imported it?
+- If archive evidence closed a current gate, did the verification contract allow that freshness rule or did current evidence revalidate it?
+- If more than 8 evidence records are unconsolidated, does the cursor name consolidation as the next action?
+
+Defect checks - any `yes` means the iteration is not done:
+
+- Could a reader mistake an `Inferred`, `Not run`, or archived claim for `Observed` current evidence?
+- Did a human gate get treated as passed without a dated verbatim quote?
+- Did a search or read bypass the archive map and treat `archives/` as default context?
+- Did any doc restate a fact whose home is elsewhere instead of citing its ID or path?
+- Do two active decision rows answer the same question?
+- Does a rewrite-in-place doc contain amendment markers or stale alternatives?
+- Does an evidence record claim current status instead of recording only iteration delta and ledger pointers?
+- Does any doc paste more than about 20 consecutive output lines instead of citing an artifact?
+- Did intent, boundaries, gate classes, verification thresholds, or archive routing change outside a human gate?
