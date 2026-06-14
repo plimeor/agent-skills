@@ -1,7 +1,7 @@
 ---
 name: code-plan
 description: >-
-  Write evidence-backed coding plans for implementation, debugging, refactoring, migrations, design parity work, and long-running agent tasks. Use when defining, clarifying, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, verification strategy, or stop condition. Near miss: use code-review when judging an existing diff, spec, or already drafted plan rather than drafting or revising a plan.
+    Write evidence-backed coding plans for implementation, debugging, refactoring, migrations, design parity work, and long-running agent tasks. Use when defining, clarifying, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, verification strategy, or stop condition. Near miss: use code-review when judging an existing diff, spec, or already drafted plan rather than drafting or revising a plan; use code-tasking to turn an approved plan plus the real codebase into ordered atomic execution tasks.
 ---
 
 # Code Plan
@@ -12,224 +12,117 @@ Produce one self-contained engineering plan that another agent can execute witho
 
 A plan is not just a Goal contract and not just a task list. It explains why the work matters, what must be true at the end, the approach and order, how to verify it, which risks to watch, and when to pause or stop.
 
-## Hard Requirements
+You own the PLAN: which change is correct (the layer that owns the behavior, not the symptom site), whether that change is irreducible, the regression bar, the authorized boundary, and the risk-ordered human reading sequence. `code-tasking` owns the downstream EXECUTION GRAPH: it consumes this plan plus the real codebase, proves the ripple set empirically, re-sorts the work leaf-first by compile dependency, and makes each irreducible change unsplittable at the toolchain level for a memoryless executor. Drift firewall: if a statement could only be checked by running a command against the real codebase, it is execution-altitude and belongs in `code-tasking`; if it is a judgment about the chosen approach's shape, it belongs here.
 
-Every plan is incomplete unless it includes:
+## What Every Plan Contains
 
-- background/problem context in the user's terms
-- one durable objective and target outcome
-- scope, non-goals, constraints, and authorization boundaries
-- required context to inspect before implementation
-- a recommended approach with the main tradeoff or rationale
-- ordered work slices with dependencies or sequencing reasons when order matters
-- acceptance results that distinguish outcomes from implementation tasks
-- regression surface and regression evidence for existing behavior that must keep working
-- verification commands, artifacts, review gates, or manual evidence
-- risks, rabbit holes, assumptions, and pause conditions
-- a concrete stop condition
-
-A plan is elevated-risk when it touches public contracts, schemas, persisted state, migrations, security boundaries, cross-module ownership, or irreversible or external side effects; when a fact that would change the approach is still assumed rather than verified; or when the user asks for deep or careful planning. Elevated-risk plans also require:
-
-- `Planning iteration` status: independent research, delegated research, design review, local review, or explicit skip reason
-- integration of any research or review findings into concrete scope, sequence, regression evidence, risks, checkpoints, pause conditions, or stop conditions
-- for material design-shape risk, a design critique through `code-review` or an equivalent local review, plus an explicit reason if the critique was skipped
-- a user decision question for unresolved regression gaps caused by insufficient project tests
-
-Every plan must pass the Design Twice Gate below before it is returned: an adversarial second-design pass that tries to defeat the drafted design shape with a materially different alternative, with the outcome integrated into the plan.
-
-Do not split the artifact into separate goal, spec, and plan documents unless the user asks. Keep one cohesive plan.
-
-## Evidence Budget
-
-Start from the user's request and provided artifacts. Inspect local files, docs, issues, screenshots, Figma links, logs, tests, or existing plans only when they affect objective, scope, implementation approach, sequencing, acceptance, verification, risk, or stop conditions.
-
-Ask a focused question when a missing fact would materially change the plan or authorize external side effects. Otherwise proceed with a conservative assumption and label it in the plan.
-
-High-impact missing facts include target files or surfaces, source-of-truth behavior, allowed differences, required verification commands, credentials, deployment, destructive actions, persistent config changes, and public contract changes.
-
-Use independent research only for questions whose answers can materially improve the plan. When sub-agents might help, use `subagent-delegation` to decide whether delegation is authorized and worth the overhead. If delegation is not used, keep the research local and record the skip reason only when it affects coverage, risk, or trust.
-
-## Planning Clarity Gate
-
-Activate this gate when the request is too broad, conflicting, or under-specified to produce a faithful plan.
-
-Required evidence before drafting:
-
-- the request and provided artifacts were inspected
-- unclear boundaries are answered, conservatively assumed, or listed as blockers
-- questions are specific and ordered by impact on the plan
-
-Weak substitutes do not satisfy the gate: a broad checklist, multiple unchosen interpretations, hidden assumptions, or "adjust later" language.
-
-If the user wants to proceed without answers, record the assumptions under `Clarification status`, `Scope`, `Non-goals`, `Assumptions`, `Risks`, or `Pause conditions`.
-
-## Scope Triage Gate
-
-Activate this gate when the request mixes a desired outcome with a proposed implementation, the plan could add unrequested surface area, or a boundary change appears necessary or tempting.
-
-Run the `code-scope-gate` triage (question → classify → clarify or delete → simplify) instead of re-deriving scope rules here. The plan is incomplete until the triage separates the requested outcome from candidate implementations, names ambiguous intended scope separately from deleted or deferred scope, names what was deleted, deferred, reused, or left out, classifies boundary changes as avoided, authorized, or blocked pending user confirmation, and chooses the smallest sufficient approach before work slices are expanded.
-
-Weak substitutes do not satisfy the gate: restating the user's proposed implementation as a requirement, treating ambiguous intended scope as disposable unrequested scope, saying "keep it simple" without naming what stays out, moving speculative work into the plan as optional implementation detail, or hiding public API, schema, persistence, security, deployment, or cross-module changes inside ordinary work slices.
-
-Write the gate result into `Scope`, `Non-goals`, `Proposed approach`, `Pause conditions`, and `Stop condition`. Do not add a separate visible `Scope Gate` section unless the user explicitly asks for it or the boundary decision needs to be audited.
-
-If an unauthorized boundary change is required to satisfy the request, the plan must choose a conservative no-boundary-change alternative, ask one user decision question, or mark a pause condition before that work begins.
-
-## Plan Shape
-
-Use the shortest structure that preserves executable value. For most coding plans, use these sections in this order:
+Every plan is incomplete unless it contains these, in this order. Fill each once; do not restate the same content across sections.
 
 1. `Clarification status` - clear enough, assumptions, or blockers.
-2. `Background / problem` - why this work exists and what pain or requirement it addresses.
-3. `Objective` - one durable outcome.
-4. `Scope` - included files, modules, routes, workflows, states, users, data, or environments.
+2. `Background / problem` - why this work exists and the pain or requirement it addresses, in the user's terms.
+3. `Objective` - one durable outcome and target state.
+4. `Scope` - included files, modules, routes, workflows, states, users, data, or environments, plus constraints and authorization boundaries.
 5. `Non-goals` - adjacent work and boundary changes that stay out.
 6. `Required context` - specific files, docs, tests, screenshots, issues, commands, traces, or source baselines to read first.
-7. `Planning iteration` - the design-twice result, plus when useful: draft frame, independent research, delegated research, or design review used or skipped, and findings integrated.
-8. `Proposed approach` - recommended implementation direction and why it fits the constraints.
-9. `Work sequence` - ordered slices with purpose, likely touchpoints, dependencies, and proof expected after each slice.
-10. `Acceptance, regression evidence, and verification` - observable results, preserved behaviors, thresholds, data sources, commands, artifacts, review gates, coverage gaps, and scope.
-11. `Risks and rabbit holes` - likely traps, unknowns, tradeoffs, and how to avoid or contain them.
+7. `Planning iteration` - the Design Gate result, plus when useful: draft frame, independent or delegated research, or design review used or skipped, and findings integrated.
+8. `Proposed approach` - the recommended direction and why it fits, aimed at the layer that owns the behavior rather than the symptom site (see Section Rules).
+9. `Work sequence` - ordered slices with purpose, touchpoints, dependencies, and per-slice proof, where any change with no independently-green intermediate is flagged as one indivisible slice rather than a faux-incremental sequence (see Section Rules).
+10. `Acceptance, regression evidence, and verification` - observable results that distinguish outcomes from tasks, preserved behaviors, thresholds, data sources, commands, artifacts, review gates, and coverage gaps.
+11. `Risks and rabbit holes` - likely traps, unknowns, and tradeoffs, each with a containment plan or a pause condition.
 12. `Checkpoints` - evidence to report before moving past risky or irreversible points.
-13. `Stop condition` - concrete state where work is done and the agent should stop.
+13. `Stop condition` - the concrete state where work is done and the agent should stop.
 14. `Pause conditions` - conditions requiring user input or authorization.
 15. `Progress report format` - only for long-running tasks.
 
-For small plans, collapse obvious sections, but keep objective, scope/non-goals, approach, work sequence, regression evidence, acceptance/verification, pause conditions, and stop condition explicit.
+For small plans, collapse obvious sections, but keep `Objective`, `Scope` / `Non-goals`, `Proposed approach`, `Work sequence`, regression evidence, acceptance/verification, `Pause conditions`, and `Stop condition` explicit. Do not split the artifact into separate goal, spec, and plan documents unless the user asks.
+
+A plan is elevated-risk when it touches public contracts, schemas, persisted state, migrations, security boundaries, cross-module ownership, or irreversible or external side effects; when a fact that would change the approach is still assumed rather than verified; or when the user asks for deep or careful planning. Elevated-risk plans also require a `Planning iteration` status (independent research, delegated research, design review, local review, or explicit skip reason), integration of those findings into concrete scope, sequence, regression evidence, risks, checkpoints, pause conditions, or stop conditions, and a user decision question for unresolved regression gaps caused by insufficient project tests.
+
+The Design Gate runs on every plan before it is returned.
+
+## Evidence Budget
+
+Start from the user's request and provided artifacts. Inspect local files, docs, issues, screenshots, logs, tests, or existing plans only when they affect objective, scope, approach, sequencing, acceptance, verification, risk, or stop conditions.
+
+Ask a focused question when a missing fact would materially change the plan or authorize external side effects; otherwise proceed with a conservative labeled assumption. High-impact missing facts include target files or surfaces, source-of-truth behavior, allowed differences, required verification commands, credentials, deployment, destructive actions, persistent config changes, and public contract changes.
+
+Use independent research only for questions whose answers can materially improve the plan, and use `subagent-delegation` to decide whether delegation is authorized and worth the overhead. Record a skip reason only when it affects coverage, risk, or trust.
+
+## Planning Clarity Gate
+
+Activate when the request is too broad, conflicting, or under-specified to plan faithfully.
+
+Required before drafting: the request and artifacts were inspected; unclear boundaries are answered, conservatively assumed, or listed as blockers; questions are specific and ordered by impact on the plan.
+
+Weak substitutes do not satisfy the gate: a broad checklist, multiple unchosen interpretations, hidden assumptions, or "adjust later" language.
+
+If the user proceeds without answers, record the assumptions under `Clarification status`, `Scope`, `Non-goals`, `Risks and rabbit holes`, or `Pause conditions`.
+
+## Scope Triage Gate
+
+Activate when the request mixes a desired outcome with a proposed implementation, the plan could add unrequested surface, or a boundary change looks necessary or tempting.
+
+Apply scope triage — question → classify → clarify or delete → simplify. The plan is incomplete until it separates the requested outcome from candidate implementations, names ambiguous intended scope separately from deleted or deferred scope, names what was deleted, deferred, reused, or left out, classifies boundary changes — public behavior, APIs, schemas, persistence, security, deployment, or cross-module ownership — as avoided, authorized, or blocked pending user confirmation, and chooses the smallest sufficient approach before slices expand.
+
+Weak substitutes do not satisfy the gate: restating the user's proposed implementation as a requirement, treating ambiguous intended scope as disposable, "keep it simple" without naming what stays out, moving speculative work in as optional implementation detail, or hiding public API, schema, persistence, security, deployment, or cross-module changes inside ordinary slices.
+
+Write the result into `Scope`, `Non-goals`, `Proposed approach`, `Pause conditions`, and `Stop condition`; do not add a separate visible scope section unless the user asks. If an unauthorized boundary change is required, take the conservative path: a no-boundary-change alternative, one user decision question, or a pause condition before that work begins.
 
 ## Section Rules
 
-### Objective And Acceptance
-
-Write one objective. Do not turn milestones, tasks, or deliverables into separate objectives.
-
-Acceptance results should measure what changes or becomes true, not merely which actions were performed. Each acceptance result should name the observable outcome, verification source, pass/fail threshold, and applicable scope when the domain permits.
-
-Prefer:
-
-- `All existing tests pass with [command]` over `works correctly`.
-- `No public API signatures, exported names, event payloads, or persisted formats change` over `compatible`.
-- `Rendered desktop and mobile screenshots match the approved reference with 0 unapproved diffs` over `looks aligned`.
-- `Manual review by [role] passes [rubric]` over `quality is good`.
-
-When automation is unavailable, define manual evidence: reviewer, artifact, rubric, and pass condition.
-
-### Planning Iteration And Independent Evidence Gate
-
-Do not jump from first understanding to final plan when independent research or review could materially improve correctness.
-
-Activate this gate when a high-quality plan needs evidence that can be researched independently before the final plan is written, such as regression surface analysis, source-of-truth behavior, migration parity, public contract risk, visual reference review, test strategy, or implementation touchpoint discovery.
-
-Before delegated or independent review, the main session must define a compact draft planning frame: `Objective`, `Scope`, `Non-goals`, known constraints, candidate approach, suspected regression surface, and the exact questions the research or review must answer. The draft can be incomplete, but it must contain enough context for another agent or local review pass to investigate without inventing the goal.
-
-Use `subagent-delegation` before any sub-agent operation. Delegate only when that skill classifies delegation as authorized and useful. Useful independent tasks include:
-
-- inspecting regression surface and existing test coverage
-- checking public API, schema, persistence, or migration compatibility
-- reviewing visual/design parity requirements
-- researching relevant code paths, prior plans, issues, logs, or docs
-- stress-testing the draft plan for missing constraints, unsafe order, or weak verification
-
-Use `code-review` rather than `plan-critic` when the draft plan needs design critique: implementation approach, module boundaries, public API shape, schema or persisted-state shape, wrapper behavior, abstraction choice, error ownership, or information hiding. `plan-critic` is for executability, scope, sequencing, and verification weaknesses.
-
-When delegation is authorized, load only the sub-agent prompt file needed for that task:
-
-- [subagents/regression-gate.md](subagents/regression-gate.md) for regression surface, existing behavior, coverage gaps, and test strategy
-- [subagents/implementation-surface.md](subagents/implementation-surface.md) for likely touchpoints, dependencies, sequencing, and risky code paths
-- [subagents/contract-parity.md](subagents/contract-parity.md) for public API, schema, persistence, migration, visual, or behavior parity
-- [subagents/plan-critic.md](subagents/plan-critic.md) for adversarial review of a draft plan before finalization
-
-Delegated or local independent work is valid only when it has a bounded question, an expected evidence format, and an integration target in the final plan. Useful outputs include regression surfaces, baseline commands, affected files, public contracts, existing test coverage, coverage gaps, risks, and recommended verification evidence.
-
-Weak substitutes do not satisfy this gate: asking a sub-agent to "review the plan", delegating broad planning ownership, bypassing `subagent-delegation`, pasting unintegrated findings, adding ceremonial parallel tasks, treating another agent's conclusion as accepted without source evidence, or delegating work the main session can answer from already inspected context.
-
-The final plan must integrate delegated findings into the relevant sections, especially `Required context`, `Proposed approach`, `Work sequence`, `Acceptance, regression evidence, and verification`, `Risks and rabbit holes`, `Checkpoints`, `Pause conditions`, and `Stop condition`. Keep only findings that change scope, order, evidence, risk, or completion criteria.
-
-### Design Review Gate
-
-Activate this gate when the plan chooses or changes module boundaries, shared abstractions, public APIs, CLI contracts, schemas, persisted state, wrapper semantics, generated artifacts, error handling, or cross-module ownership. Also activate it when a small-looking change could push complexity onto future callers or maintainers.
-
-Before the final plan, create a draft planning frame and run `code-review` as a design critique when the host can apply another skill within the current authorization boundary. If skill chaining or delegation is unavailable, perform the same design-shape review locally and record that in `Planning iteration`.
-
-The final plan is incomplete unless it names:
-
-- the proposed design shape: module or API boundary, owner, callers, and changed contract surface
-- the complexity target: what future maintainers should not need to know after the change, and which complexity symptom the plan is avoiding: change amplification, cognitive load, or unknown-unknown risk
-- the hidden knowledge: invariants, ordering constraints, derived state, error rules, or special cases the design keeps behind the right boundary
-- the invariant and error owner: where invalid states are prevented or rejected
-- at least one plausible alternative when the design choice is material, plus why the chosen shape reduces current complexity
-- design-review findings that changed approach, scope, work sequence, acceptance evidence, risks, checkpoints, pause conditions, or stop condition
-
-Weak substitutes do not satisfy the gate: "keep it simple", style-only critique, listing alternatives without choosing, adding generic abstractions for future flexibility, calling a broad review without design questions, or leaving review findings unintegrated.
-
-If design review surfaces unresolved ownership, API, schema, persistence, or compatibility risk, the final plan must either choose the conservative no-boundary-change path, ask one user decision question, or mark a pause condition.
-
-### Design Twice Gate
-
-Run this gate on every plan after the draft is complete and before it is returned. It is not user-triggered. The pass is adversarial: try to defeat the drafted design shape with a materially different alternative instead of confirming it.
-
-Keep the plan frame fixed during the pass: objective, scope, non-goals, constraints, acceptance bar, regression bar, and authorization boundaries. The pass reviews design shape; it does not restart planning.
-
-Required evidence before the plan is returned:
-
-- the material design choice the draft commits to: owner, boundary, representation, interface, error model, sequencing strategy, migration shape, or generated-artifact contract
-- at least two viable and materially different options, where the drafted plan counts as one option
-- the future maintainer or caller task each option makes easier or harder
-- complexity comparison mapped to APOSD symptoms and causes: change amplification, cognitive load, unknown-unknown risk, dependency, and obscurity
-- local-fit comparison: existing patterns, public contracts, regression surface, implementation cost, validation cost, and authorized boundary
-- the outcome applied to the plan: keep the drafted shape, revise the affected sections, or add a pause condition asking for one user decision
-
-Record the result compactly in `Planning iteration`: the design choice tested, the losing option and why it lost, and which plan sections changed. If the pass finds no material design choice — a mechanical change with a single viable shape — record that conclusion and the inspected surface in one line instead of fabricating alternatives.
-
-When the Design Review Gate is also active, feed the design-twice options into that critique instead of running two disconnected reviews.
-
-Weak substitutes do not satisfy this gate: a single real option plus a strawman, superficial naming variants, generic pros and cons, "cleaner" without a maintainer task, future-flexibility theater, skipping the pass because the draft already looks good, or a revision that changes public API, schema, persistence, security posture, deployment, or external side effects without authorization.
-
-### Regression Evidence
-
-A plan must identify the existing behavior, public contract, workflow, data format, visual surface, or integration boundary that the change could accidentally break, since protecting existing behavior usually matters more than proving the new code path once.
-
-For each material work slice, define both:
-
-- forward evidence: proof that the new or changed behavior works
-- regression evidence: proof that relevant existing behavior still works
-
-Regression evidence should use the smallest existing public boundary that protects real users or callers: existing tests, typecheck, lint, build, contract tests, E2E paths, CLI output, API responses, rendered UI states, persisted data checks, characterization tests, or a manual smoke matrix.
-
-Do not satisfy regression evidence with weak substitutes such as a new-code-only test, private helper assertions, mock call counts without user-visible proof, "no obvious issues", or a successful compile when behavior risk is outside compilation.
-
-For high-risk work, plan a baseline check before edits when feasible, so pre-existing failures are distinguished from new regressions. If full regression coverage is too expensive, stale, unavailable, or already failing, name the `Regression gap`, the accepted risk, and the next best evidence.
-
-If the project does not have enough tests to cover the regression surface, finish the plan with a `Test gap decision` question. Ask whether the remaining gaps should be covered by targeted behavior test cases or end-to-end tests. For web projects, prefer end-to-end tests unless a lower-level public-boundary test clearly gives equal confidence at lower cost.
-
-Do not silently choose to add broad tests, defer the gap, or treat manual smoke as enough when the user needs to decide the coverage strategy.
-
-For complex or high-risk changes, a delegated Regression Gate analysis may identify existing behavior, public contracts, baseline checks, coverage gaps, and the smallest useful regression evidence. The final plan must still choose the accepted evidence and name unresolved gaps.
-
 ### Proposed Approach
 
-Name the recommended path, not every possible path. Include alternatives only when the choice is material to risk, user authorization, or implementation cost.
+Name the recommended path, not every possible path; include alternatives only when the choice is material to risk, authorization, or cost.
 
-The approach should explain the reasoning boundary: why this is the smallest sufficient path, what it preserves, and what it intentionally leaves out.
-
-When the Scope Triage Gate applies, the approach must preserve the distinction between requested outcomes and candidate implementations. Do not let a proposed mechanism become a requirement unless the user or source-of-truth behavior makes it one.
+Aim the approach at the layer that OWNS the behavior — the module, symbol, or contract where it originates — not the site where the symptom shows, even when the symptom site is the smaller edit. Smallest sufficient means smallest among root-cause-correct options, never smallest absolute. Chain "why does this behavior occur here?" until the next answer leaves the proposed edit boundary; if it still points deeper, the approach is aimed at a symptom and must move down. A root-cause approach may need a preparatory refactor first (make the change easy, then make the easy change) — order it as an earlier slice rather than patching around the un-refactored shape. State what the approach preserves and intentionally leaves out, and keep requested outcomes distinct from candidate implementations.
 
 ### Work Sequence
 
-The work sequence is an execution map, not a backlog dump. Each slice should have:
+The work sequence is an execution map, not a backlog dump. Each slice names its purpose, likely files/surfaces/commands, dependency on earlier slices, and the forward and regression evidence that completes it. Order risky discovery, characterization, or contract checks before broad edits; put irreversible actions, external side effects, deployments, and destructive operations behind explicit pause conditions. This is the risk/discovery-first human reading order, intentionally not the execution order — `code-tasking` discards it and re-sorts leaf-first by compile dependency.
 
-- purpose
-- likely files, modules, surfaces, or commands involved
-- dependency on earlier slices when relevant
-- forward and regression evidence that the slice is complete
+Before ordering, identify any change with NO independently-green intermediate — a rename without an alias, a signature, required-field, type, or representation change, or a moved invariant owner, where partial application leaves the code broken or wrong. Mark it as ONE indivisible slice that lands in a single cut; do not present it as "add the new path now, migrate callers later," which invites a permanent compatibility shim. A parallel-change sequence (expand → migrate → contract) is justified only when a consumer genuinely cannot change in the same unit because it is published, persisted, or in another repo; name that consumer, and make the contract step that deletes the old path a mandatory terminal slice, never optional cleanup. Unrequested backward-compatibility is a scoped decision to record, never a default to volunteer.
 
-Order risky discovery, characterization, or contract checks before broad edits. Put irreversible actions, external side effects, deployments, and destructive operations behind explicit pause conditions.
+### Objective And Acceptance
+
+Write one objective; do not turn milestones, tasks, or deliverables into separate objectives.
+
+Acceptance results measure what becomes true, not which actions were performed. Each names the observable outcome, verification source, pass/fail threshold, and applicable scope when the domain permits. Prefer `All existing tests pass with [command]` over "works correctly"; `No public API signatures, exported names, event payloads, or persisted formats change` over "compatible"; `Rendered desktop and mobile screenshots match the approved reference with 0 unapproved diffs` over "looks aligned"; `Manual review by [role] passes [rubric]` over "quality is good". When automation is unavailable, define manual evidence: reviewer, artifact, rubric, and pass condition.
+
+### Regression Evidence
+
+A plan must identify the existing behavior, public contract, workflow, data format, visual surface, or integration boundary the change could accidentally break; protecting existing behavior usually matters more than proving the new path once.
+
+For each material slice define both forward evidence (the new or changed behavior works) and regression evidence (relevant existing behavior still works). Regression evidence uses the smallest existing public boundary that protects real users or callers: existing tests, typecheck, lint, build, contract tests, E2E paths, CLI output, API responses, rendered UI states, persisted-data checks, characterization tests, or a manual smoke matrix. Do not satisfy it with weak substitutes — a new-code-only test, private-helper assertions, mock call counts without user-visible proof, "no obvious issues", or a successful compile when the behavior risk is outside compilation.
+
+For high-risk work, plan a baseline check before edits so pre-existing failures are distinguished from new regressions. If full coverage is too expensive, stale, unavailable, or already failing, name the `Regression gap`, the accepted risk, and the next best evidence. For complex or high-risk changes a delegated Regression Gate analysis may identify existing behavior, public contracts, baselines, and coverage gaps; the plan still chooses the accepted evidence and names unresolved gaps.
+
+If the project does not have enough tests to cover the regression surface, finish with a `Test gap decision` question: should the gaps be covered by targeted behavior test cases or end-to-end tests? For web projects prefer end-to-end tests unless a lower-level public-boundary test clearly gives equal confidence at lower cost. Do not silently add broad tests, defer the gap, or treat manual smoke as enough when the user needs to decide the coverage strategy.
 
 ### Risks And Rabbit Holes
 
-Call out details that could derail execution: hidden coupling, stale docs, migration parity gaps, visual mismatch, unclear product judgment, flaky tests, missing credentials, schema or API compatibility, and generated-file churn.
+Call out what could derail execution — hidden coupling, stale docs, migration parity gaps, visual mismatch, unclear product judgment, flaky tests, missing credentials, schema or API compatibility, generated-file churn — and for each give a containment plan or a pause condition.
 
-For each meaningful risk, either state the containment plan or mark it as a pause condition.
+## Design Gate
+
+Run on every plan after the draft is complete and before it is returned; it is not user-triggered. The pass is adversarial — try to defeat the drafted design shape with a materially different alternative instead of confirming it. Keep the plan frame fixed (objective, scope, non-goals, constraints, acceptance bar, regression bar, authorization boundaries); the pass reviews design shape, it does not restart planning.
+
+Required before the plan is returned:
+
+- the material design choice committed to: owner, boundary, representation, interface, error model, sequencing strategy, migration shape, or generated-artifact contract — including which layer owns the targeted behavior (origin vs symptom) and whether the change is irreducible (one cut) or genuinely supports a safe incremental / expand-contract path
+- at least two viable, materially different options (the draft counts as one), the future maintainer or caller task each makes easier or harder, a complexity comparison mapped to APOSD symptoms and causes (change amplification, cognitive load, unknown-unknown risk, dependency, obscurity), and a local-fit comparison (existing patterns, public contracts, regression surface, implementation and validation cost, authorized boundary)
+- the chosen design shape the executor inherits: module or API boundary, owner, callers, and changed contract surface; the complexity target (what future maintainers need not know after the change, and which symptom is avoided); the hidden knowledge kept behind the boundary (invariants, ordering constraints, derived state, error rules, special cases); and where invalid states are prevented or rejected
+- the outcome applied: keep the drafted shape, revise the affected sections, or add a pause condition asking for one user decision
+
+Independent evidence path. When a high-quality plan needs evidence researchable before the final plan — regression surface, source-of-truth behavior, migration parity, public-contract risk, visual reference, test strategy, or touchpoint discovery — do not jump from first understanding to final plan. First define a compact draft frame (`Objective`, `Scope`, `Non-goals`, known constraints, candidate approach, suspected regression surface, exact questions to answer); it may be incomplete but must let another pass investigate without inventing the goal. Then, via `subagent-delegation` (which decides whether delegation is authorized and useful), run the right pass:
+
+- `code-review` for design critique: implementation approach, module boundaries, public API shape, schema or persisted-state shape, wrapper behavior, abstraction choice, error ownership, information hiding — feed the second-design options into this critique. `plan-critic` is for executability, scope, sequencing, and verification weaknesses.
+- [subagents/regression-gate.md](subagents/regression-gate.md), [subagents/implementation-surface.md](subagents/implementation-surface.md), [subagents/contract-parity.md](subagents/contract-parity.md), and [subagents/plan-critic.md](subagents/plan-critic.md) for those bounded passes.
+
+Each pass is valid only with a bounded question, an expected evidence format, and an integration target. Integrate findings into the affected sections — especially `Required context`, `Proposed approach`, `Work sequence`, `Acceptance, regression evidence, and verification`, `Risks and rabbit holes`, `Checkpoints`, `Pause conditions`, and `Stop condition` — keeping only what changes scope, order, evidence, risk, or completion criteria.
+
+Record the result compactly in `Planning iteration`: the design choice tested, the losing option and why it lost, and which sections changed. If there is no material design choice — a mechanical change with one viable shape — record that conclusion, the layer that owns the behavior, and whether the change is irreducible, in one line; the owner and irreducibility facts are never skippable, only the two-option comparison is. If the gate surfaces unresolved ownership, API, schema, persistence, or compatibility risk, take the conservative path named in the Scope Triage Gate.
+
+Weak substitutes do not satisfy this gate: a single real option plus a strawman, superficial naming variants, generic pros and cons, "cleaner" without a maintainer task, future-flexibility theater, skipping the pass because the draft already looks good, "keep it simple", style-only critique, listing alternatives without choosing, generic abstractions for future flexibility; asking a sub-agent to "review the plan", delegating broad planning ownership, bypassing `subagent-delegation`, pasting unintegrated findings, treating another agent's conclusion as accepted without source evidence, delegating work the main session can answer from already-inspected context; or a revision that changes public API, schema, persistence, security posture, deployment, or external side effects without authorization.
 
 ## Specialized Gates
 
@@ -253,46 +146,26 @@ Adapting imports, file layout, naming, formatting, framework conventions, local 
 
 ## Self-Review
 
-Before returning the plan, check for every plan:
+Before returning the plan, check each; any gap a check reveals leaves the plan incomplete until fixed:
 
 - Could an agent execute the plan without inventing the background, objective, boundaries, or order?
-- Are acceptance results outcomes, not task completions?
-- Does every risky slice protect existing behavior with regression evidence — not only prove the new path — and tie to evidence, containment, or a pause condition?
-- Does the plan explain why the recommended approach fits better than obvious alternatives?
-- Could an agent claim completion without running or reporting the stated verification? If yes, rewrite the stop condition.
-- Did the design-twice pass compare at least two real options against the drafted shape — or record that no material design choice exists — with tradeoffs mapped to APOSD complexity symptoms and causes, and is its outcome recorded in `Planning iteration`?
-- If the design-twice pass changed the plan, did it update only the affected sections plus verification, regression evidence, risks, stop conditions, or pause conditions while preserving the plan frame?
-- If a hard gate applies, does the output contract require the gate's evidence rather than burying it in prose?
-- Is any section low-signal filler that should be removed or collapsed?
+- Are acceptance results observable outcomes, not task completions, and could an agent claim completion without running the stated verification?
+- Does the approach change the OWNER of the behavior, or only the site where the symptom appears? A fix that would have to be repeated at many call sites to be correct is a symptom patch — re-aim it at the owner.
+- Does any slice claim an independently-green intermediate that does not exist? Plan an irreducible change as one cut; if a compatibility path is proposed, is the delete-old contract step present and terminal?
+- Does every risky slice protect existing behavior with regression evidence, tied to evidence, containment, or a pause condition?
+- Did the Design Gate weigh at least two real options (or record that none exist) with tradeoffs mapped to APOSD symptoms in `Planning iteration`, revising only the affected sections while the plan frame stayed fixed?
+- If a hard gate applies, does the output contract require its evidence rather than burying it in prose? Is any section low-signal filler that should be removed or collapsed?
 
-When the plan is elevated-risk or used independent research or delegation:
+When the plan is elevated-risk or used independent research or delegation: did the main session draft a frame and exact research questions first, then use or explicitly skip useful independent research via `subagent-delegation`; did each delegated finding change a concrete section (else remove it as ceremonial); did a design critique inspect interface depth, information hiding, invariant/error ownership, and complexity pushed to callers; and does the plan remain one cohesive executable plan rather than a bundle of sub-agent notes?
 
-- Did the main session draft enough context, then use or explicitly skip useful independent research?
-- Did the main session define the objective, scope, non-goals, and exact research questions before delegating, and rely on `subagent-delegation` for authorization and coordination?
-- Did each delegated finding change a concrete part of the final plan: scope, sequence, regression evidence, risk, checkpoint, pause condition, or stop condition? Remove ceremonial, broad, unbounded, or unintegrated tasks, or rewrite them into bounded evidence questions.
-- Does the final plan remain one cohesive executable plan rather than a bundle of sub-agent notes?
+When scope risk exists: does the plan name the requested outcome, what was deleted or deferred, and whether boundary changes are avoided, authorized, or blocked, separating ambiguous intended scope from deleted scope, with a clarification question, assumption, or pause condition for anything that plausibly carries requested value; and could an agent treat a candidate implementation, speculative feature, or adjacent refactor as required work?
 
-When the plan has design-shape risk:
-
-- Did `code-review` or an equivalent design critique inspect interface depth, information hiding, invariant/error ownership, and complexity pushed to callers?
-- Did design-review findings change the final plan, or does `Planning iteration` explain why no plan change was needed?
-
-When scope risk exists:
-
-- Does the plan name the actual requested outcome, what was deleted or deferred, and whether boundary changes are avoided, authorized, or blocked?
-- Does the plan separate ambiguous intended scope from deleted/deferred scope, with a clarification question, assumption, pause condition, or learning step for anything that plausibly carries requested value?
-- Could an agent treat a candidate implementation, speculative future feature, or adjacent refactor as required work? If yes, rewrite `Scope`, `Non-goals`, and `Proposed approach`.
-
-When project tests are insufficient for the regression surface:
-
-- Does the plan ask the user to choose targeted behavior tests or end-to-end tests, with E2E recommended for web projects?
+When project tests are insufficient for the regression surface: does the plan ask the user to choose targeted behavior tests or end-to-end tests, with E2E recommended for web projects?
 
 ## Stop Rules
 
-Stop when the user has one executable plan that has passed the Design Twice Gate, the required `Test gap decision` question for any unresolved regression gaps, the next narrow clarification question, or a blocker list explaining which missing facts prevent a faithful plan.
+Stop when the user has one executable plan that passed the Design Gate, the required `Test gap decision` question for unresolved regression gaps, the next narrow clarification question, or a blocker list naming which missing facts prevent a faithful plan.
 
-When scope risk remains unresolved, stop only after the plan names the conservative no-boundary-change path, the user decision needed, or the pause condition that blocks expansion.
+When scope risk is unresolved, stop only after the plan names the conservative no-boundary-change path, the user decision needed, or the pause condition that blocks expansion. When independent or delegated research is used, stop only after the final plan integrates the relevant findings and names unresolved evidence gaps, waived risks, or user decisions — not with unintegrated notes unless the user asked for raw research output.
 
-When independent or delegated research is used, stop only after the final plan integrates the relevant findings and names unresolved evidence gaps, waived risks, or user decisions. Do not stop with unintegrated notes unless the user explicitly asked for raw research output.
-
-The next phase is separate unless already authorized: implementation, file edits, documentation changes, test execution, commits, pushes, deployment, or external side effects require the user's current request or an active execution task.
+The next phase is separate unless already authorized: implementation, file edits, documentation changes, test execution, commits, pushes, deployment, or external side effects require the user's current request or an active execution task. To turn an approved plan plus the real codebase into ordered atomic execution tasks, hand off to `code-tasking`.

@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: >-
-  Review concrete code plan drafts, specs, diffs, and implementation shapes. Use for code-review requests, serious code-plan design critique, and judging whether a proposed direction is sound. Near miss: use code-plan to create or revise plans; use code-scope-gate for pre-spec scope shaping.
+  Review concrete code plan drafts, specs, diffs, and implementation shapes. Use for code-review requests, serious code-plan design critique, and judging whether a proposed direction is sound. Near miss: use code-plan to create or revise plans.
 ---
 
 # Code Review
