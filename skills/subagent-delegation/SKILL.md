@@ -1,7 +1,7 @@
 ---
 name: subagent-delegation
 description: >-
-  Decide whether and how to use authorized sub-agents, then coordinate delegated work while preserving the main agent's context. Use when the user asks for orchestration, parallel agents, delegation, background workers, context isolation, or when another skill needs delegated research, review, implementation, or verification. Owns host-policy checks, delegation packets, non-overlap, report verification, and stop rules. Do not use to bypass tool policy, infer user authorization, or add coordination overhead to simple single-threaded tasks.
+  Decide whether and how to use sub-agents, treating user authorization as granted by default unless the user explicitly prohibits delegation, then coordinate delegated work while preserving the main agent's context. Use when the user asks for orchestration, parallel agents, delegation, background workers, context isolation, or when another skill needs delegated research, review, implementation, or verification. Owns host-policy checks, delegation packets, non-overlap, report verification, and stop rules. Do not use to bypass tool policy, ignore explicit user prohibitions, or add coordination overhead to simple single-threaded tasks.
 ---
 
 # Subagent Delegation
@@ -10,7 +10,7 @@ Coordinate sub-agents to protect the main agent's context and attention while co
 
 This skill is tool-neutral. "Sub-agent" may mean a worker, explorer, background agent, forked agent, delegated session, agent thread, or any equivalent capability provided by the current coding or agent tool.
 
-This skill owns reusable sub-agent policy. Other skills may state that independent evidence, review, or verification would be useful, but they should defer authorization checks, delegation packet shape, non-overlap rules, report handling, and stop conditions to this skill.
+This skill owns reusable sub-agent policy. Other skills may state that independent evidence, review, or verification would be useful, but they should defer the default user authorization gate, host/tool checks, delegation packet shape, non-overlap rules, report handling, and stop conditions to this skill.
 
 Multi-agent work has real overhead: duplicated setup context, coordination messages, report synthesis, and more failure modes. Use sub-agents when they buy one of three things:
 
@@ -24,12 +24,39 @@ If none of those apply, prefer a single agent.
 
 Follow the current host and tool policy before applying any orchestration rule in this skill.
 
-- Before any `spawn`, `message`, `resume`, or `wait` operation, classify delegation status as `explicitly authorized`, `host-authorized`, or `not authorized`.
-- If sub-agent calls require explicit user authorization, treat benefit signals as planning inputs only. Do not spawn, message, resume, or wait on sub-agents unless the user explicitly asked for sub-agents, delegation, parallel agents, or equivalent agent work.
-- If the host permits autonomous delegation, use the use/not-use rules below to decide whether delegation is worth the cost.
+- Before any `spawn`, `message`, `resume`, or `wait` operation, classify delegation status as `explicitly requested`, `user-default-authorized`, `explicitly prohibited`, `host/tool blocked`, or `not worth overhead`.
+- User authorization is granted by default. If the user has not explicitly prohibited sub-agents, delegation, parallel agents, background workers, or equivalent agent work, treat sub-agent use as user-authorized and decide by host/tool policy, task fit, cost, and side-effect boundaries.
+- Do not require an explicit user request before using sub-agents. Lack of explicit delegation language is not evidence that delegation is unauthorized.
+- If the user explicitly prohibits sub-agents or equivalent delegation, do not spawn, message, resume, or wait on sub-agents until the user changes that instruction.
+- If host or tool policy blocks sub-agent calls, treat benefit signals as planning inputs only and keep the work local.
 - Do not create external infrastructure, durable state, issue trackers, queues, files, commits, branches, or other side effects for coordination unless the user authorized that surface or the artifact already exists inside the requested work.
-- If delegation would change the authorization boundary, ask one narrow question or keep the work local.
-- If delegation is not authorized or not worth the overhead, record the skip reason in the final output only when that reason affects user trust, coverage, or verification.
+- If delegation would change a side-effect or authorization boundary beyond sub-agent use itself, ask one narrow question or keep that boundary local.
+- If delegation is explicitly prohibited, host/tool blocked, or not worth the overhead, record the skip reason in the final output only when that reason affects user trust, coverage, or verification.
+
+### Default User Authorization Gate
+
+Activation condition: apply this gate before each proposed `spawn`, `message`, `resume`, or `wait` operation.
+
+Required evidence or fields:
+
+- Current user instructions contain no explicit prohibition against sub-agents, delegation, parallel agents, background workers, or equivalent agent work; or the user explicitly requested one of those modes.
+- Current host and tool policy permits the requested sub-agent operation.
+- The proposed delegation satisfies the use/not-use rules below.
+- The delegation does not create external infrastructure, durable coordination state, commits, branches, deployments, or other side effects outside the requested work.
+
+Prohibited substitutes:
+
+- Treating silence as lack of user authorization.
+- Treating "the user did not ask for sub-agents" as a reason to classify delegation as unauthorized.
+- Hiding a cost or scope decision behind `not authorized`.
+- Using default authorization to bypass host/tool policy or an explicit user prohibition.
+
+Incomplete or pause behavior:
+
+- If explicit user prohibition is present, keep the work local.
+- If host/tool policy blocks the operation, keep the work local or use a permitted non-sub-agent workflow.
+- If the sub-agent operation would create a separate side effect boundary, ask one narrow question before crossing that boundary.
+- If only task fit or coordination cost is weak, classify the decision as `not worth overhead`, not `not authorized`.
 
 ## Core Principle
 
@@ -56,7 +83,7 @@ The main agent may verify returned work, but verification starts after the relev
 
 ## When To Use
 
-Use this skill to decide whether to delegate, and to coordinate delegation only when the current host policy permits it. Delegation is worth considering when at least one of these is true:
+Use this skill to decide whether to delegate, and to coordinate delegation when the user has not explicitly prohibited it and the current host/tool policy permits it. Delegation is worth considering when at least one of these is true:
 
 - The user explicitly asks for sub-agents, parallel agents, orchestration, delegation, background workers, or context isolation.
 - Another active skill requires an authorization-aware decision about independent research, review, implementation, or verification.
@@ -77,7 +104,8 @@ Strong signals:
 
 Do not use sub-agents when:
 
-- Host or tool policy requires explicit delegation authorization and the user has not given it.
+- The user explicitly prohibited sub-agents, delegation, parallel agents, background workers, or equivalent agent work.
+- Host or tool policy blocks the sub-agent operation.
 - The task is small enough that delegation adds more coordination cost than value.
 - The next step is a blocking critical-path decision that the main agent must make now.
 - The subtask is vague, open-ended, or lacks a clear stop condition.
@@ -311,7 +339,17 @@ Before final response:
 - Apply or refine worker changes if needed.
 - Run the smallest meaningful final verification.
 - State what changed, what was checked, and what remains unverified.
+- Do not finish with `not authorized` as the delegation reason unless an explicit user prohibition or host/tool block was actually observed; use `not worth overhead` for cost and fit decisions.
 - Stop when the requested work is complete. Do not keep spawning agents just because capacity remains.
+
+## Self-Review Check
+
+Before reporting a delegation decision, check:
+
+- Did I treat user silence as default authorization rather than as missing permission?
+- If I did not delegate, is the reason explicit user prohibition, host/tool block, weak task fit, coordination cost, overlap risk, or a side-effect boundary?
+- If I wrote `not authorized`, can I point to the explicit user prohibition or host/tool block? If not, relabel it as `not worth overhead` or ask the narrow boundary question.
+- Did I avoid using default authorization to cross unrelated side-effect boundaries such as durable files, branches, commits, deployments, issue trackers, queues, or external infrastructure?
 
 ## Common Patterns
 
@@ -386,7 +424,7 @@ When this skill triggers, keep the visible orchestration note short unless the u
 
 ```markdown
 Orchestration:
-- Delegation status: [explicitly authorized / host-authorized / not authorized, with brief reason]
+- Delegation status: [explicitly requested / user-default-authorized / explicitly prohibited / host/tool blocked / not worth overhead, with brief reason]
 - Main thread: [critical-path work kept local]
 - Delegated: [sub-agent tasks, with disjoint file ownership noted when any agents edit concurrently]
 - Non-overlap: [what the main agent will not duplicate while agents run]

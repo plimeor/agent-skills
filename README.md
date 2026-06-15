@@ -43,7 +43,7 @@ Skills are grouped by primary mode.
 
 - [context-engineering](skills/context-engineering/SKILL.md): Route durable rules and context to the right layer — task, project, skill, tooling, MCP, or global — and produce the smallest directly applicable edit.
 - [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md): Maintain and upgrade GPT-oriented prompt artifacts, including SKILL.md, AGENTS, system/developer prompts, agent workflows, evals, and grader prompts.
-- [subagent-delegation](skills/subagent-delegation/SKILL.md): Decide whether and how to use authorized sub-agents, then coordinate delegation, non-overlap, report verification, and integration.
+- [subagent-delegation](skills/subagent-delegation/SKILL.md): Decide whether and how to use sub-agents under default user authorization unless explicitly prohibited, then coordinate delegation, non-overlap, report verification, and integration.
 
 ### Ops
 
