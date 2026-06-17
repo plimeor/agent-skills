@@ -26,6 +26,7 @@ Skills are grouped by primary mode.
 
 ### Code
 
+- [code-lean](skills/code-lean/SKILL.md): Force the smallest correct coding change: YAGNI, deletion before addition, standard library/native/existing project capability first, no unrequested abstractions, explicit quality boundaries, simplification comments with upgrade triggers, and one runnable check for non-trivial logic.
 - [code-plan](skills/code-plan/SKILL.md): Write tiered, evidence-backed coding plans with objective, scope, ambiguous intended scope, proposed approach, ordered work, acceptance, regression evidence, verification, risks, pause conditions, and stop conditions, with an automatic design-twice adversarial pass before every plan is delivered.
 - [code-review](skills/code-review/SKILL.md): Review plan drafts, specs, diffs, and implementation shapes for direction soundness, premise validity, high-potential preservation, boundary clarification, alternatives, APOSD-style complexity, contracts, tests, implementation fit, and synthesis.
 - [code-tasking](skills/code-tasking/SKILL.md): Turn an approved plan plus the real codebase into a leaf-first, dependency-ordered graph of atomic execution tasks for an iterative Goal-mode executor; locate the root-cause change, fuse a synchronized ripple into one no-green-partial task that edits the foundation incompatibly in place, order foundation before dependents, and give each task an anti-patch Definition of Done that names the forbidden shim and requires deleting the superseded path.
