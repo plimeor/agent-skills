@@ -33,6 +33,8 @@ Each type owns a specific altitude and forbids the others' content. One home per
 
 Every Requirement, Plan, Tasking, and Decision carries YAML front matter at the top of the file. Front matter is the machine-readable status surface: the index, lint, and supersession checks read it; humans read the body. A doc without valid front matter is not a doc of its type — it is an undated note and fails the Required Context Gate.
 
+The body does not echo what front matter already records — `date`, `status`, `supersedes`, `superseded_by`. Restating these in prose is duplication that drifts out of sync whenever the front matter updates; the front matter is the single source for them. When the body needs to point at one (most often explaining why a prior doc is overturned), cite the upstream path inline rather than repeating its status or date.
+
 ```yaml
 ---
 date: 2026-06-19
@@ -164,6 +166,7 @@ Defect checks — any `yes` leaves the work incomplete:
 
 - Could a doc at one altitude be mistaken for authority at another (e.g., a plan treated as a decision, or a superseded doc of any type still cited as current)?
 - Does any doc restate a fact whose home is elsewhere instead of citing it?
+- Does any doc echo its own front-matter `status`, `date`, `supersedes`, or `superseded_by` in the body instead of letting the front matter be the single source?
 - Did a routing or status change (add / promote / supersede / archive) happen without updating the cursor and index in the same edit?
 - Is a decision still living in a plan or tasking while the plan is cited as authority?
 - Did a superseded or archived doc lose its forward pointer, get its body edited or deleted, or land only one of the two supersession stamps?
