@@ -53,6 +53,8 @@ Acceptance and quality gates should name weak substitutes that do not satisfy th
 
 Before finishing a skill, run an adversarial check: `Could an agent follow this skill and skip the user's hard requirement while still sounding compliant?` A yes answer means the requirement needs a stronger gate, output field, self-review check, or stop rule.
 
+When the requirement is a decomposition — a fan-out, a critique matrix, a multi-lens review — a conservative executor collapses it down whatever axis the skill leaves to judgment, and each tightening only pushes the collapse to the next-softest axis. (`agent-team` ran this gauntlet: dropped the adversarial pass entirely → split the question into analysis angles instead of competing candidates → ran one shared review instead of per-candidate → collapsed the distinct lenses into one reviewer.) Name the matrix on every load-bearing axis and add a red flag per collapse mode. Stop when the residual axis is low-value — be stakes-proportional, not count-maximal.
+
 ## Verification
 
 After adding, removing, renaming, or changing the functional behavior of a skill:
