@@ -1,7 +1,7 @@
 ---
 name: agentic-document-workflow
 description: >-
-  Capture, route, and maintain the structured documents produced while collaborating with an AI — requirements, plans, tasking, decisions, and the execution cursor — so collaboration knowledge compounds across sessions instead of evaporating in chat history. Use when creating, placing, linking, promoting, superseding, archiving, or indexing one of these docs, or when setting up the document system for a project. Near miss: use code-plan to draft a plan's engineering content, and code-tasking to turn a plan into ordered tasks; this skill owns the document system those artifacts live in, not their content quality.
+  Capture, route, and maintain the structured documents produced while collaborating with an AI — requirements, plans, tasking, decisions, and the execution cursor — so collaboration knowledge compounds across sessions instead of evaporating in chat history. Use when creating, placing, linking, promoting, superseding, archiving, indexing, or materially editing one of these docs, including checking nearby older docs for keep/reduce/archive/supersede/delete-candidate handling. Near miss: use code-plan to draft a plan's engineering content, and code-tasking to turn a plan into ordered tasks; this skill owns the document system those artifacts live in, not their content quality.
 ---
 
 # Agentic Document Workflow
@@ -10,17 +10,17 @@ description: >-
 
 The collaboration document set is a context substrate: a fresh agent or a future you can orient from the files alone, every doc has exactly one home and one owner, stable outcomes outlive the task that produced them, overturned docs of any type remain inspectable as history, and each session makes the set richer rather than noisier. Chat history is not the record; the dated, front-mattered, linked, indexed, archived docs are.
 
-This skill owns the SYSTEM — doc types, ownership boundaries, front matter, naming, routing, index, version control, lifecycle, promotion, supersession, archive. It does not own the engineering quality of a plan (code-plan) or the task graph (code-tasking). Those producers emit a doc; this skill places, links, ages, supersedes, and retires it.
+This skill owns the SYSTEM — doc types, ownership boundaries, front matter, naming, routing, index, version control, lifecycle, promotion, supersession, archive, content selection, and bounded maintenance observation. It does not own the engineering quality of a plan (code-plan) or the task graph (code-tasking). Those producers emit a doc; this skill places, links, ages, supersedes, and retires it.
 
 ## Activation
 
-Activate when the user is doing any of: creating a requirement, plan, tasking, or decision doc for AI collaboration; deciding which doc type a piece of work belongs to, or where it lives; linking a doc to its source(s) and dependents, or updating those links; promoting a stable outcome from a plan/tasking into the decision record; superseding a prior doc of any type with a new one; archiving completed work and keeping a lookup route to it; setting up, repairing, or linting the document system for a project.
+Activate when the user is doing any of: creating or materially editing a requirement, plan, tasking, or decision doc for AI collaboration; deciding which doc type a piece of work belongs to, or where it lives; linking a doc to its source(s) and dependents, or updating those links; promoting a stable outcome from a plan/tasking into the decision record; superseding a prior doc of any type with a new one; archiving completed work and keeping a lookup route to it; setting up, repairing, or linting the document system for a project.
 
 Complete the work directly and skip this skill when it is one-shot, one-session, and needs no durable record: a quick clarification, a direct code edit, a throwaway note. If a direct task later needs to compound, open the workflow then.
 
 ## Doc Types And Ownership
 
-Each type owns a specific altitude and forbids the others' content. One home per fact; the rest cite it.
+Each type owns a specific altitude and forbids the others' content. One home per authority-bearing claim; the rest cite it and may carry only short contextual summaries that do not become authority.
 
 - **Requirement** — goals, scope, non-goals, UX expectations, acceptance criteria, product constraints. A dated incremental record, not a single living requirements file. Owns: what and why. Forbids: implementation plans, task breakdowns, execution status, long-term decisions.
 - **Plan** — recommended implementation approach, ownership boundaries, prerequisites, phase breakdown, risks, verification strategy, stop condition. Derived from one or more requirements. Owns: how, in what order, with what risk. Forbids: detailed agent task status, command transcripts, durable decisions.
@@ -96,10 +96,39 @@ Requirement → Plan → Tasking → (execution) → Decision
 
 ## Operations
 
-- **Capture.** Classify the moment (requirement / plan / tasking / decision / archive), create the doc at the right altitude, in the right place, with the right date, valid front matter, and status; cite upstream docs inline where it derives from them; add its line to `index.md`; and point any downstream docs that should cite it. If the work does not fit a type, name what is missing rather than forcing it into the wrong home.
-- **Maintain.** Keep cross-links, front-matter status, and `index.md` current as docs are added, promoted, superseded, or archived. Every routing or status change lands with its index update in the same edit.
+- **Capture.** Classify the moment (requirement / plan / tasking / decision / archive), create the doc at the right altitude, in the right place, with the right date, valid front matter, and status; pass the Content Selection Gate before adding body content; cite upstream docs inline where it derives from them; add its line to `index.md`; point any downstream docs that should cite it; and complete the Maintenance Observation Gate for the bounded related set. If the work does not fit a type, name what is missing rather than forcing it into the wrong home.
+- **Maintain.** Keep cross-links, front-matter status, and `index.md` current as docs are added, promoted, superseded, archived, reduced, or marked as follow-up. Every routing or status change lands with its index update in the same edit, and every material content/routing/status change carries a bounded maintenance observation.
 - **Query.** Read `index.md` and the cursor first, then drill into the specific doc. Do not grep the whole set as a first move.
 - **Lint.** Periodically detect: front-matter errors (missing/invalid status, directory and filename suffix disagreeing about type, `supersedes` without matching `superseded_by`), orphans (no inbound links, not in index), stale links (target moved, archived, or superseded without forward pointer), contradictions (two `active` docs at the same altitude answer the same question), decisions still buried in a plan that should be promoted, and broken supersession chains. Lint findings are new Capture or Maintain work, not silent edits.
+
+## Maintenance Observation Gate
+
+Activate on every material create, update, move, promote, supersede, archive, or routing/status edit in the document set. Spelling-only and formatting-only edits do not require a corpus check, but they still must not hide a known lifecycle problem in the touched doc.
+
+The observation is bounded by the routing surface, not the whole repository. Inspect: `index.md`; the cursor if present; the touched doc(s); upstream/downstream docs named by inline links, front matter, cursor, or index; same-question candidates surfaced by the index; and affected directory peers only when the index is missing, stale, or visibly incomplete. Use wider search only to repair broken routing or answer a concrete stale-link question, not as the first move.
+
+The work is incomplete until a compact observation exists in the place appropriate to the operation: the cursor for active work, `index.md` for routing/status changes, the touched doc when the lifecycle note is durable context, or the final/task note when no durable edit is needed. The observation records:
+
+- `operation`: create / update / move / promote / supersede / archive / route, plus touched path(s);
+- `observed_set`: the concrete paths inspected, including absent required paths such as a missing cursor or index;
+- per materially related doc: `classification`, `reason`, and `action` (`applied`, `deferred`, or `blocked`);
+- whether front matter, cursor, links, or `index.md` changed.
+
+If no materially related prior doc is found, record the `observed_set` and that no lifecycle action was found. Silence is not evidence that the observation happened.
+
+Allowed classifications:
+
+- `keep` — current, scoped, routed, and not duplicative authority.
+- `record` — valuable context exists but its route, owner, status, source, or evidence pointer needs to be recorded.
+- `reduce` — content has value but duplicates authority, overstates code-derived facts, or belongs as a short pointer.
+- `archive` — cold evidence or completed execution context should leave the default read path while retaining a route.
+- `supersede` — a newer same-altitude doc replaces current authority and must pass the Supersession Gate.
+- `delete-candidate` — non-authoritative, certainly wrong, redundant, generated, or valueless material is a candidate, not an action; removal requires deletion to be in the current authorized scope or a focused user approval, with routes, links, and recovery path handled.
+- `follow-up` — real maintenance work is outside the current authorization or too large for the current edit.
+
+Weak substitutes that do not satisfy the gate: "checked related docs" with no paths; a blanket "all keep" with no per-doc reason; repo-wide grep before reading the index and cursor; deleting front-mattered workflow history as cleanup; marking a decision, approval, or requirement-source record as disposable because it is old; or deferring a stale active doc without a route to the follow-up.
+
+Stop and ask the user before deleting or rewriting any front-mattered doc that carries unique history, human approval, requirement source, or decision rationale. For such docs, normal lifecycle outcomes are `keep`, `reduce`, `archive`, or `supersede`, not direct deletion.
 
 ## Required Context Gate
 
@@ -108,6 +137,20 @@ Activate when creating or promoting any doc.
 The doc is incomplete until it has: valid YAML front matter with at least `date` and `status`; its status matching its actual lifecycle stage (`draft` until it is real authority, `active` once it is); its filename matching its directory's type convention; an inline citation of upstream docs for derived types (plan ← requirement, tasking ← plan + requirement); and its one-line entry in `index.md`.
 
 Weak substitutes that do not satisfy the gate: an undated note; a doc with no front matter; a doc whose directory and filename suffix disagree about type; a derived doc that restates its source instead of citing it; a promotion that copies a conclusion into the decision record while leaving the plan as if still authoritative; a new doc whose index line is missing or added in a later edit.
+
+## Content Selection Gate
+
+Activate when creating or materially updating durable doc content.
+
+The body is a context budget for future humans and agents. It records durable context that is not reliably recoverable from the codebase, command history, generated reference, schemas, tests, or logs alone: requirement source, user intent, constraints, approvals, non-goals, rationale, rejected alternatives, trade-offs, confidence, revisit triggers, current execution state, and the interpretation of evidence.
+
+Directly observable implementation facts are cited, not copied into prose as authority. Use stable source pointers such as file paths, symbols, test names, issue/PR IDs, commands, source URLs, or archive IDs. A short contextual summary is allowed when it helps orientation, but it must point to the canonical authority and must not become a second source of truth. Source-code contracts, public API/schema, and runtime behavior live next to the implementation; workflow docs record why the contract exists, which requirement or decision produced it, and when it should be revisited.
+
+Bulk evidence stays out of the default read path. Archive raw output only when it is not reproducible, proves an approval or validation result, explains a rejected path, or prevents repeated work. Otherwise record the command/source and the short observed result.
+
+The content is incomplete until every new or changed authority-bearing claim has one home at the right altitude, directly recoverable facts have source pointers, and non-recoverable context is recorded without filler.
+
+Weak substitutes that do not satisfy the gate: a directory tour that repeats what `find` or `rg --files` can show; a prose copy of class names, routes, schema fields, or file layout as if it were authority; raw transcripts in active docs; a decision conclusion without rationale or rejected alternatives; a requirement with no source; evidence with no pointer; or stuffing full plan/tasking bodies into the cursor.
 
 ## Promotion Gate
 
@@ -153,6 +196,9 @@ Weak substitutes: moving a doc to archive and leaving dangling links; archiving 
 Required confirmations — any `no` leaves the work incomplete:
 
 - Does every doc created or moved own exactly one altitude, and cite rather than restate its source?
+- Does every authority-bearing claim have one canonical home at its altitude, with other docs citing it rather than becoming parallel authority?
+- Does every material doc change include a Maintenance Observation Gate record with inspected paths, classifications, reasons, and action/defer/block status?
+- Does new or changed body content pass the Content Selection Gate: source pointers for recoverable facts, and durable intent/source/rationale/constraint/trade-off/approval/revisit context when applicable?
 - Does each derived doc cite its upstream source by path inline in the body?
 - Does every Requirement, Plan, Tasking, and Decision carry valid front matter with at least `date` and `status`?
 - Does the front-matter `status` match the doc's actual lifecycle stage — `draft` until it is real authority, `active` once it is?
@@ -166,6 +212,10 @@ Defect checks — any `yes` leaves the work incomplete:
 
 - Could a doc at one altitude be mistaken for authority at another (e.g., a plan treated as a decision, or a superseded doc of any type still cited as current)?
 - Does any doc restate a fact whose home is elsewhere instead of citing it?
+- Does any doc turn recoverable implementation detail into prose authority instead of citing the source and recording only the decision-relevant interpretation?
+- Did a material doc change skip the bounded maintenance observation, omit the observed paths, or classify related docs with no reason?
+- Did a cleanup action delete, rewrite, or hide front-mattered history, approval, requirement source, or decision rationale instead of reducing, archiving, or superseding it?
+- Is there a stale, duplicate, overgrown, or wrongly authoritative related doc that was observed but neither handled nor recorded as a follow-up?
 - Does any doc echo its own front-matter `status`, `date`, `supersedes`, or `superseded_by` in the body instead of letting the front matter be the single source?
 - Did a routing or status change (add / promote / supersede / archive) happen without updating the cursor and index in the same edit?
 - Is a decision still living in a plan or tasking while the plan is cited as authority?
@@ -174,6 +224,6 @@ Defect checks — any `yes` leaves the work incomplete:
 
 ## Stop Rules
 
-Stop when the triggering doc exists at the right altitude, in the right place, dated, with valid front matter and matching status, linked to its source(s), reflected in `index.md`, and — for supersession — both stamps landed in the same edit with the old body preserved. Stop and ask the user when the work does not fit any defined type, when a promotion or supersession would record an unresolved question as settled, when a supersession overturns a human-approved doc without new approval, or when an archive move would orphan a still-cited doc.
+Stop when the triggering doc exists at the right altitude, in the right place, dated, with valid front matter and matching status, linked to its source(s), reflected in `index.md`, passes the Content Selection Gate, and has a completed Maintenance Observation Gate record for the bounded related set; and — for supersession — both stamps landed in the same edit with the old body preserved. Stop and ask the user when the work does not fit any defined type, when a promotion or supersession would record an unresolved question as settled, when a supersession overturns a human-approved doc without new approval, when an archive move would orphan a still-cited doc, or when deleting/reducing a doc would remove unique history, approval, requirement source, or decision rationale without explicit authorization and a recovery route.
 
 The content quality of a plan or tasking is a separate job: hand a plan draft to `code-plan` and a task graph to `code-tasking`; this skill places their output, it does not grade it.

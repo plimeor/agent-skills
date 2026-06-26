@@ -38,7 +38,7 @@ Skills are grouped by primary mode.
 
 ### Knowledge
 
-- [agentic-document-workflow](skills/agentic-document-workflow/SKILL.md): Capture, route, and maintain the structured documents produced while collaborating with an AI — requirements, plans, tasking, decisions, and the execution cursor — so collaboration knowledge compounds across sessions. Owns the document system (types, ownership, naming, index, lifecycle, promotion, supersession, archive), not the content quality of a plan or task graph.
+- [agentic-document-workflow](skills/agentic-document-workflow/SKILL.md): Capture, route, and maintain structured AI-collaboration documents — requirements, plans, tasking, decisions, and the execution cursor — with content-selection rules and bounded observation of related older docs for keep, reduce, archive, supersede, or delete-candidate handling. Owns the document system, not the content quality of a plan or task graph.
 ### Meta
 
 - [context-engineering](skills/context-engineering/SKILL.md): Route durable rules and context to the right layer — task, project, skill, tooling, MCP, or global — and produce the smallest directly applicable edit.
