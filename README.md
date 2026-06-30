@@ -38,7 +38,7 @@ Skills are grouped by primary mode.
 
 ### Knowledge
 
-- [agentic-document-workflow](skills/agentic-document-workflow/SKILL.md): Manage structured AI-collaboration docs in `agentdocs/` plus `DECISIONS.xml`: requirements, plans, tasking, decisions, and the cursor. There is no separate active-doc index; front matter owns lifecycle/discovery, the cursor owns current execution links, and Decisions live in `DECISIONS.xml`. Promotes durable product/architecture/contract residue before deletion; maintenance actions do not become Decisions, and user-identified mistaken Decisions are removed directly. Owns document lifecycle, not plan or task-graph content quality.
+- [agentic-document-workflow](skills/agentic-document-workflow/SKILL.md): Manage structured AI-collaboration docs in `agentdocs/` plus `DECISIONS.xml`: requirements, plans, tasking, decisions, and the cursor. There is no separate active-doc index; front matter owns lifecycle/discovery, the cursor owns current execution links, and Decisions live in `DECISIONS.xml`. Promotes durable product/architecture/contract residue before deletion; maintenance actions do not become Decisions, same-question Decisions merge directly, and user-identified mistaken Decisions are removed directly. Owns document lifecycle, not plan or task-graph content quality.
 
 ### Meta
 
