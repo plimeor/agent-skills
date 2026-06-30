@@ -1,10 +1,10 @@
 ---
-name: agentic-document-workflow
+name: agent-docs
 description: >-
   Capture, place, and maintain structured AI-collaboration documents — requirements, plans, tasking, decisions, and the execution cursor. Use when creating, placing, linking, superseding, merging Decisions, consolidating, explicitly deleting a Requirement, removing an erroneously recorded Decision, deleting a completed plan or tasking, or materially editing one of these docs, or when a plan completes, a handoff/review needs a current-state distillation, an active-set invariant is breached, or an explicit session wind-down starts. Near miss: use code-plan to draft a plan's engineering content and code-tasking to turn a plan into ordered tasks; this skill owns the document system those artifacts live in, not their content quality.
 ---
 
-# Agentic Document Workflow
+# Agent Docs
 
 ## Outcome
 
