@@ -42,10 +42,20 @@ There is no `archive/` directory and no separate active-doc index. Discover Requ
 
 ## Placement And Serialization
 
-Decisions live in `DECISIONS.xml` at the narrowest owning scope's root, surfaced through that scope's `CLAUDE.md`/`AGENTS.md` pointer — never a central active-work doc. The path is fixed:
+Decisions live in `DECISIONS.xml` at the owning scope's root, surfaced through that scope's `CLAUDE.md`/`AGENTS.md` pointer. Ledger placement follows Decision ownership. The path is fixed:
 
 - **Single repo:** one `DECISIONS.xml` at the repo root.
-- **Monorepo:** `DECISIONS.xml` beside the nearest enclosing package/module boundary — the repo's package marker by convention (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `*.csproj`, …); a decision no single package owns lives in the repo-root `DECISIONS.xml`.
+- **Monorepo:** `DECISIONS.xml` beside the owning package/module boundary — the repo's package marker by convention (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `*.csproj`, …). A decision owned by one package stays in that package's ledger even when it materially affects other packages. The repo-root `DECISIONS.xml` owns repo-level authority, cross-package invariants with no single package owner, and genuinely shared ownership that cannot be narrowed.
+
+## Decision Ownership Placement Gate
+
+Activate whenever placing, moving, or validating a Decision in a monorepo or any workspace with multiple package/module scopes.
+
+The owning scope is the package, module, or repo whose responsibility boundary, invariant, public contract, or durable authority the Decision defines. Determine the owner before choosing the ledger. Impacted scopes enter the record as affected elements, related implementation areas, or context. If a core package owns the invariant and a minor package must adapt, the Decision belongs to the core package's `DECISIONS.xml`.
+
+Incomplete until the placement rationale identifies the owner or states that ownership is genuinely shared/repo-level; the chosen `DECISIONS.xml` is at that owner's scope root; affected-but-non-owning packages appear as context/traceability inside the Decision; and the scope has the required `CLAUDE.md`/`AGENTS.md` pointer. Weak substitutes: choosing the repo root because more than one package is affected; placing a Decision in a reference/docs directory because it mentions several packages; treating dependency direction, file count, or blast radius as ownership; leaving owner ambiguous while claiming the decision is cross-cutting.
+
+Stop and ask the user when two or more scopes plausibly own the same durable authority and no local ownership evidence decides it, or when placing the Decision at a narrower owner would contradict an existing human-approved ownership boundary.
 
 `DECISIONS.xml` is **agent-only XML**. Scalars are attributes: `id`, `status`, `date`, `supersedes`/`superseded-by`, and optional `builds-on` (XML uses hyphenated attributes; active-work YAML uses `superseded_by`). `id` is assigned sequentially, zero-padded (`001`), unique within that ledger, and never reused there; user-authorized removal leaves a gap rather than renumbering records. Multi-valued attributes (`supersedes`, `builds-on`) are space-separated id lists, e.g. `supersedes="001 003"`. Prose (rationale, rejected options, non-goals, revisit) lives in tag bodies as normal XML text with XML entities where needed. Do not use CDATA sections such as `<![CDATA[`; CDATA is a prohibited substitute for correct XML escaping.
 
@@ -55,9 +65,9 @@ A single `<decisions>` root holds every `<decision>` child; two top-level `<deci
 
 Activate whenever creating, promoting, superseding, merging, or materially editing a Decision.
 
-The output artifact is the actual `DECISIONS.xml` ledger edit, not a Markdown note or prose description of what a decision should contain. Each Decision record is a structured XML element with required lifecycle attributes (`id`, `status`, `date`, plus lifecycle links when applicable) and an open set of optional child elements. Child elements such as `<title>`, `<context>`, `<chosen>`, `<rejected>`, `<non-goals>`, `<rationale>`, and `<revisit>` are examples, not required fields. Use the smallest set of child elements that preserves the durable decision's meaning, evidence, and future maintenance value. Do not emit empty placeholder elements, and do not invent content to satisfy a template.
+The output artifact is the actual `DECISIONS.xml` ledger edit. Markdown notes and prose descriptions are weak substitutes for a ledger record. Each Decision record is a structured XML element with required lifecycle attributes (`id`, `status`, `date`, plus lifecycle links when applicable) and an open set of optional child elements. Child elements such as `<title>`, `<context>`, `<chosen>`, `<rejected>`, `<non-goals>`, `<rationale>`, and `<revisit>` are examples; each record selects the fields that preserve the durable decision's meaning, evidence, and future maintenance value. Do not emit empty placeholder elements, and do not invent content to satisfy a template.
 
-A Decision is long-term authority, not a patch note. Authority fields are the parts a future reader should be able to read as current rules without reconstructing the edit history: stable target state, current invariants, responsibility boundaries, and durable constraints. Write those fields in present-tense target-state language. Avoid patch-note phrasing in authority fields, such as "changed from A to B", "no longer X; now Y", "replace X with Y", or "remove the old path". Historical changes, old states, replacement reasons, and migration narrative belong only in historical/context fields such as `<context>`, `<rationale>`, `<rejected>`, `<related-decisions>`, and lifecycle attributes like `supersedes` / `superseded-by`.
+A Decision is long-term authority. Authority fields are the parts a future reader should be able to read as current rules without reconstructing the edit history: stable target state, current invariants, responsibility boundaries, and durable constraints. Write those fields in present-tense target-state language. Historical changes, old states, replacement reasons, and migration narrative belong in historical/context fields such as `<context>`, `<rationale>`, `<rejected>`, `<related-decisions>`, and lifecycle attributes like `supersedes` / `superseded-by`. Patch-note phrasing in authority fields, such as "changed from A to B", "no longer X; now Y", "replace X with Y", or "remove the old path", is a defect.
 
 Common optional child elements include:
 
@@ -235,7 +245,7 @@ Incomplete until any durable product/architecture/contract residue in the Requir
 
 Activate when creating, promoting, superseding, materially editing an allowed mutable doc, or changing routing/status for any doc.
 
-Incomplete until it has its required state surface (front matter `date`/`status` for Requirement/Plan/Tasking; `id`/`status`/`date` attributes and Decision Record Shape Gate structure for a Decision; Cursor Contract fields for the cursor); status matches lifecycle where status exists; placement and discovery match Directory; derived docs cite upstream docs inline (plan ← requirement, tasking ← plan + requirement); any touched `DECISIONS.xml` parses as XML and contains no CDATA sections; and a new scope ledger has a same-edit `CLAUDE.md`/`AGENTS.md` pointer. Weak substitutes: an undated note; no required state surface; type/placement mismatch; restating a source without citation; CDATA-wrapped prose; prose describing a Decision instead of a structured ledger edit; an active Plan/Tasking absent from the cursor; a ledger pointer added later.
+Incomplete until it has its required state surface (front matter `date`/`status` for Requirement/Plan/Tasking; `id`/`status`/`date` attributes and Decision Record Shape Gate structure for a Decision; Cursor Contract fields for the cursor); status matches lifecycle where status exists; placement and discovery match Directory; Decision placement passes Decision Ownership Placement Gate; derived docs cite upstream docs inline (plan ← requirement, tasking ← plan + requirement); any touched `DECISIONS.xml` parses as XML and contains no CDATA sections; and a new scope ledger has a same-edit `CLAUDE.md`/`AGENTS.md` pointer. Weak substitutes: an undated note; no required state surface; type/placement mismatch; impact-based Decision placement; restating a source without citation; CDATA-wrapped prose; prose describing a Decision instead of a structured ledger edit; an active Plan/Tasking absent from the cursor; a ledger pointer added later.
 
 ## Maintenance Neighbor Check
 
@@ -263,6 +273,7 @@ Confirmations — any **no** leaves the work incomplete:
 - For every material Requirement change: does the active set contain a replacement Requirement with the replaced record stamped, and no material scope/rationale absorbed into an existing Requirement body?
 - For every Decision removal: did the user say the record should not have been recorded, was the record deleted directly, were inbound id references cleared, and was no explanatory Decision appended?
 - For every Decision merge: did one existing record survive with all unique rationale preserved, were merged-away ids repointed/removed without renumbering, and was no new merge Decision appended?
+- For every placed or moved Decision in a multi-scope workspace: does the placement rationale identify the Decision owner, and does the selected ledger match that owner?
 - For every created, promoted, superseded, merged, or materially edited Decision: did `DECISIONS.xml` contain lifecycle metadata as attributes and selected child elements that preserve the durable decision meaning, rather than a Markdown/prose description or a freeform `<decision>` body?
 - For every Decision authority field: can a future reader understand the current rule, invariant, or responsibility boundary directly, without reading it as a patch note or reconstructing the previous state?
 - For every supersession: superseded Decisions were only lifecycle-stamped, superseded Requirement/Plan front matter was stamped, stamps landed in the same edit, exactly one `active` record answers the question, and replacement evidence was cited?
@@ -276,6 +287,7 @@ Defect checks — any **yes** leaves the work incomplete:
 - Was a removal-only Decision added?
 - Was a merge-only Decision added?
 - Was a Decision represented as a prose note, Markdown list, or freeform XML body instead of the Decision Record Shape Gate structure?
+- Was a Decision promoted to repo root, reference docs, or another upper scope solely because multiple packages were affected?
 - Did a Decision authority field use patch-note phrasing, such as "changed from A to B", "no longer X; now Y", or "replace X with Y", instead of stable target-state language?
 - Were optional example child elements treated as mandatory, or were filler fields added only to satisfy a template?
 - Did a Decision merge drop unique rationale, rejected alternatives, approvals, non-goals, or revisit triggers from a merged-away record?
@@ -290,6 +302,6 @@ Defect checks — any **yes** leaves the work incomplete:
 
 ## Stop Rules
 
-Stop when Required Context passes for the triggering doc, Decision Record Shape Gate passes for every touched Decision, no visible neighbor defect remains unresolved or unrouted, and any triggered Consolidation/Promotion/Supersession/Decision Merge/Requirement Deletion/Decision Removal Gate completed without violating Safety Invariants.
+Stop when Required Context passes for the triggering doc, Decision Record Shape Gate passes for every touched Decision, Decision Ownership Placement Gate passes for every placed or moved Decision, no visible neighbor defect remains unresolved or unrouted, and any triggered Consolidation/Promotion/Supersession/Decision Merge/Requirement Deletion/Decision Removal Gate completed without violating Safety Invariants.
 
 Stop and ask the user when: deletion or edit would lose unique history, approval, or decision rationale that has not been promoted to a Decision; a supersession overturns a human-approved doc without new approval; or the work fits no defined type. The content quality of a plan or tasking is a separate job — hand a plan draft to `code-plan` and a task graph to `code-tasking`; this skill places their output, it does not grade it.
