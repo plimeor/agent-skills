@@ -28,7 +28,7 @@ Use this skill once a prompt artifact exists to maintain: a `SKILL.md`, rules fi
 
 Use `skill-creator` instead when the main task is to create a brand-new skill, design skill evals, benchmark a skill, or optimize skill triggering from scratch.
 
-Use `context-engineering` when the main question is where a rule belongs: global rules, project rules, a skill, tooling, task context, or an external system — unless the prompt artifact is already selected or the work is specifically GPT prompt quality.
+Use `agent-docs` when the main question is where a rule belongs: global rules, project rules, a skill, tooling, task context, or an external system — unless the prompt artifact is already selected or the work is specifically GPT prompt quality.
 
 Use writing or editing skills for ordinary prose polishing. Do not turn blog drafts, documentation prose, customer copy, or creative writing into prompt maintenance unless the text is itself an instruction to a model.
 
