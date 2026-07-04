@@ -1,91 +1,237 @@
 ---
 name: agent-team
 description: >-
-  Decompose a problem into multiple parallel sub-agents and cross-verify their findings, to cover or confirm something a single context cannot. Use whenever fanning out two or more non-conflicting sub-agents: parallel exploration of separate modules or sources, multi-lens review, exhaustive bug or issue hunts, or independent research that supports a plan or decision. Delegation is assumed authorized. The number of agents is not chosen up front — it falls out of the decomposition, and even a single question splits into multiple angles. Near miss: use agent-handoff for one indivisible delegation, and for the per-agent contract this skill reuses for every member. Do not use for a single atomic task, or to spawn agents whose work would overlap or edit shared state without disjoint ownership.
+  Compile and run a multi-subagent team through Scout, Mode, Bake, Structure, and Launch. Use when a task needs several non-conflicting sub-agents for parallel coverage, independent verification, exhaustive review or audit, broad research, codebase understanding, migration or sweep work, or a decision that must survive adversarial critique. Delegation is assumed authorized. Mode can be selected from presets or constructed dynamically from scout evidence; agent count is derived from the baked work units and verification matrix, not chosen up front. Near miss: use agent-handoff for one indivisible delegation and as the per-agent packet contract. Do not use for a single atomic task or for overlapping mutators without disjoint ownership or isolation.
 ---
 
 # Agent Team
 
-Run many sub-agents against ONE decomposed problem: the main agent decomposes the problem, dispatches the slices in parallel, cross-verifies what comes back, and synthesizes a single result. A team exists to cover more ground than one context window can hold, or to confirm a result through independent perspectives — not to maximize agent count.
+Run a team only after the task has been compiled into an orchestration blueprint. The main agent is the orchestrator and integrator: it scouts the real shape of the work, selects or constructs a Mode, bakes shared context into every packet, structures the topology, launches bounded sub-agents, verifies their outputs, and synthesizes one result.
 
-The main agent stays the **orchestrator and integrator**. It owns the goal, the decomposition, conflict detection across agents, and the final synthesis and verification. Sub-agents own bounded slices and return distilled evidence.
+The team's value comes from disciplined shape, not agent count. A broad fan-out without a blueprint is a parallel dump; a small team with complete scout evidence, shared context, and independent verification can be stronger than a larger unstructured fan-out.
 
-Delegation is assumed authorized; spawn freely. Each member's contract — packet, return format, stop condition, report-as-evidence — is owned by `agent-handoff`. This skill governs how the team is **shaped and verified**, and reuses that contract for every member.
+Delegation is assumed authorized. Each member's packet, return format, stop condition, and report-as-evidence contract follows `agent-handoff`; this skill governs the team blueprint and verification topology.
 
-## When To Fan Out, And How Wide
+## Hard Gate: Blueprint Before Launch
 
-Fan out when a problem is worth decomposing into parallel coverage or independent verification: several modules, sources, or hypotheses to investigate; a multi-file or high-risk surface to review; an exhaustive hunt where one pass will miss the tail; or a decision that needs unbiased confirmation.
+Activation: every `agent-team` use before spawning more than one sub-agent.
 
-Scale the structure to the stakes — under-building a high-stakes question is the more common failure, and the one a conservative executor falls into, because a thin fan-out still *looks* like a team:
+Required artifact: create an internal or user-visible blueprint with these fields:
 
-- "find anything off in here" → a few finders, single-pass verification.
-- "thoroughly audit this / I need to be confident" → a larger finder pool, multi-vote adversarial verification, and a synthesis pass.
-- An irreversible or high-stakes decision — architecture, a rewrite, a trade-off you will not revisit cheaply → a *multi-round* team, not one round of parallel angles. Field several **mutually-exclusive whole solutions** (the options you must choose between, not facets of one analysis), give **each its own adversaries** — a distinct set of lenses paid to kill that option specifically — then synthesize one ruling against real evidence. It is a matrix, each candidate × its own lenses, not a list, so its size is roughly positions × lenses and a serious decision fans out wide. Two under-builds pass as compliant here: splitting the question into research angles instead of competing candidates, and reviewing everything in one shared pass instead of gauntleting each candidate (see Cross-Verify).
+- `Objective`: the single outcome the team is serving.
+- `Mode`: the task shape that determines scout evidence, bake fields, skeleton, and stop rule.
+- `Scout Evidence`: the concrete work-list, shared risks or invariants, not-a-bug list, constraints, and unknowns.
+- `Context Pack`: the baked material every relevant packet receives.
+- `Structure`: stages, pipeline/barrier choices, verification matrix, completeness pass, and synthesis owner.
+- `Launch Gate`: disjoint ownership, edit isolation when needed, caps, stall limits, and stop criteria.
 
-Keep the work to one agent (`agent-handoff`) or local when it is a single indivisible unit, when the next step is a blocking critical-path decision the main agent must make now, or when the slices cannot be made disjoint and would edit shared state.
+Prohibited substitutes: an agent count, a list of vague angles, "have several agents look around", or independent packets that each rediscover scope.
 
-## Decompose First — Cardinality Comes From The Decomposition
+Incomplete behavior: scout locally or with a single scout agent until the blueprint is specific enough. If a critical scope fact remains unavailable and affects the topology, ask one focused question or return a plan-only blueprint with the missing fact named.
 
-The first act is always to decompose, and the agent count falls out of it. Do not pick a number up front and then invent work for it; derive the number from the structure of the problem.
+## Scout
 
-A single question is still a team. Research it from multiple angles — source-of-truth behavior, regression surface, prior art, failure modes — and each angle is an agent. Splitting one question into angles *is* the work, which is why a lone question does not collapse into a single handoff.
+Scout discovers the shape of the work before the team is formed. It is not duplicate evidence; it is the orchestrator's job to determine what the agents should not waste budget rediscovering.
 
-When the size of the work is unknown, **scout first, then fan out** over what you find. One agent enumerates the work-list — the call sites, the affected files, the candidate sources — and the team's cardinality is that list, derived from data rather than guessed.
+Required scout evidence:
 
-Partition by the context each agent needs, not by vibes:
+- Work-list candidates: files, modules, sources, candidate decisions, subsystems, sites, or hypotheses.
+- Shared risk or invariant: the one or two facts most likely to drive real findings or failures.
+- Not-a-bug list: authorized translations, accepted deferrals, known limitations, and things agents must not report.
+- Boundaries: what is in scope, what is out of scope, and whether any agent may edit.
+- Unknowns: facts that would change the Mode, topology, or stop rule.
 
-- Good: separate modules or directories, separate sources, separate hypotheses, separate review lenses, separate angles on one question.
-- Bad: several agents solving the same whole task, agents with overlapping edit rights, "research everything" with no boundary.
+Mark each material scout item as `observed`, `user-stated`, `inferred`, or `unknown`. `SHARED` and `NOT_A_BUG` may be empty or unknown; do not invent them to fill the blueprint. If an `unknown` would change `Mode`, `WORK_UNITS`, `VERIFY_MATRIX`, or the stop rule, scout further, ask one focused question, or carry it as an explicit residual gap instead of launching as if it were covered.
 
-A cross-cutting concern is not a partition. When one invariant's definition and its enforcement land in different slices — a guard, a permission check, a validation or error contract, an auth boundary — splitting by module threads it across agents and leaves no owner for the whole of it. Give such a concern a single owner that follows it across slices, or keep an orchestrator checklist of what each agent reports it did NOT inspect. Otherwise it falls through the seam.
+When the work-list is unknown, scout first and derive cardinality from the result. When scout finds no real work-list, keep the task local or use `agent-handoff`.
 
-## Dispatch Topology
+## Mode
 
-Dispatch independent packets in the same turn so they run concurrently; spawning them one at a time serializes work the partition already made parallel.
+Mode is a task-shape constructor, not a closed enum and not a label. Determine the Mode after scout and before bake. It determines what evidence is required, what work units mean, which skeleton to use, which outputs need verification, and what "done" means.
 
-Default to a **pipeline**: each slice flows through its stages — find, then verify — independently, with no barrier between stages, so slice A can be in verification while slice B is still being found. Wall-clock is the slowest single chain, not the slowest stage summed across all slices.
+Preset Modes are templates for common task shapes. Use a preset only when its work-unit type, evidence standard, verification target, and stop rule fit the scouted task. When a preset would distort the task, construct a new Mode instead of forcing the task into the closest template.
 
-Use a **barrier** — wait for an entire stage to finish before the next begins — only when the next stage genuinely needs the whole previous set: to dedup or merge across all findings before expensive verification, to early-exit when the total is zero, or when a stage compares findings against each other. "I need to flatten or filter the results first" is not a barrier reason — do that inside the next stage.
+Mode construction is required when any of these are true:
 
-Each member's packet, return format, and stop condition follow `agent-handoff`.
+- The natural work unit is not files, sources, candidates, subsystems, sites, or another preset unit type.
+- The load-bearing evidence is not captured by the preset's scout requirements.
+- The verification target is unusual: narratives, event timelines, contracts, personas, generated artifacts, policies, constraints, or another domain-specific object.
+- The stop rule is domain-specific and cannot be reduced to confirmed findings, verified claims, candidate ruling, mapped subsystems, or applied sites.
+- Combining presets would blur ownership or create a shared review where a per-object gauntlet is needed.
 
-## Cross-Verify — The Half That Buys Trust
+For compound tasks, compose a Mode only where composition changes the skeleton or verification bar. Otherwise name one primary Mode and bake the secondary concern into `SHARED` or `VERIFY_MATRIX`.
 
-Parallel coverage finds candidates; verification is what makes them trustworthy, and it is the line between a team and a parallel dump. A finding that no independent agent checked is a hypothesis, not a result.
+### Constructing A New Mode
 
-Verify **adversarially**: for each material finding, spawn one or more independent agents prompted to *refute* it — default to "not real" unless the evidence forces otherwise — and keep the finding only if it survives. For a high-stakes claim, use several skeptics and require a majority to let it through.
+When constructing a Mode, define it before bake with:
 
-When a finding can fail in more than one way, give each verifier a **distinct lens** — correctness, security, does-it-actually-reproduce — rather than several identical skeptics. Diverse lenses catch failure modes that redundant ones are all blind to together.
+- `Mode name`: a short task-shaped name.
+- `Why presets do not fit`: the specific mismatch that would corrupt coverage, verification, or stopping.
+- `Work unit type`: what the team should split over.
+- `Scout requirements`: what must be known before bake.
+- `Context pack fields`: any fields beyond the standard pack.
+- `Skeleton`: stage order, pipeline/barrier points, and synthesis owner.
+- `Verification matrix`: what gets checked, by which lenses or adversaries, and the pass threshold.
+- `Stop rule`: what evidence proves the team is done.
+- `Red flags`: how this Mode is most likely to collapse into a weak generic fan-out.
 
-This discipline applies equally when the team's job is to **decide**, not to find. A candidate answer — an architecture, a recommendation, a chosen trade-off — is a hypothesis too. Field several mutually-exclusive positions and run *each* through its own distinct critique lenses — does the data model actually hold, does it survive scale, does it fit the product — before synthesizing one ruling. Lens each candidate separately, not the whole set in one shared review: an option only dies when an adversary is paid to kill it in particular. Covering a question from several angles is not the same as a choice that survived attack: angles inform, lenses refute.
+### Review / Audit
 
-## Coverage Patterns
+Use for code reviews, security audits, behavioral parity checks, risk hunts, and "find anything wrong" requests.
 
-Compose these as the task calls for; they are tools, not a fixed sequence:
+- Scout for changed or suspicious work units, systemic risk, contracts, and not-a-bug items.
+- Bake one `WORK_UNIT` per file pair, module, feature path, behavior, or review dimension that can be inspected independently.
+- Structure as `review each unit -> adversarially verify every material finding -> completeness critic -> report`.
+- Done means every reported material finding survived independent refutation, and skipped scope is named.
 
-- **Loop-until-dry**: for unknown-size discovery, keep spawning finders until K consecutive rounds surface nothing new — a fixed count misses the tail. Dedup each round against everything seen, not just what was already confirmed, or rejected findings keep reappearing.
-- **Multi-modal sweep**: several agents each search a different way — by container, by content, by entity, by timeline — blind to each other, because one search angle never finds everything.
-- **Completeness critic**: a final agent that asks "what is missing — a modality not run, a claim unverified, a slice not inspected?" Its answer is the next round of work.
-- **Judge panel**: generate several independent attempts from different angles, score them with parallel judges, then synthesize from the winner while grafting the best of the runners-up.
+### Research
 
-Never cap coverage silently. If you stop at top-N, skip a retry, or sample, say what was dropped — a silent cap reads as "covered everything" when it did not.
+Use for broad or current research where claims need sources and cross-checking.
 
-## Integrate, Stall, Stop
+- Scout for source modalities, authority rules, recency needs, and claim categories.
+- Bake one unit per search angle, source family, jurisdiction, time window, or hypothesis.
+- Structure as `gather claims -> dedup claims -> independently verify load-bearing claims -> cited synthesis`.
+- Done means supported, refuted, and unverified claims are separated, and the final answer does not rest on unchecked claims.
 
-Synthesize into ONE result — resolve conflicts between reports, dedup across them, and decide. A bundle of pasted sub-agent notes is not a synthesis.
+### Decision
 
-While agents run, do not duplicate their work locally; do non-overlapping critical-path work or wait. Write a coordination record only when three or more agents run, the work spans rounds, or reports may conflict and need reconciliation — and keep it to assignments, status, and distilled evidence, never a second transcript.
+Use for architecture choices, trade-offs, irreversible plans, prioritization, and recommendations that should survive attack.
 
-Set limits before the loops start: max follow-up rounds, max verify/repair loops, max stall count. Stall signals — the same blocker twice, an agent expanding scope instead of converging, verifiers repeating generic feedback, reports contradicting with no new evidence being added. When stalled, narrow the task, ask one focused follow-up, or take it local; do not keep spawning equivalent agents. Stop when the requested work is covered and confirmed — not because capacity remains.
+- Scout for constraints, decision criteria, candidate positions, and disqualifiers.
+- Bake mutually exclusive whole candidates, not just analysis facets.
+- Structure as `candidate proposals -> candidate x critique-lens gauntlet -> judge panel -> ruling`.
+- Done means each serious candidate has been attacked by its own lenses, not merely discussed in a shared review.
+
+### Understand / Map
+
+Use for mapping a large codebase, unfamiliar system, document set, or process.
+
+- Scout for major subsystems, entry points, data/control flow, and cross-cutting concerns.
+- Bake one unit per subsystem or source cluster, plus a completeness critic for missed major units.
+- Structure as `discover -> completeness critic -> deep-read units -> synthesize map`.
+- Done means the synthesis covers major units, relationships, reading order, and named gaps.
+
+### Migration / Sweep
+
+Use for broad mechanical changes, repeated inspections, or site-by-site remediation.
+
+- Scout for every candidate site and the invariant each site must preserve.
+- Bake one unit per site, with edit permission and verification command expectations explicit.
+- Structure as `discover sites -> transform or inspect each site with disjoint ownership -> verify each -> summarize`.
+- Done means applied/verified, failed, skipped, and kept-for-human-attention sites are separated.
+
+### Example Constructed Mode: Incident Reconciliation
+
+Use when the task is to reconcile conflicting incident reports, postmortems, audit narratives, or stakeholder accounts into a grounded account.
+
+- Scout for source narratives, event claims, timestamps, actors, disputed facts, evidence strength, and publication constraints.
+- Bake one unit per narrative, claim cluster, timeline segment, or disputed point.
+- Structure as `extract claims -> build contradiction matrix -> verify load-bearing facts -> synthesize reconciled account`.
+- Done means every public claim is supported, contradicted, or explicitly unresolved; narrative conflicts are named rather than smoothed over.
+
+## Bake
+
+Bake turns scout evidence into a context pack. An agent should never have to rediscover which files, sources, candidates, or risks matter. If it does, the packet is under-specified.
+
+Required context pack fields:
+
+- `WORK_UNITS`: concrete units with id, scope, required files or sources, ownership boundary, in-scope/out-of-scope notes, and edit permission.
+- `SHARED`: objective, systemic risk, invariants, evidence standard, and terms of success.
+- `NOT_A_BUG`: known accepted behavior, authorized deferrals, false-positive traps, and exclusions.
+- `OUTPUT_CONTRACT`: required fields each agent returns, including evidence, inspected scope, findings or result, confidence, gaps, and what it did not inspect.
+- `VERIFY_MATRIX`: which findings, claims, candidates, or units will be independently checked, by whom, and with what lens.
+- `LIMITS`: max rounds, caps, sampling, top-N cutoffs, and stall conditions.
+
+Prohibited substitutes: "review this area", "research this topic", "find issues here", or any packet whose boundary is a theme without files, sources, hypotheses, or candidate positions.
+
+Incomplete behavior: refine the scout or split/merge work units before launch. If a cross-cutting invariant spans units, assign one owner to follow it across units or add it to the orchestrator checklist.
+
+## Structure
+
+Structure chooses the topology that turns the context pack into trustworthy results.
+
+Default to a pipeline: each unit flows through its stages independently, such as find then verify, so one unit can be verified while another is still being inspected. Use a barrier only when the next stage genuinely needs the full previous set: dedup across all findings, early-exit on zero, compare findings against each other, run a completeness critic, or synthesize a global result.
+
+Every Structure must specify:
+
+- Stages and owners.
+- Which stages run in parallel and which are barriers.
+- The verification rule for material findings, claims, or candidates.
+- The completeness check.
+- The final synthesis contract.
+
+Verification is adversarial by default. A material finding that no independent agent tried to refute is a hypothesis, not a result. For high-stakes claims, use several skeptics or distinct lenses and require the stated threshold to pass.
+
+## Launch
+
+Launch only after the gates pass.
+
+Before spawning, confirm:
+
+- Agent count follows from `WORK_UNITS`, candidate count, critique lenses, or verifier count.
+- Packets are disjoint, or mutators have explicit isolation and ownership.
+- Every packet receives the relevant baked context.
+- Cross-cutting concerns have an owner.
+- Caps, sampling, and skipped work are named.
+- Stop and stall rules are set.
+
+Dispatch independent packets in the same turn so they run concurrently. While agents run, do not duplicate their assigned work locally; do non-overlapping critical-path work or wait. Keep a coordination record when three or more agents run, the work spans rounds, or reports may conflict. The record stores assignments, status, distilled evidence, and unresolved conflicts, never a second transcript.
+
+## Integrate
+
+Synthesize one result. Do not paste a bundle of reports.
+
+The final synthesis must include, in the user's requested format:
+
+- The conclusion, decision, or confirmed findings.
+- The evidence that supports each material claim.
+- Coverage: what units, candidates, sources, or slices were inspected.
+- Verification: what was independently checked, refuted, confirmed, or left unverified.
+- Gaps and limits: skipped scope, caps, failed agents, uncertainty, and why the team stopped.
+
+Resolve conflicts explicitly. When reports contradict without new evidence, narrow the question, run one targeted verifier, or take the issue local; do not keep spawning equivalent agents.
+
+## Stall And Stop Rules
+
+Set limits before loops start: max follow-up rounds, max verify/repair loops, and max stall count.
+
+Stall signals:
+
+- The same blocker appears twice without new evidence.
+- Agents expand scope instead of converging.
+- Verifiers repeat generic feedback.
+- Reports contradict with no new evidence.
+- The coordination record becomes a transcript instead of a control surface.
+
+When stalled, narrow the task, ask one focused follow-up, or switch to local work. Stop when the requested work is covered and confirmed, not because capacity remains.
+
+## Self-Review Before Final
+
+Before delivering the result, check:
+
+- Could any agent have skipped scout evidence and still sounded compliant?
+- Could the Mode label be changed without changing required evidence, structure, or stop rule? If yes, Mode was not doing real work.
+- Did scout evidence suggest a constructed Mode, but the team forced the task into a preset anyway?
+- Did any packet force an agent to rediscover its own scope or systemic risk?
+- Did any cross-cutting invariant lack an owner?
+- Did any material claim reach the final answer without independent verification or an explicit "unverified" label?
+- Were caps, sampling, failed agents, or skipped scope silent?
+- Is the final answer a synthesis rather than pasted reports?
+
+If any answer fails, the artifact is incomplete until the blueprint, verification, or final synthesis is tightened.
 
 ## Red Flags
 
-- An agent count picked before the problem was decomposed.
-- Slices with overlapping edit rights, or a cross-cutting invariant that no agent owns.
+- Launching before Scout, Mode, Bake, and Structure are explicit enough to audit.
+- Picking an agent count before deriving work units or verification needs.
+- Treating Mode as a label or closed enum instead of a constructor for evidence, work units, skeleton, verification, and stop rule.
+- Forcing a novel task into the closest preset when its work-unit type, verification target, or stop rule does not fit.
+- Vague work units with overlapping edit rights or unclear ownership.
+- A cross-cutting invariant split across agents with no owner.
 - Findings accepted without an independent refutation pass.
-- A high-stakes decision split into research angles instead of competing candidates, or reviewed in one shared pass instead of each candidate gauntleted by its own adversaries — breadth standing in for a choice that survived attack.
-- A barrier where a pipeline would do, leaving fast agents idle behind the slowest.
-- Discovery stopped after a single round on an unknown-size problem.
+- A decision split into research angles instead of mutually exclusive candidates.
+- A shared review of all candidates instead of a candidate x lens gauntlet.
+- A barrier where a pipeline would do.
+- Discovery stopped after one round on an unknown-size problem.
+- Silent top-N caps, sampling, skipped retries, or failed agents.
 - Reports pasted into the main context instead of synthesized into one result.
-- The coordination record growing into a second transcript.
-- Agents still spawning after the question is already answered.
