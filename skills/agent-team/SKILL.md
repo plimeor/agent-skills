@@ -1,12 +1,12 @@
 ---
 name: agent-team
 description: >-
-  Compile and run a multi-subagent team through Scout, Mode, Bake, Structure, and Launch. Use when a task needs several non-conflicting sub-agents for parallel coverage, independent verification, exhaustive review or audit, broad research, codebase understanding, migration or sweep work, or a decision that must survive adversarial critique. Delegation is assumed authorized. Mode can be selected from presets or constructed dynamically from scout evidence; agent count is derived from the baked work units and verification matrix, not chosen up front. Near miss: use agent-handoff for one indivisible delegation and as the per-agent packet contract. Do not use for a single atomic task or for overlapping mutators without disjoint ownership or isolation.
+  Use when a task needs two or more non-conflicting sub-agents for parallel coverage, independent verification, exhaustive review or audit, broad research, codebase mapping, migration or sweep work, or adversarial critique of a decision. Also use when the user asks to fan out, delegate to several agents, run a team, or cross-check work with multiple independent agents. Near miss: use agent-handoff for one indivisible delegation. Do not use for a single atomic task or for overlapping mutators without disjoint ownership or isolation.
 ---
 
 # Agent Team
 
-Run a team only after the task has been compiled into an orchestration blueprint. The main agent is the orchestrator and integrator: it scouts the real shape of the work, selects or constructs a Mode, bakes shared context into every packet, structures the topology, launches bounded sub-agents, verifies their outputs, and synthesizes one result.
+Run a team only after the task has been compiled into an orchestration blueprint. The main agent scouts the real shape of the work, selects or constructs a Mode, bakes shared context into every packet, structures the topology, launches bounded sub-agents, relays progress, routes gaps or conflicts, and synthesizes one result from returned evidence.
 
 The team's value comes from disciplined shape, not agent count. A broad fan-out without a blueprint is a parallel dump; a small team with complete scout evidence, shared context, and independent verification can be stronger than a larger unstructured fan-out.
 
@@ -23,7 +23,7 @@ Required artifact: create an internal or user-visible blueprint with these field
 - `Scout Evidence`: the concrete work-list, shared risks or invariants, not-a-bug list, constraints, and unknowns.
 - `Context Pack`: the baked material every relevant packet receives.
 - `Structure`: stages, pipeline/barrier choices, verification matrix, completeness pass, and synthesis owner.
-- `Launch Gate`: disjoint ownership, edit isolation when needed, caps, stall limits, and stop criteria.
+- `Launch Gate`: disjoint ownership, edit isolation when needed, parent relay boundary, caps, stall limits, and stop criteria.
 
 Prohibited substitutes: an agent count, a list of vague angles, "have several agents look around", or independent packets that each rediscover scope.
 
@@ -41,7 +41,7 @@ Required scout evidence:
 - Boundaries: what is in scope, what is out of scope, and whether any agent may edit.
 - Unknowns: facts that would change the Mode, topology, or stop rule.
 
-Mark each material scout item as `observed`, `user-stated`, `inferred`, or `unknown`. `SHARED` and `NOT_A_BUG` may be empty or unknown; do not invent them to fill the blueprint. If an `unknown` would change `Mode`, `WORK_UNITS`, `VERIFY_MATRIX`, or the stop rule, scout further, ask one focused question, or carry it as an explicit residual gap instead of launching as if it were covered.
+Mark each material scout item as `observed`, `user-stated`, `inferred`, or `unknown`. `SHARED` and `NOT_A_BUG` may be empty or unknown; do not invent them to fill the blueprint. If an `unknown` would change `Mode`, `WORK_UNITS`, `VERIFY_MATRIX`, or the stop rule, scout further, ask one focused question, or carry it as an explicit residual gap. Launch requires named coverage status for topology-shaping unknowns.
 
 When the work-list is unknown, scout first and derive cardinality from the result. When scout finds no real work-list, keep the task local or use `agent-handoff`.
 
@@ -49,7 +49,7 @@ When the work-list is unknown, scout first and derive cardinality from the resul
 
 Mode is a task-shape constructor, not a closed enum and not a label. Determine the Mode after scout and before bake. It determines what evidence is required, what work units mean, which skeleton to use, which outputs need verification, and what "done" means.
 
-Preset Modes are templates for common task shapes. Use a preset only when its work-unit type, evidence standard, verification target, and stop rule fit the scouted task. When a preset would distort the task, construct a new Mode instead of forcing the task into the closest template.
+Preset Modes are templates for common task shapes. Use a preset only when its work-unit type, evidence standard, verification target, and stop rule fit the scouted task. When no preset fits, construct a new Mode that matches the task's natural unit, evidence, verification target, and stop rule.
 
 Mode construction is required when any of these are true:
 
@@ -140,11 +140,11 @@ Required context pack fields:
 - `NOT_A_BUG`: known accepted behavior, authorized deferrals, false-positive traps, and exclusions.
 - `OUTPUT_CONTRACT`: required fields each agent returns, including evidence, inspected scope, findings or result, confidence, gaps, and what it did not inspect.
 - `VERIFY_MATRIX`: which findings, claims, candidates, or units will be independently checked, by whom, and with what lens.
-- `LIMITS`: max rounds, caps, sampling, top-N cutoffs, and stall conditions.
+- `LIMITS`: max rounds, caps, sampling, top-N cutoffs, stall conditions, and parent relay boundary.
 
 Prohibited substitutes: "review this area", "research this topic", "find issues here", or any packet whose boundary is a theme without files, sources, hypotheses, or candidate positions.
 
-Incomplete behavior: refine the scout or split/merge work units before launch. If a cross-cutting invariant spans units, assign one owner to follow it across units or add it to the orchestrator checklist.
+Incomplete behavior: refine the scout or split/merge work units before launch. A cross-cutting invariant spanning units belongs to a named sub-agent owner or verifier with required evidence; without that owner, the blueprint is incomplete.
 
 ## Structure
 
@@ -172,14 +172,17 @@ Before spawning, confirm:
 - Packets are disjoint, or mutators have explicit isolation and ownership.
 - Every packet receives the relevant baked context.
 - Cross-cutting concerns have an owner.
+- Parent relay boundary assigns every substantive work unit, evidence hunt, edit, and verification lane to a sub-agent or names it out of scope.
 - Caps, sampling, and skipped work are named.
 - Stop and stall rules are set.
 
-Dispatch independent packets in the same turn so they run concurrently. While agents run, do not duplicate their assigned work locally; do non-overlapping critical-path work or wait. Keep a coordination record when three or more agents run, the work spans rounds, or reports may conflict. The record stores assignments, status, distilled evidence, and unresolved conflicts, never a second transcript.
+Dispatch independent packets in the same turn so they run concurrently. After launch, the parent process owns relay and control: status updates, the coordination record, blocker relay, cap enforcement, conflict routing, and synthesis shell preparation from returned reports. Local tool work is limited to those coordination duties and final synthesis after evidence returns.
+
+A new necessary work item after launch becomes one of: a bounded sub-agent packet, a focused question, or an explicit gap.
 
 ## Integrate
 
-Synthesize one result. Do not paste a bundle of reports.
+Synthesize one result from sub-agent evidence. The final answer is a synthesis rather than a pasted bundle, and every material claim traces to returned evidence or an explicit unverified gap.
 
 The final synthesis must include, in the user's requested format:
 
@@ -189,7 +192,7 @@ The final synthesis must include, in the user's requested format:
 - Verification: what was independently checked, refuted, confirmed, or left unverified.
 - Gaps and limits: skipped scope, caps, failed agents, uncertainty, and why the team stopped.
 
-Resolve conflicts explicitly. When reports contradict without new evidence, narrow the question, run one targeted verifier, or take the issue local; do not keep spawning equivalent agents.
+Resolve conflicts explicitly. Contradictory reports resolve through a narrowed question, one targeted verifier, a focused question, or an unresolved-gap label. Equivalent verifier loops and parent-local investigation are stall signals, not conflict resolution.
 
 ## Stall And Stop Rules
 
@@ -198,12 +201,12 @@ Set limits before loops start: max follow-up rounds, max verify/repair loops, an
 Stall signals:
 
 - The same blocker appears twice without new evidence.
-- Agents expand scope instead of converging.
+- Agents expand scope while convergence evidence stays flat.
 - Verifiers repeat generic feedback.
 - Reports contradict with no new evidence.
-- The coordination record becomes a transcript instead of a control surface.
+- The coordination record grows as a transcript rather than a control surface.
 
-When stalled, narrow the task, ask one focused follow-up, or switch to local work. Stop when the requested work is covered and confirmed, not because capacity remains.
+When stalled, narrow the task, ask one focused follow-up, dispatch a smaller packet, or stop with the gap named. Completion depends on covered and confirmed requested scope, with gaps named.
 
 ## Self-Review Before Final
 
@@ -214,6 +217,7 @@ Before delivering the result, check:
 - Did scout evidence suggest a constructed Mode, but the team forced the task into a preset anyway?
 - Did any packet force an agent to rediscover its own scope or systemic risk?
 - Did any cross-cutting invariant lack an owner?
+- Does the parent relay boundary account for every substantive work unit, evidence hunt, edit, cleanup, and verification lane after launch?
 - Did any material claim reach the final answer without independent verification or an explicit "unverified" label?
 - Were caps, sampling, failed agents, or skipped scope silent?
 - Is the final answer a synthesis rather than pasted reports?
@@ -224,14 +228,16 @@ If any answer fails, the artifact is incomplete until the blueprint, verificatio
 
 - Launching before Scout, Mode, Bake, and Structure are explicit enough to audit.
 - Picking an agent count before deriving work units or verification needs.
-- Treating Mode as a label or closed enum instead of a constructor for evidence, work units, skeleton, verification, and stop rule.
+- Treating Mode as a label or closed enum with no effect on evidence, work units, skeleton, verification, and stop rule.
 - Forcing a novel task into the closest preset when its work-unit type, verification target, or stop rule does not fit.
 - Vague work units with overlapping edit rights or unclear ownership.
 - A cross-cutting invariant split across agents with no owner.
+- Parent-local tool work after launch produces new task evidence outside the relay boundary.
+- A post-launch work item has no bounded packet, focused question, or explicit gap label.
 - Findings accepted without an independent refutation pass.
-- A decision split into research angles instead of mutually exclusive candidates.
-- A shared review of all candidates instead of a candidate x lens gauntlet.
+- Decision work units are research angles rather than mutually exclusive candidates.
+- Candidate critique collapses into one shared review rather than a candidate x lens gauntlet.
 - A barrier where a pipeline would do.
 - Discovery stopped after one round on an unknown-size problem.
 - Silent top-N caps, sampling, skipped retries, or failed agents.
-- Reports pasted into the main context instead of synthesized into one result.
+- Reports pasted into the main context with no synthesized result.
