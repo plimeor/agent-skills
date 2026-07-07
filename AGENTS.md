@@ -51,6 +51,8 @@ Hard requirements belong in enforceable structure, not only in prose, examples, 
 
 Acceptance and quality gates should name weak substitutes that do not satisfy the gate. Missing required evidence means the generated artifact is incomplete until the evidence, waiver, or user decision is present.
 
+Never gate on a self-assessed resource condition — budget, token cost, context size, "scope too large". Such conditions are unfalsifiable and act as silent escape hatches. When a contract cannot be met, the skill fails loudly: name the unmet remainder and return the decision to the user, who owns resource trade-offs through scoping. <!-- 2026-07-07: earned — budget escape hatch removed from code-review Coverage after user correction -->
+
 Before finishing a skill, run an adversarial check: `Could an agent follow this skill and skip the user's hard requirement while still sounding compliant?` A yes answer means the requirement needs a stronger gate, output field, self-review check, or stop rule.
 
 When the requirement is a decomposition — a fan-out, a critique matrix, a multi-lens review — a conservative executor collapses it down whatever axis the skill leaves to judgment, and each tightening only pushes the collapse to the next-softest axis. (`agent-team` ran this gauntlet: dropped the adversarial pass entirely → split the question into analysis angles instead of competing candidates → ran one shared review instead of per-candidate → collapsed the distinct lenses into one reviewer.) Name the matrix on every load-bearing axis and add a red flag per collapse mode. Stop when the residual axis is low-value — be stakes-proportional, not count-maximal.
