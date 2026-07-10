@@ -1,198 +1,130 @@
 ---
 name: meta-gpt-prompt-maintenance
 description: >-
-  Maintain, audit, rewrite, or upgrade prompt artifacts for GPT-series models. Use when adapting existing prompts to current OpenAI GPT prompt guidance; polishing SKILL.md files, AGENTS instructions, system/developer prompts, product assistant prompts, reusable agent workflows, eval prompts, or grader prompts; or reducing legacy process-heavy prompt stacks into clearer outcome-first instructions. Do not use for ordinary prose editing, model-agnostic prompt advice, new skill creation from scratch, or deciding where durable context belongs before a target prompt artifact is chosen.
+  Maintain, audit, or rewrite existing GPT prompt artifacts from a clean slate using current OpenAI guidance. Use when a system/developer prompt, AGENTS or rules file, SKILL.md, product-assistant prompt, agent workflow, eval prompt, or grader prompt has accumulated legacy instructions, stale context, redundant examples, broad style rules, or unclear authorization. Do not use for ordinary prose editing, model-agnostic prompt advice, creating a new skill, or deciding where durable instructions belong.
 ---
 
 # GPT Prompt Maintenance
 
-## Goal
+## Outcome
 
-Maintain prompt artifacts so GPT-series models receive clear, outcome-first instructions with the constraints, evidence guidance, validation, and stop rules needed to complete the user's requested work without unnecessary process noise.
+Rebuild a selected prompt from current requirements instead of editing legacy text in place. The result uses the smallest prompt and tool set justified by current invariants or observed evaluation gaps, and stale context is removed, refreshed, or explicitly unresolved.
 
-## Success Criteria
+Success means:
 
-A good prompt-maintenance result:
-
-- Preserves the target artifact's intent, audience, scope, and authorization boundary.
-- Defines the outcome, success criteria, constraints, evidence or retrieval budget, output shape, validation expectations, and stop rules when they affect behavior.
-- Removes or compresses legacy process-heavy instructions unless order is required for correctness.
-- Reserves absolute words such as `always`, `never`, `must`, and `only` for true invariants: safety, exact output contracts, irreversible actions, required fields, or tool syntax.
-- Keeps personality and collaboration guidance short enough to shape behavior without replacing the task goal.
-- Makes model-specific claims only from user-provided guidance, official OpenAI documentation, or explicitly labeled inference.
-- Reports what changed, what was validated, and what was intentionally left outside scope.
+- current outcome, evidence, output, safety, and authorization requirements remain enforceable
+- no instruction survives only because it existed before
+- both starting and accumulated context receive a freshness audit
+- required content takes priority over generic brevity, style, or formatting
+- changes, validation, and unresolved evidence are reported
 
 ## Boundaries
 
-Use this skill once a prompt artifact exists to maintain: a `SKILL.md`, rules file, system/developer prompt, product prompt, agent workflow prompt, eval prompt, grader prompt, or comparable reusable instruction block.
+Use this skill after the target prompt has been selected. Use `agent-docs` to decide where durable instructions belong and `skill-creator` for a new skill, skill eval design, benchmarking, or trigger optimization.
 
-Use `skill-creator` instead when the main task is to create a brand-new skill, design skill evals, benchmark a skill, or optimize skill triggering from scratch.
+Treat the existing prompt as evidence of possible requirements and past failure modes, not as a template or preservation baseline. Limit edits to the selected artifact and repository-required metadata. Do not rename, sync an installed copy, or change runtime configuration unless requested.
 
-Use `agent-docs` when the main question is where a rule belongs: global rules, project rules, a skill, tooling, task context, or an external system — unless the prompt artifact is already selected or the work is specifically GPT prompt quality.
+Use only the `Use shorter prompts`, `Define autonomy and permissions clearly`, and `Personality and style` subsections of [OpenAI model guidance: Prompting best practices](https://developers.openai.com/api/docs/guides/latest-model#prompting-best-practices) as sources for this skill's reusable behavior. Do not import workflow guidance from other subsections of that page.
 
-Use writing or editing skills for ordinary prose polishing. Do not turn blog drafts, documentation prose, customer copy, or creative writing into prompt maintenance unless the text is itself an instruction to a model.
+## Core Rules
 
-Do not broaden the artifact's behavior, target model family, tool access, external side effects, sync state, commits, deployment, or persistent configuration unless the user explicitly asks.
+### Start Minimal
 
-## Evidence And Retrieval Budget
+Draft from a blank page using only current requirements. Add an instruction, tool, example, formatting rule, or style rule only when it protects a current invariant or an evaluation reveals a specific gap.
 
-Read the target prompt artifact first. If the task mentions a current GPT model, OpenAI prompt guidance, migration, or model-specific behavior, read the user-provided guidance or current official OpenAI documentation before making model-specific edits.
+Expose only task-relevant tools and describe them concisely. Remove duplicated guidance, speculative safeguards, decorative examples, global templates, repeated phrasing, and contrastive `X, not Y` patterns that do not prevent an observed failure.
 
-Continue retrieval only when:
+Minimal-first does not mean shortening the requested artifact. Preserve every required fact, decision, caveat, output field, and next action.
 
-- a required source artifact, prompt version, model target, or product surface is missing
-- the prompt's current behavior depends on tool contracts, surrounding rules, code, or eval results
-- the user asks for comprehensive coverage, batch migration, or comparison
-- a model-specific recommendation would otherwise be unsupported
+### Keep Context Fresh
 
-Stop retrieval once the core rewrite can be justified; do not search again for phrasing, decorative examples, or noncritical background.
+Treat the static prompt and injected context as one model input. Audit both starting context and accumulated context, including conversation history, retrieved material, tool output, retry transcripts, completed work, and carried-forward summaries.
 
-When the source is a local file supplied by the user, prefer that file over web search. Use official OpenAI sources for external refreshes unless the user requests another source.
+Retain only current information that can change the next decision or final answer. Remove superseded decisions, completed steps, stale facts, obsolete errors, old tool output, duplicate background, and context that encourages repeating finished work.
 
-## Prompt Types
+When a fact, rule, identifier, date, model behavior, or external state may have changed, refresh it from the closest authoritative source or mark it unresolved. Summarizing or compacting stale content does not make it fresh.
 
-### Agent Or System Prompts
+### State Autonomy Once
 
-Optimize for role clarity, collaboration style, tool behavior, evidence discipline, validation, and stop conditions. Keep personality short. Separate how the assistant sounds from how it works.
+Use one compact policy adapted to the host:
 
-For long-running or tool-heavy workflows, include a short user-visible preamble rule when the host supports intermediate messages. For Responses API workflows that replay assistant items manually, preserve `phase` values exactly when the artifact controls replay behavior.
+- answer, explain, review, diagnose, or plan: inspect and report; do not implement unless requested
+- change, build, or fix: make requested in-scope local changes and run non-destructive validation without asking first
+- external writes, destructive actions, purchases, or material scope expansion: require confirmation
 
-### Product Assistant Prompts
+Name safe local actions when ambiguity would cause unnecessary approval checks. Do not repeat permission warnings throughout the prompt.
 
-Define the user's visible outcome, what completion means, what actions are allowed, and what the final answer should contain. Include fallback behavior for missing evidence, unavailable tools, or unsupported requests.
+### Prioritize Required Content
 
-For customer-facing text, define tone and length, but do not let tone instructions obscure policy, evidence, or action boundaries.
+Replace generic brevity instructions with priorities: lead with the conclusion; include required evidence, material caveats, decisions, and next actions; trim introductions, repetition, reassurance, and optional background first.
 
-### Agent Workflow Prompts
+Use a lightweight task-specific outline instead of a global template. Make tone concrete and situational, such as direct and tactful, instead of broadly warm or empathetic.
 
-Prefer decision rules over fixed sequences. Keep required order only for fragile operations, safety checks, exact tool syntax, validation integrity, or irreversible side effects.
+## Hard Gates
 
-For coding agents, require concrete validation commands when available and an explicit explanation when validation cannot run.
+### Gate 1 — Clean Slate
 
-### Skill Prompts
+- **Activates:** every rewrite or upgrade.
+- **Required evidence:** a current-requirements map sourced from the user request and current authoritative product, safety, tool, evidence, and output contracts. Existing prompt text is only a candidate source to classify.
+- **Prohibited substitutes:** prior presence, old examples, comments, familiar wording, speculative usefulness, or backward compatibility with no current owner or requirement.
+- **If unmet:** exclude unsupported legacy content. If its current status could materially change safety, authorization, or an exact contract, ask one narrow question or mark the artifact incomplete instead of preserving it by default.
 
-For `SKILL.md`, keep frontmatter `description:` focused on trigger conditions, near-miss exclusions, and routing. Put reusable workflow guidance in the body.
+### Gate 2 — Minimal First
 
-The body should start with outcome and constraints before process. Keep references, large examples, scripts, and domain-specific details outside `SKILL.md` when progressive disclosure would reduce context load.
+- **Activates:** every rewrite and every proposed instruction, tool, example, formatting rule, or style rule.
+- **Required evidence:** a minimal baseline plus a concise retention ledger linking every retained element or explicit rule group to a current invariant or a specific observed evaluation failure.
+- **Prohibited substitutes:** fewer lines than the old prompt, a smaller diff, intuition that something may help, model-specific padding, or examples added just in case.
+- **If unmet:** remove the unsupported element. Without representative evaluation, deliver only the invariant-backed baseline and label behavioral reliability unverified.
 
-For skills with user-stated acceptance, safety, parity, quality, or evidence invariants, promote each invariant into a hard gate. A hard gate defines when it activates, what fields or artifacts are required, which weaker substitutes are insufficient, what self-review should catch, and what evidence is required before completion.
+### Gate 3 — Context Freshness
 
-When modifying existing skills, do not rename directories, update indexes, or sync installed skills unless the user asked for those operations.
+- **Activates:** every maintenance task. Inspect embedded context in the target and any history, retrieval, tool output, retry state, or summary the host exposes or injects.
+- **Required evidence:** a freshness report naming current context retained, stale or superseded context removed, sources refreshed, unresolved freshness, and observations of starting and accumulated context. If context is inaccessible, record that limitation explicitly.
+- **Prohibited substitutes:** token or line counts, shorter summaries, compaction without source refresh, deduplication alone, or an unsupported claim that context is current.
+- **If unmet:** refresh, remove, or label the uncertain context. If the uncertainty could change behavior, evidence, or authorization, pause for the missing source or user decision. Inaccessible context never counts as verified fresh.
 
-### Eval And Grader Prompts
+### Gate 4 — Allowed Official Source
 
-Make the task, inputs, scoring criteria, and output schema explicit. Avoid leaking expected answers into the prompt under test unless that is the purpose of the eval. Keep grading rubrics atomic enough that pass/fail evidence is inspectable.
+- **Activates:** every rewrite, every reusable OpenAI-derived rule, and every current or model-specific behavior claim.
+- **Required evidence:** a source-scope record mapping reusable rules only to the three allowed subsections. A target-specific current claim also needs direct support from current official OpenAI documentation.
+- **Prohibited substitutes:** workflow guidance from another subsection, model memory, third-party summaries, undated older guidance, unsupported generalization, or a user waiver.
+- **If unmet:** omit the reusable rule or label the target-specific claim unverified. A waiver cannot expand the allowed reusable source scope or make a claim current.
 
-## Audit Checklist
+## Workflow
 
-Before rewriting, identify which defects actually matter for the user's goal:
+1. Extract current requirements from the user request and current authoritative sources. Do not line-edit the old prompt.
+2. Inventory starting and accumulated context; remove, refresh, or isolate stale material.
+3. Write the smallest invariant-backed prompt and task-relevant tool set from a blank page.
+4. Run representative evaluations when available. Add instructions only for observed failures, then rerun the affected case.
+5. Inspect the result for scope expansion and run repository-required structural checks.
 
-- missing or vague target outcome
-- success criteria buried in process steps
-- over-specified sequence where judgment would be better
-- unbounded search, tool use, retries, or iteration
-- unsupported claims about models, users, policy, product facts, or data
-- broad `always` / `never` rules used for judgment calls
-- personality text that is longer than the task contract
-- formatting instructions that make simple answers too heavy
-- no validation path for code, data, visual, or document outputs
-- no stop condition after enough evidence is collected
-- hard acceptance requirements present only in examples, middle prose, or `should` language
-- output contracts that omit evidence required by a stated acceptance, parity, safety, or quality gate
-- stop rules that allow completion without required artifacts, measurements, approvals, or explicit waivers
-- prompt content that changes the artifact's product behavior without authorization
+If evaluation is unavailable, keep the invariant-backed baseline, disclose the missing behavioral evidence, and do not add speculative guidance or claim reliability.
 
-Do not force every prompt into the same template. Add sections only when they change behavior or make maintenance safer.
+## Output Contract
 
-## Rewrite Rules
+Every result includes:
 
-Preserve the artifact's requested behavior first. Improve clarity, ordering, and enforceability without adding new product requirements, facts, capabilities, tools, or obligations.
+- changed files or rewritten text; for review-only work, impact/confidence-ordered findings and confirmation that no files changed
+- the current-requirements map
+- the retention ledger for every retained element or explicit rule group
+- the context freshness report: retained, removed, refreshed, unresolved, starting-context observation, and accumulated-context observation
+- the allowed-source scope record and verification status for current or model-specific claims
+- validation run, observed results, unmet gates, waivers, and intentionally excluded work
 
-Use the shortest structure that covers the real risk:
+## Self-Review And Stop
 
-```text
-Role:
-Goal:
-Success Criteria:
-Constraints:
-Evidence:
-Output:
-Stop Rules:
-```
+Before completion, check:
 
-For small prompts, this can be compressed into a few paragraphs. For durable agent prompts, explicit headings are usually worth the space.
+- would any instruction remain solely because it appeared in the old prompt?
+- does every retained element or explicit rule group map to a current invariant or observed evaluation failure?
+- did stale or superseded context survive through summary, compaction, replay, or copied examples?
+- were starting and accumulated context both inspected or explicitly marked inaccessible?
+- does every reusable OpenAI-derived rule come only from the three allowed subsections, and does every current or model-specific claim have direct official support?
+- are autonomy rules stated once and response guidance limited to required content priorities?
+- does the final report contain every active gate's evidence?
 
-Convert brittle sequences into decision rules:
+If any answer exposes a bypass, revise or report the artifact as incomplete.
 
-- Bad: first do A, then B, then C, then explain every step.
-- Better: collect the minimum evidence needed to answer; continue only if a required fact is missing, sources conflict, or the user requested exhaustive coverage.
+Finish only when every active gate has its evidence or an allowed explicit waiver, the requested artifact is rewritten or reviewed, validation status is observed and reported, and the Output Contract is complete. Completion also requires the source-scope record to show that no reusable rule came from outside the three allowed subsections. A waiver never converts stale, inaccessible, or unverified context into verified current context.
 
-For retrieval, include a budget:
-
-```text
-Read the directly relevant source first. Make another retrieval call only when a
-required fact, source, ID, date, parameter, or comparison target is missing.
-Stop once the core answer can be supported.
-```
-
-For rewriting, summary, and customer-facing outputs, state what to preserve:
-
-```text
-Preserve the requested artifact, length, structure, genre, and factual claims.
-Improve clarity and flow without adding new claims, extra sections, or a more
-promotional tone unless explicitly requested.
-```
-
-For creative drafting, separate source-backed facts from allowed creative wording. Use placeholders or labeled assumptions instead of inventing metrics, customer names, roadmap status, capabilities, or dates.
-
-For reasoning guidance, ask for concise rationale, checks, or evidence in the final answer when useful. Do not ask the model to reveal hidden chain of thought.
-
-## Batch Maintenance
-
-When maintaining multiple prompt artifacts, process each artifact on its own terms. Collapse them into a shared rewrite only when the user asks for a common template.
-
-For each artifact:
-
-- read the current file
-- identify its task, audience, tools, risks, and near-miss exclusions
-- decide which GPT prompt-guidance rules apply
-- edit only the needed parts
-- validate that local naming, schemas, or index rules still hold
-
-If the user asks for independent review per artifact, create one worker per artifact when available and aggregate their findings. If worker capacity is limited, batch workers and record the batching constraint. Do not pretend a single local pass was independent worker review.
-
-## Validation
-
-Choose validation that matches the artifact:
-
-- For edited files, inspect the diff for accidental scope expansion.
-- For `SKILL.md`, verify frontmatter `name:` matches the directory and that trigger descriptions are still focused on use and near-miss exclusions.
-- For added, removed, or renamed skills, update the repo's public index if the repo has one, then run the repo's skill inventory and stale-name checks.
-- For coding-agent prompts, include or run relevant test, typecheck, lint, build, or smoke-test commands when the prompt change is tied to code behavior.
-- For visual or document prompts, render or inspect the artifact when feasible.
-- For eval or grader prompts, test at least one should-pass and one should-fail case when practical.
-
-After rewriting a prompt that carries user acceptance, safety, parity, or quality invariants, run an adversarial check: could an agent follow the rewritten prompt and skip the invariant while still sounding compliant? If so, strengthen the gate, required output field, or stop rule before finishing.
-
-If validation cannot run, say why and name the next best check.
-
-## Output
-
-For rewrite tasks, provide:
-
-- changed files or rewritten prompt text
-- concise summary of behavioral changes
-- validation performed
-- any intentionally excluded work
-
-For review-only tasks, lead with findings ordered by impact, then give concrete rewrite recommendations. Say that no files changed.
-
-For batch work, summarize per artifact. Avoid hiding individual decisions behind a generic theme.
-
-## Stop Rules
-
-Stop when the requested prompt artifacts are rewritten or reviewed, evidence and validation status are stated, and out-of-scope improvements are separated.
-
-Ask one narrow question only when missing information would change the target artifact, model family, product behavior, authorization boundary, or validation claim.
-
-Stop optimizing wording once the prompt is clear, scoped, supported, and testable.
+Do not stop because of self-assessed token, context, time, or effort limits. If a gate cannot be met, name the exact missing evidence or decision. Ask one narrow question only when its answer changes behavior, authorization, the target artifact, or a validation claim. Stop wording optimization once the prompt is minimal, current, scoped, and testable.
