@@ -1,7 +1,6 @@
 ---
 name: codex-session-maintenance
-description: >-
-  Maintain local Codex Desktop/App state when Codex feels slow, session history is heavy, logs or worktrees are large, or the user asks to inspect, archive, clean up, rotate, hand off, reset, or speed up Codex sessions. Do not use for application code performance, model prompt tuning, live conversation compaction, process killing, automation scheduling unless requested, or deleting user data.
+description: "Maintain local Codex Desktop/App state when Codex feels slow, session history is heavy, logs or worktrees are large, or the user asks to inspect, archive, clean up, rotate, hand off, reset, or speed up Codex sessions. Do not use for application code performance, model prompt tuning, live conversation compaction, process killing, automation scheduling unless requested, or deleting user data."
 ---
 
 # Codex Session Maintenance

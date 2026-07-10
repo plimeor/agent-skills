@@ -1,7 +1,6 @@
 ---
 name: agent-team
-description: >-
-  Use when a task needs two or more non-conflicting sub-agents for parallel coverage, independent verification, exhaustive review or audit, broad research, codebase mapping, migration or sweep work, or adversarial critique of a decision. Also use when the user asks to fan out, delegate to several agents, run a team, or cross-check work with multiple independent agents. Near miss: use agent-handoff for one indivisible delegation. Do not use for a single atomic task or for overlapping mutators without disjoint ownership or isolation.
+description: "Use when a task needs two or more non-conflicting sub-agents for parallel coverage, independent verification, exhaustive review or audit, broad research, codebase mapping, migration or sweep work, or adversarial critique of a decision. Also use when the user asks to fan out, delegate to several agents, run a team, or cross-check work with multiple independent agents. Near miss: use agent-handoff for one indivisible delegation. Do not use for a single atomic task or for overlapping mutators without disjoint ownership or isolation."
 ---
 
 # Agent Team

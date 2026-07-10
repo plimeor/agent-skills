@@ -1,15 +1,6 @@
 ---
 name: writing-blog
-description: >-
-  Create, diagnose, outline, rewrite, or polish blog posts and articles with
-  reader expectation management, SCQA, Pyramid Principle structure, and concrete
-  revision guidance. Use for writing from notes, optimizing drafts for
-  structure/clarity/readability, polishing notes into publishable form, article
-  outlines, or feedback on whether a draft reads well. Trigger on blog posts,
-  articles, publishing, writing, first drafts, polishing, diagnosis,
-  optimization, structure, outlines, submissions, newsletters, and
-  reader-oriented writing. For raw reader-experience simulation without writing
-  advice, use writing-reader-feedback instead.
+description: "Create, diagnose, outline, rewrite, or polish blog posts and articles with reader expectation management, SCQA, Pyramid Principle structure, and concrete revision guidance. Use for writing from notes, optimizing drafts for structure/clarity/readability, polishing notes into publishable form, article outlines, or feedback on whether a draft reads well. Trigger on blog posts, articles, publishing, writing, first drafts, polishing, diagnosis, optimization, structure, outlines, submissions, newsletters, and reader-oriented writing. For raw reader-experience simulation without writing advice, use writing-reader-feedback instead."
 ---
 
 # Blog Writing

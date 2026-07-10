@@ -1,7 +1,6 @@
 ---
 name: writing-blog-illustration
-description: >-
-  Generate English image-model prompts for blog or article illustrations in a colorful cartoon infographic style. Use when the user asks for an illustration, image, infographic, concept-diagram, system-architecture, or comparison-visual prompt for a blog or article. Returns a text prompt, not a generated image; if the user wants the assistant to directly create or edit an image, use image generation instead unless they explicitly want a prompt.
+description: "Generate English image-model prompts for blog or article illustrations in a colorful cartoon infographic style. Use when the user asks for an illustration, image, infographic, concept-diagram, system-architecture, or comparison-visual prompt for a blog or article. Returns a text prompt, not a generated image; if the user wants the assistant to directly create or edit an image, use image generation instead unless they explicitly want a prompt."
 ---
 
 # Blog Illustration Prompt Generator

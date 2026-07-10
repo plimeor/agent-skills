@@ -1,14 +1,6 @@
 ---
 name: writing-reader-feedback
-description: >-
-  Simulate a specified reader persona reading an article section by section and
-  report raw reading-experience feedback, not writing advice. Use when the user
-  asks how a specific audience would experience a draft, whether readers can
-  understand it, or wants reader role-play. Trigger on reader simulation, reader
-  feedback, reader perspective, reading experience, or testing how a target
-  reader reacts. For general writing
-  improvement, draft polishing, structural optimization, or revision plans, use
-  writing-blog instead.
+description: "Simulate a specified reader persona reading an article section by section and report raw reading-experience feedback, not writing advice. Use when the user asks how a specific audience would experience a draft, whether readers can understand it, or wants reader role-play. Trigger on reader simulation, reader feedback, reader perspective, reading experience, or testing how a target reader reacts. For general writing improvement, draft polishing, structural optimization, or revision plans, use writing-blog instead."
 ---
 
 # Writing Reader Feedback

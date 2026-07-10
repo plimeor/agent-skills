@@ -1,7 +1,6 @@
 ---
 name: code-test-strategy
-description: >-
-  Decide the smallest useful test strategy for a coding task without letting tests drive production-only complexity. Use when adding tests, choosing unit/integration/E2E level, reviewing mocks, doing TDD, or when an agent is about to add or modify tests.
+description: "Decide the smallest useful test strategy for a coding task without letting tests drive production-only complexity. Use when adding tests, choosing unit/integration/E2E level, reviewing mocks, doing TDD, or when an agent is about to add or modify tests."
 ---
 
 # Code Test Strategy

@@ -1,7 +1,6 @@
 ---
 name: reconsider
-description: >-
-  Use before finalizing a non-trivial answer, recommendation, review, or decision to reconsider it and raise its quality, especially when shallow reasoning, context inertia, false framing, overconfidence, unfit analogy transfer, or an obvious-but-missed defect could distort the result. Trigger especially before applying external evidence, familiar frameworks, or comparisons to the user's specific request, and when the user asks to reconsider, double-check, take a second look, or sanity-check an answer.
+description: "Use before finalizing a non-trivial answer, recommendation, review, or decision to reconsider it and raise its quality, especially when shallow reasoning, context inertia, false framing, overconfidence, unfit analogy transfer, or an obvious-but-missed defect could distort the result. Trigger especially before applying external evidence, familiar frameworks, or comparisons to the user's specific request, and when the user asks to reconsider, double-check, take a second look, or sanity-check an answer."
 ---
 
 # Reconsider

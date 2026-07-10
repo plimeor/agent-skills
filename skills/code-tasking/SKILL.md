@@ -1,7 +1,6 @@
 ---
 name: code-tasking
-description: >-
-  Turn an approved development plan plus the real codebase into a bottom-up, dependency-ordered graph of atomic execution tasks for an iterative or Goal-mode executor. Use when sequencing or bundling already-planned work so a foundation change lands in one go instead of accreting upper-layer patches, and when a memoryless per-turn executor with an additive bias will run the tasks. Near miss: use code-plan to create or revise the plan itself; use code-review to judge a draft plan or diff; not for executing the tasks.
+description: "Turn an approved development plan plus the real codebase into a bottom-up, dependency-ordered graph of atomic execution tasks for an iterative or Goal-mode executor. Use when sequencing or bundling already-planned work so a foundation change lands in one go instead of accreting upper-layer patches, and when a memoryless per-turn executor with an additive bias will run the tasks. Near miss: use code-plan to create or revise the plan itself; use code-review to judge a draft plan or diff; not for executing the tasks."
 ---
 
 # Code Tasking

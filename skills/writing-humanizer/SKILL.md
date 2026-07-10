@@ -1,7 +1,6 @@
 ---
 name: writing-humanizer
-description: >
-  Humanize Chinese or English drafts. Use when the user asks to make writing less AI-like, more human, more natural, less generic, more authored, or when a draft feels over-polished, too symmetrical, generic, translated, or detached from the author's real judgment. Do not use this as an AI-word blacklist, synonym-replacement pass, fact-expansion pass, or request to make technical writing casually chatty.
+description: "Humanize Chinese or English drafts. Use when the user asks to make writing less AI-like, more human, more natural, less generic, more authored, or when a draft feels over-polished, too symmetrical, generic, translated, or detached from the author's real judgment. Do not use this as an AI-word blacklist, synonym-replacement pass, fact-expansion pass, or request to make technical writing casually chatty."
 ---
 
 # Writing Humanizer

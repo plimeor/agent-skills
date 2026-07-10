@@ -1,7 +1,6 @@
 ---
 name: meta-gpt-prompt-maintenance
-description: >-
-  Maintain, audit, or rewrite existing GPT prompt artifacts from a clean slate using current OpenAI guidance. Use when a system/developer prompt, AGENTS or rules file, SKILL.md, product-assistant prompt, agent workflow, eval prompt, or grader prompt has accumulated legacy instructions, stale context, redundant examples, broad style rules, or unclear authorization. Do not use for ordinary prose editing, model-agnostic prompt advice, creating a new skill, or deciding where durable instructions belong.
+description: "Maintain, audit, or rewrite existing GPT prompt artifacts from a clean slate using current OpenAI guidance. Use when a system/developer prompt, AGENTS or rules file, SKILL.md, product-assistant prompt, agent workflow, eval prompt, or grader prompt has accumulated legacy instructions, stale context, redundant examples, broad style rules, or unclear authorization. Do not use for ordinary prose editing, model-agnostic prompt advice, creating a new skill, or deciding where durable instructions belong."
 ---
 
 # GPT Prompt Maintenance

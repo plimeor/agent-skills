@@ -1,7 +1,6 @@
 ---
 name: code-lean
-description: >-
-  Force the smallest correct coding change. Use when the user asks for Code Lean, lean code, minimal implementation, YAGNI, less boilerplate, fewer dependencies, simpler code, deleting bloat, or avoiding over-engineering. Also use before implementing broad or speculative coding requests where a smaller existing capability may satisfy the goal.
+description: "Force the smallest correct coding change. Use when the user asks for Code Lean, lean code, minimal implementation, YAGNI, less boilerplate, fewer dependencies, simpler code, deleting bloat, or avoiding over-engineering. Also use before implementing broad or speculative coding requests where a smaller existing capability may satisfy the goal."
 ---
 
 # Code Lean

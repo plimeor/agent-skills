@@ -1,7 +1,6 @@
 ---
 name: url-reader
-description: >-
-  Read the main content of a specific webpage URL when the user asks to summarize, inspect, cite, reference, or extract facts from that URL, including "read this", "look at this link", "based on this article", or equivalent reference requests. Owns URL retrieval safety for other skills that need webpage body content; not a broad web search tool.
+description: "Read the main content of a specific webpage URL when the user asks to summarize, inspect, cite, reference, or extract facts from that URL, including \"read this\", \"look at this link\", \"based on this article\", or equivalent reference requests. Owns URL retrieval safety for other skills that need webpage body content; not a broad web search tool."
 ---
 
 # URL Reader
