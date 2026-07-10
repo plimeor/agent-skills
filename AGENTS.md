@@ -42,14 +42,9 @@ Choose the name by the user's natural trigger phrase and the skill's primary reu
 
 When creating or materially updating a `SKILL.md`, extract the user's hard requirements before drafting reusable instructions. A hard requirement is any condition that changes whether the skill output is acceptable, complete, safe, or faithful to the user's stated bar.
 
-Hard requirements belong in enforceable structure, not only in prose, examples, or advisory language. Each applicable hard requirement should appear in:
+Hard requirements belong in enforceable structure, not only in prose, examples, or advisory language. Enforce each one at the fewest points that actually bind — a named gate, an output-contract field, a self-review check, or a stop rule, singly or in combination — chosen for where an executor would otherwise skip it. State a requirement's normative form once and reference it by a short name elsewhere; do not replicate the same clause across gate, output, self-review, and stop rules by default. Repeat an enforcement point only when that specific point would otherwise fail to bind, never as a uniform authoring rule. <!-- 2026-07-11: earned — four-point replication mandate removed; single-point enforcement is the default and verbatim duplication across sections is a defect, per user decision -->
 
-- A named gate section with activation condition, required evidence or fields, prohibited substitutes, and incomplete or pause behavior.
-- The output contract as required fields or required artifacts.
-- A self-review check that tests whether an agent could skip the requirement while sounding compliant.
-- Stop rules that require the relevant evidence before completion.
-
-Acceptance and quality gates should name weak substitutes that do not satisfy the gate. Missing required evidence means the generated artifact is incomplete until the evidence, waiver, or user decision is present.
+When a gate is the right structure, give it an activation condition, required evidence or fields, prohibited substitutes, and incomplete or pause behavior, and name the weak substitutes that do not satisfy it. Missing required evidence means the generated artifact is incomplete until the evidence, waiver, or user decision is present.
 
 Never gate on a self-assessed resource condition — budget, token cost, context size, "scope too large". Such conditions are unfalsifiable and act as silent escape hatches. When a contract cannot be met, the skill fails loudly: name the unmet remainder and return the decision to the user, who owns resource trade-offs through scoping. <!-- 2026-07-07: earned — budget escape hatch removed from code-review Coverage after user correction -->
 
