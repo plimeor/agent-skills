@@ -39,7 +39,7 @@ Stop after the full article has been read and the overall impression has been re
 
 ### 1. Get The Article
 
-Get the article per Evidence And Reading Boundaries (direct text, file path, or webpage URL).
+Get the article per Evidence And Reading Boundaries.
 
 ### 2. Establish The Reader Persona
 

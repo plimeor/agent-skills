@@ -1,7 +1,7 @@
 ---
 name: writing-blog-illustration
 description: >-
-  Generate English image-model prompts for blog or article illustrations in a colorful cartoon infographic style. Use when the user asks for an illustration, image, infographic, concept-diagram, system-architecture, or comparison-visual prompt for a blog or article. Returns a text prompt, not a generated image; if the user wants Codex to directly create or edit an image, use image generation instead unless they explicitly want a prompt.
+  Generate English image-model prompts for blog or article illustrations in a colorful cartoon infographic style. Use when the user asks for an illustration, image, infographic, concept-diagram, system-architecture, or comparison-visual prompt for a blog or article. Returns a text prompt, not a generated image; if the user wants the assistant to directly create or edit an image, use image generation instead unless they explicitly want a prompt.
 ---
 
 # Blog Illustration Prompt Generator
@@ -24,7 +24,7 @@ A good result:
 
 The prompt itself must be written in English, regardless of the conversation language. Use Chinese labels only when the user explicitly requests Chinese text inside the image.
 
-Return a prompt for the user's preferred image generation model. If the user asks Codex to directly generate or edit an image, hand off to image generation instead of returning only a prompt.
+Return a prompt for the user's preferred image generation model. If the user asks the assistant to directly generate or edit an image, hand off to image generation instead of returning only a prompt.
 
 ## Default Style
 

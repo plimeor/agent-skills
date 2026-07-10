@@ -11,7 +11,7 @@ description: >-
 Two layers, one direction of flow:
 
 - **Durable — rules files.** `AGENTS.md` (canonical) at each scope; `CLAUDE.md` is a one-line `@AGENTS.md` import or symlink, never a fork. This is the only collaboration artifact worth maintaining. Decisions live here as terse current-state rules — no decision ledger, no ADR folder, no archive. Git history of the rules file is the audit trail.
-- **Ephemeral — working docs.** `.agentdocs/` holds plans, tasking, and freeform working notes — requirement notes, task context packs, handoff notes. They are steering artifacts: their value is spent when the work ships. On completion, distill any earned residue upward, then delete them.
+- **Ephemeral — working docs.** `.agentdocs/` holds plans, tasking, and freeform working notes. They are steering artifacts: their value is spent when the work ships. On completion, distill any earned residue upward, then delete them.
 
 Human-maintained docs (`docs/`, runbooks) are their owners' concern; reference them from AGENTS.md as pointers. Skip the whole system for one-shot single-session work — documenting throwaway work is itself noise.
 

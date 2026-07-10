@@ -67,6 +67,7 @@ CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 du -sh "$CODEX_HOME"/* 2>/dev/null | sort -h
 find "$CODEX_HOME/sessions" -type f -name '*.jsonl' -size +10M -print 2>/dev/null
 find "$CODEX_HOME/log" -type f -size +50M -print 2>/dev/null
+du -sh "$CODEX_HOME"/logs_*.sqlite* 2>/dev/null   # recent Codex keeps logs in a top-level SQLite store, not log/
 find "$CODEX_HOME/worktrees" -mindepth 1 -maxdepth 1 -type d -mtime +10 -print 2>/dev/null
 ps aux | rg -i '[c]odex'
 ps aux | rg -i 'node|bun|vite|next|webpack|tsx'
@@ -152,7 +153,7 @@ Sessions from the last 7-10 days are usually too recent to archive, but age is o
 
 For worktrees, inspect each candidate with `git status --short` when it is a git repository. Keep dirty worktrees unless the user confirms a specific archive action. If a directory is a registered git worktree, prefer the repository's safe worktree move mechanism; stop if you cannot verify it.
 
-For logs, rotate oversized old logs by moving them to an archive folder. Leave the active log path available so Codex can recreate fresh logs. Do not truncate a log while Codex is running.
+For logs, rotate oversized old logs by moving them to an archive folder. Leave the active log path available so Codex can recreate fresh logs. Do not truncate a log while Codex is running. When logs live in a top-level SQLite store (`logs_*.sqlite`) rather than files under `log/`, treat it as a database: back it up and integrity-check it per Cleanup Policy instead of moving or truncating it, and never touch it while Codex is running.
 
 ## Validation
 

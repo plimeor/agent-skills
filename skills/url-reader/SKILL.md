@@ -21,8 +21,6 @@ A good result:
 
 ## Constraints
 
-Use this for concrete URLs the user wants read, summarized, inspected, cited, or extracted.
-
 Other skills that need article or webpage body content should route URL retrieval through this skill or an explicitly authorized domain-specific tool instead of duplicating URL privacy, extraction, and fallback rules.
 
 Prefer dedicated tools or skills when available for a domain, such as OpenAI docs, GitHub PRs/issues, local browser testing, app connector data, or code/test execution. Use this skill only for raw public webpage main-content extraction.
