@@ -14,11 +14,21 @@ Install a single skill:
 npx skills add plimeor/agent-skills --skill url-reader
 ```
 
+Install Claude Code plugins (marketplace name: `plimeor`; plugins do not go
+through `npx skills add`):
+
+```bash
+claude plugin marketplace add plimeor/agent-skills
+claude plugin install english-coach@plimeor
+```
+
 ## Project Structure
 
 - `skills/<skill-name>/SKILL.md`: each skill has its own directory, and `SKILL.md` is the entrypoint.
 - The `name:` field in `SKILL.md` frontmatter must match the parent directory name exactly.
-- `README.md` is the public index. Update it whenever a skill is added, removed, or renamed.
+- `plugins/<plugin-name>/`: Claude Code plugins, with `.claude-plugin/plugin.json` as the entrypoint.
+- `.claude-plugin/marketplace.json`: the plugin marketplace index.
+- `README.md` is the public index. Update it whenever a skill or plugin is added, removed, or renamed.
 
 ## Skills
 
@@ -57,3 +67,9 @@ Skills are grouped by primary mode.
 - [writing-blog-illustration](skills/writing-blog-illustration/SKILL.md): Generate illustration prompts for blog posts, especially workflow, architecture, and abstract-concept visuals.
 - [writing-humanizer](skills/writing-humanizer/SKILL.md): Reduce AI-writing traces so generated docs and drafts read more naturally and human-authored.
 - [writing-reader-feedback](skills/writing-reader-feedback/SKILL.md): Simulate a specified reader reading an article section by section and report raw reading-experience feedback.
+
+## Plugins
+
+Claude Code plugins, distributed through this repo's plugin marketplace (`plimeor`).
+
+- [english-coach](plugins/english-coach/README.md): On every English prompt, shows an improved version with short fix notes before Claude responds. Display-only via the hook `systemMessage` channel — never enters Claude's context.

@@ -1,0 +1,8 @@
+{
+  "name": "english-coach",
+  "description": "Shows an improved version of your English prompts before Claude responds. Display-only: the improved prompt is never added to Claude's context.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Plimeor"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "plimeor",
+  "description": "Plimeor's personal Claude Code plugins",
+  "owner": {
+    "name": "Plimeor"
+  },
+  "plugins": [
+    {
+      "name": "english-coach",
+      "source": "./plugins/english-coach",
+      "description": "Shows an improved version of your English prompts before Claude responds. Display-only: the improved prompt never enters Claude's context."
+    }
+  ]
+}
