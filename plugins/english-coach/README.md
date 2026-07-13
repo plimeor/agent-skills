@@ -23,9 +23,8 @@ zero tokens to your conversation context.
 - If the English is already good (`ALREADY_GOOD`) or the nested call fails,
   the hook stays silent.
 - The coach makes minimal edits — real errors and clearly unnatural phrasing
-  only, watching the high-frequency errors of Chinese native speakers (tense,
-  agreement, articles, plurals, countability) — and orders notes by learning
-  value. A deterministic backstop in the script suppresses rewrites that
+  only, watching high-frequency learner errors (tense, agreement, articles,
+  plurals, countability) — and orders notes by learning value. A deterministic backstop in the script suppresses rewrites that
   differ from the original only in punctuation, casing, or whitespace.
 
 ## Latency and cost
