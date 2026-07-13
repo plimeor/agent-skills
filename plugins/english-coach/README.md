@@ -40,6 +40,13 @@ thinking added ~20 s per call. Without thinking haiku needs the format
 locked hard, which is why the system prompt carries a worked example; edit
 it carefully.
 
+## Requirements
+
+- [Bun](https://bun.sh) on `PATH` — the hook script runs via `#!/usr/bin/env bun`.
+  Claude Code does not ship a runtime for hooks; they execute in your shell
+  environment, so the hook fails on machines without Bun.
+- `claude` CLI logged in (the nested improvement call reuses your auth).
+
 ## Configuration
 
 - `ENGLISH_COACH_MODEL` — model for the nested call (default `haiku`).
