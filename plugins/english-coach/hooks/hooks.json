@@ -1,5 +1,5 @@
 {
-  "description": "English prompt improvement (display-only via systemMessage)",
+  "description": "Coach the English of your prompt (display-only via systemMessage)",
   "hooks": {
     "UserPromptSubmit": [
       {

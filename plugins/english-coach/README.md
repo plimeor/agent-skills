@@ -1,36 +1,44 @@
 # english-coach
 
-Claude Code plugin: every time you submit an English prompt, an improved
-version (with up to 3 short notes on the fixes) is shown to you before Claude
-starts responding. The improved prompt is **display-only** — it is delivered
-via the hook `systemMessage` field, which the model never sees, so it adds
-zero tokens to your conversation context.
+Claude Code plugin: every time you submit a prompt, the English you should have
+written (with up to 3 short notes) is shown to you before Claude starts
+responding. English prompts are copy-edited; prompts in any other language are
+translated into the natural English prompt you should have sent. The suggestion
+is **display-only** — it is delivered via the hook `systemMessage` field, which
+the model never sees, so it adds zero tokens to your conversation context.
 
 ## How it works
 
 - `hooks/hooks.json` registers a `UserPromptSubmit` hook running
   `scripts/improve-prompt.ts` (Bun).
-- The script skips non-candidates instantly: prompts shorter than 15 chars or
-  longer than 2000, slash/bash/memory input (`/` `!` `#`), prompts containing
-  CJK characters, fewer than 4 words, or mostly non-letter content.
-- For English prompts it runs a one-shot nested `claude -p` (model `haiku` by
-  default) with a copy-editor system prompt, then emits
-  `{"systemMessage": ...}`. The user prompt is wrapped in `<prompt-to-edit>`
-  tags and treated as data, so instructions inside it are not executed.
+- The script skips non-candidates instantly: prompts longer than 2000 chars,
+  slash/bash/memory input (`/` `!` `#`), English prompts shorter than 15 chars,
+  with fewer than 4 words, or mostly non-letter content (pasted code, logs,
+  IDs). Non-English input (3+ non-ASCII letters) is let through down to 5 chars.
+- For candidates it runs a one-shot nested `claude -p` (model `haiku` by
+  default) with a coach system prompt, then emits `{"systemMessage": ...}`. The
+  model detects the language and either copy-edits (English) or translates (any
+  other language) — nothing is tied to one source language. The user prompt is
+  wrapped in `<prompt-to-edit>` tags and treated as data, so instructions inside
+  it are not executed.
 - The nested call runs in an empty temp workdir (`$TMPDIR/english-coach-workdir`)
   so it never inherits the current project's CLAUDE.md, AGENTS.md, or
   auto-memory — that context made startup slow enough to blow the hook timeout.
-- If the English is already good (`ALREADY_GOOD`) or the nested call fails,
-  the hook stays silent.
-- The coach makes minimal edits — real errors and clearly unnatural phrasing
-  only, watching high-frequency learner errors (tense, agreement, articles,
-  plurals, countability) — and orders notes by learning value. A deterministic backstop in the script suppresses rewrites that
-  differ from the original only in punctuation, casing, or whitespace.
+- For English input, if it is already good (`ALREADY_GOOD`) or the nested call
+  fails, the hook stays silent. Translations always show (there is no
+  `ALREADY_GOOD` for them).
+- On English input the coach makes minimal edits — real errors and clearly
+  unnatural phrasing only, watching high-frequency learner errors (tense,
+  agreement, articles, plurals, countability). On non-English input it writes
+  the idiomatic English a fluent developer would send. Either way it orders
+  notes by learning value. A deterministic backstop suppresses English rewrites
+  that differ from the original only in punctuation, casing, or whitespace;
+  translations never match it, so they are never suppressed.
 
 ## Latency and cost
 
 The hook is synchronous: expect roughly 5–10 s before Claude starts on each
-English prompt (API congestion can occasionally push this higher). Each
+coached prompt (API congestion can occasionally push this higher). Each
 improvement is one small haiku call billed to your Claude account/limits.
 Hook timeout is 60 s; on timeout the prompt proceeds without a suggestion.
 

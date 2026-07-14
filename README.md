@@ -72,4 +72,4 @@ Skills are grouped by primary mode.
 
 Claude Code plugins, distributed through this repo's plugin marketplace (`plimeor`).
 
-- [english-coach](plugins/english-coach/README.md): On every English prompt, shows an improved version with short fix notes before Claude responds. Display-only via the hook `systemMessage` channel — never enters Claude's context.
+- [english-coach](plugins/english-coach/README.md): On every prompt, shows the English you should have written — copy-edits English, translates other languages — with short fix notes before Claude responds. Display-only via the hook `systemMessage` channel — never enters Claude's context.
