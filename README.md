@@ -54,7 +54,7 @@ Skills are grouped by primary mode.
 
 - [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md): Rebuild existing GPT prompt artifacts from current requirements, starting with the smallest prompt and tool set, removing or refreshing stale context, clarifying authorization, and adding guidance only for demonstrated gaps.
 - [agent-handoff](skills/agent-handoff/SKILL.md): Hand one bounded unit of work to a single sub-agent with a clean contract — packet, return format, stop condition — and treat the report as evidence to verify. Owns the per-delegation contract that agent-team reuses for each member; delegation assumed authorized.
-- [agent-team](skills/agent-team/SKILL.md): Compile and run a multi-subagent team through Scout, Mode, Bake, Structure, and Launch; select a preset Mode or construct a task-specific Mode from scout evidence, bake shared context into each packet, delegate substantive work to sub-agents, and synthesize one verified result. Defers the per-agent contract to agent-handoff.
+- [agent-team](skills/agent-team/SKILL.md): Compile and run a multi-subagent team through Scout, Mode, Bake, Structure, and Launch; select a preset Mode or construct a task-specific Mode from scout evidence; classify closed-surface vs open-discovery coverage; bake atomic evidence-root work units with probe plus skeptic/completeness topology; and synthesize one verified result. Defers the per-agent contract to agent-handoff.
 
 ### Ops
 
