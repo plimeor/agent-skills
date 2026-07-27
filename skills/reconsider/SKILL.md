@@ -51,7 +51,7 @@ Prefer an independent challenger before finalizing when:
 - a wrong answer would materially affect code, public claims, operational decisions, money, safety, or user trust
 - the answer depends on interpreting ambiguous or conflicting evidence
 
-Use `agent-handoff` to delegate the challenger; if it is not worth the overhead, run the same challenge locally and record the skip reason only when it affects confidence.
+Use `agent-team` to delegate the challenger as a single handoff; if it is not worth the overhead, run the same challenge locally and record the skip reason only when it affects confidence.
 
 When a sub-agent is used, isolate it from the main thread's conversation where the host supports it, so the subagent receives the normal system and project context plus the task packet, but not the main thread's full conversation history or draft bias. Do not describe this as a completely clean context: global instructions, project rules, workspace state, and tool definitions may still be visible.
 

@@ -1,19 +1,86 @@
 ---
 name: agent-team
-description: "Use when a task needs two or more sub-agents for parallel coverage, independent verification, exhaustive review or audit, broad research, codebase mapping, migration or sweep work, or adversarial critique of a decision. Also use when the user asks to fan out, delegate to several agents, run a team, or cross-check work across independent agents. Near miss: use agent-handoff for one indivisible delegation. Do not use for a single atomic task, or for overlapping mutators without disjoint ownership or isolation."
+description: "Use when delegating to sub-agents: one bounded handoff — an independent challenger before finalizing, a focused investigation, a bounded implementation slice, a verifier with a rubric — or two or more agents for parallel coverage, independent verification, exhaustive review or audit, broad research, codebase mapping, migration or sweep work, or adversarial critique of a decision. Also use when the user asks to fan out, delegate, run a team, or cross-check work across independent agents. Do not use to add a coordination round-trip to work the main agent should simply do itself, or for overlapping mutators without disjoint ownership or isolation."
 ---
 
 # Agent Team
 
-Run a team only after the task has been compiled into an orchestration blueprint. The main agent scouts the real shape of the work, selects or constructs a Mode, bakes shared context into every packet, structures the topology, launches bounded sub-agents, relays progress, routes gaps or conflicts, and synthesizes one result from returned evidence.
+Delegate to sub-agents — one bounded handoff, or a team compiled into an orchestration blueprint — and integrate what returns as evidence rather than truth. Delegation is assumed authorized. The judgment this skill owns is whether a delegation is worth its overhead, how tight each contract must be, and what shape a team takes.
 
-The team's value comes from disciplined shape, not agent count. A broad fan-out without a blueprint is a parallel dump; a small team with complete scout evidence, atomic work units, shared context, and independent verification can be stronger than a larger unstructured fan-out. A small team is never justified by coarse labels that hide multiple evidence roots; it is justified when the scouted surface is small, or when a larger surface is explicitly sampled or capped in `LIMITS` with the Topology Floor completeness lane named.
+The value comes from disciplined shape, not agent count. A broad fan-out without a blueprint is a parallel dump; a small team with complete scout evidence, atomic work units, shared context, and independent verification can be stronger than a larger unstructured fan-out. A small team is never justified by coarse labels that hide multiple evidence roots; it is justified when the scouted surface is small, or when a larger surface is explicitly sampled or capped in `LIMITS` with the Topology Floor completeness lane named.
 
-Delegation is assumed authorized. Each member's packet, return format, stop condition, and report-as-evidence contract follows `agent-handoff`; this skill governs the team blueprint and verification topology.
+## Route
+
+**One handoff** when the work is a single atomic unit under Unit Atomicity — one evidence root, one inspect type, one owner, finishable without dropping a named sub-surface. Typical shapes: an independent challenger before finalizing, a focused investigation, a bounded implementation slice, a verifier with a rubric.
+
+**A team** when the work has two or more independent evidence roots, an unknown-size surface that must be inventoried, or material claims that need an independent lane to refute them.
+
+The Delegation Contract governs every sub-agent on either path. Only the team path adds Scout, Mode, Bake, Structure, Launch, and Integrate, and only it runs the three hard gates. Calling multi-root work "just one handoff" is the collapse this skill guards against: the test is Unit Atomicity, not how heavy the task feels.
+
+## The Delegation Contract
+
+Applies to a lone handoff and to every member of a team alike.
+
+### When A Delegation Earns Its Cost
+
+A sub-agent has real overhead: duplicated setup context, a coordination round-trip, and report synthesis. It pays off when:
+
+- The subtask needs noisy exploration — many file reads, large logs, wide searches — but only a compact result matters to the main thread.
+- A focused prompt or a narrower tool/permission boundary improves reliability.
+- The main agent can keep moving on the critical path while the sub-agent works.
+
+Keep the work local instead when the round-trip would cost more than it saves, when the next step is a blocking decision the main agent must make now, or when the subtask is too vague to be given a stop condition. A delegation with no stop condition is not a delegation, it is a leak.
+
+### The Packet
+
+Each sub-agent receives a concrete packet carrying only the context it needs. Padding it with the main thread's full history reintroduces the noise you delegated to escape.
+
+```markdown
+Objective:
+[One concrete outcome.]
+
+Context:
+[Minimal background, relevant constraints and decisions — not the whole conversation.]
+
+Scope:
+- Owns: [files / modules / sources / questions]
+- May inspect: [paths / sources]
+- Must not edit: [paths, or "anything outside ownership"]
+
+Tool and permission boundary:
+[Read-only / allowed commands / allowed tools.]
+
+Execution rules:
+- If blocked, report the blocker instead of expanding scope.
+- [Anything else this task needs beyond the boundaries above.]
+
+Verification:
+[Commands, checks, source requirements, or "read-only investigation".]
+
+Return format:
+[Only the fields the main thread will consume — findings | evidence with source pointers | files changed | verification run | unknowns | next step. Distilled, never a raw transcript. Evidence with source pointers is not optional: an unverifiable claim is not a result.]
+
+Stop condition:
+[What counts as done, plus any time or depth limit.]
+```
+
+For a verifier, include a **rubric**. An agent asked only to "check if this is good" produces the appearance of quality control without signal — give it the concrete criteria to check against.
+
+On the team path the packet is assembled from the context pack rather than written from scratch: `Objective` and `Context` from `SHARED` and `NOT_A_BUG`, `Scope` and `Tool and permission boundary` from that agent's `WORK_UNIT`, `Return format` from `OUTPUT_CONTRACT`, limits and caps from `LIMITS`. Packet `Verification` is what the agent runs on its own work; it is never the independent check, which `VERIFY_MATRIX` owns.
+
+### While Sub-Agents Run
+
+Do not re-do delegated work locally while a sub-agent is still responsible for it; that throws away the context isolation you delegated for, and risks two conflicting versions. While it runs, work a different part of the task, prepare integration scaffolding that does not depend on the result, or wait if the result is the next blocker. Waiting beats duplicating.
+
+### Receive Reports As Evidence
+
+Treat every return as evidence, not truth. Before integrating, check: did the agent stay in scope, give concrete evidence and source pointers, run the requested verification, and surface assumptions or conflicts?
+
+Verify proportionally — spot-check the high-impact claims, re-run the smallest relevant check, and lean harder on anything that changes a decision. If a report is weak, ask one focused follow-up rather than silently redoing the whole task; only take it local if the agent failed and the work is on the critical path.
 
 ## Hard Gate: Blueprint Before Launch
 
-Activation: every `agent-team` use before spawning more than one sub-agent.
+Activation: every team use before spawning more than one sub-agent.
 
 Required artifact: an internal or user-visible blueprint with these fields:
 
@@ -25,7 +92,7 @@ Required artifact: an internal or user-visible blueprint with these fields:
 - `Structure`: stages, pipeline/barrier choices, verification matrix (including topology-floor lane owners), completeness pass, and synthesis owner.
 - `Launch Gate`: atomic work units, topology floor, disjoint ownership, edit isolation when needed, parent relay boundary, caps, batching, stall limits, and stop criteria.
 
-Prohibited substitutes: an agent count; a list of vague angles; "have several agents look around"; subsystem labels treated as discovery units; independent packets that each rediscover scope.
+Prohibited substitutes: an agent count; a list of vague angles; "have several agents look around"; subsystem labels treated as discovery units; independent packets that each rediscover scope; a multi-root or unknown-size task declared a single handoff so this gate never activates.
 
 Incomplete behavior: scout locally or with a single scout agent until the blueprint is specific enough. If a critical scope fact remains unavailable and affects the topology, ask one focused question or return a plan-only blueprint with the missing fact named.
 
@@ -52,7 +119,7 @@ After the first scout pass, classify coverage shape:
 
 Mixed tasks: if any in-scope substream is `open-discovery`, record overall Coverage Shape as `open-discovery` and apply inventory plus completeness rules to every open substream. Closed substreams still bake from their pinned lists and keep pinned cardinality.
 
-Derive cardinality from the inventory result — never from a preferred headcount, from a handful of logical areas, or from a single discovery round on an unknown-size surface. When scout finds no real work-list, keep the task local or use `agent-handoff`.
+Derive cardinality from the inventory result — never from a preferred headcount, from a handful of logical areas, or from a single discovery round on an unknown-size surface. When scout finds no real work-list, keep the task local or run it as a single handoff under the Delegation Contract.
 
 ## Mode
 
@@ -86,7 +153,7 @@ Incomplete behavior: refine the scout or split/merge work units before launch. A
 
 ## Hard Gate: Unit Atomicity
 
-Activation: after Bake candidate units exist and before Launch, for every `WORK_UNIT`.
+Activation: after Bake candidate units exist and before Launch, for every `WORK_UNIT`; and at Route, to test whether work claimed as a single handoff is really one unit.
 
 Required evidence per unit: exactly one `evidence_root`, exactly one `inspect_type`, and a deep-inspect or transform scope one agent can finish without dropping a named sub-surface already visible in scout or inventory — except where homogeneous batching is allowed below.
 
