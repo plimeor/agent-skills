@@ -1,6 +1,6 @@
 ---
 name: reconsider
-description: "Use before finalizing a non-trivial answer, recommendation, review, or decision to reconsider it and raise its quality, especially when shallow reasoning, context inertia, false framing, overconfidence, unfit analogy transfer, or an obvious-but-missed defect could distort the result. Trigger especially before applying external evidence, familiar frameworks, or comparisons to the user's specific request, and when the user asks to reconsider, double-check, take a second look, or sanity-check an answer."
+description: "Use before finalizing a non-trivial answer, recommendation, review, or decision, especially when shallow reasoning, stale context, a false frame, overconfidence, or transferring an outside framework or analogy onto the user's specific case could distort it, or when the user asks to reconsider, double-check, take a second look, or sanity-check. Not for one-line facts, simple commands, or mechanical formatting."
 ---
 
 # Reconsider
@@ -11,30 +11,9 @@ Produce answers that survive scrutiny before they are delivered. The answer shou
 
 This improves judgment before responding; it is not permission to expand the user's requested work.
 
-## Success Criteria
-
-A good reconsider pass:
-
-- Answers the current request, not an older thread goal or the assistant's momentum.
-- Distinguishes observed facts, source-supported conclusions, memory-derived clues, inferences, and value judgments when trust depends on the distinction.
-- Finds the most likely failure mode before output: missing decisive evidence, false premise, overconfident claim, ignored counterexample, wrong scope, or contradiction.
-- Surfaces the strongest decision-relevant conclusion before lower-cost mitigations, workarounds, or compromise paths.
-- Uses external evidence, tools, or independent scrutiny when intrinsic self-correction would be too weak.
-- Keeps the final answer no larger than the user's request requires.
-
 ## When To Use
 
-Use this skill for non-trivial explanations, recommendations, critiques, decisions, final answers after long work, and when the user asks for careful thought, skepticism, reconsideration, a second look, sanity checking, or an answer that can withstand scrutiny.
-
-Consider independent scrutiny when:
-
-- the conversation context is large, compressed, or full of previous attempts
-- the main agent has already drafted a conclusion and may be anchored to it
-- the user explicitly asks for deep consideration, careful scrutiny, or a second look
-- a wrong answer would materially affect code, public claims, operational decisions, money, safety, or user trust
-- the answer depends on interpreting ambiguous or conflicting evidence
-
-Skip this skill for one-line factual answers, simple commands, mechanical formatting, or tasks already covered by a more specific deterministic validation workflow.
+Skip this pass for one-line factual answers, simple commands, mechanical formatting, or work a more specific deterministic validation workflow already covers. Everything else non-trivial is in scope; `Pre-Answer Gate` is the pass, and `Stop Rules` is the bar it has to clear.
 
 ## Evidence Ladder
 
@@ -54,9 +33,9 @@ Before answering, run this pass:
 
 1. **Reset the request.** Identify what the user is asking now. Drop older goals and prior drafts that are not part of the latest request.
 2. **Choose verification level.** Decide whether the answer only needs local sanity checking, source/tool verification, or independent scrutiny. When a wrong answer is high-cost or context-inertia risk is high, restating the draft's own reasoning or asserting confidence does not count as verification; use external evidence, a tool result, or independent scrutiny.
-3. **Locate evidence.** Mark which claims come from observed facts, cited sources, memory, user statements, or inference.
+3. **Locate evidence.** Mark which claims come from observed facts, cited sources, memory, user statements, inference, or value judgment.
 4. **Challenge the frame.** Check whether the question assumes an unproven fact, imports stale context, or forces a false binary.
-5. **Attack the answer.** Ask one to three targeted challenge questions against the most likely failure mode:
+5. **Attack the answer.** Name the most likely failure mode — missing decisive evidence, false premise, overconfident claim, ignored counterexample, wrong scope, or contradiction — then ask one to three targeted challenge questions against it:
    - Am I leading with a cheaper compromise while a stronger evidence-backed conclusion should come first?
    - Am I preserving prior work, current implementation, or conversational momentum instead of answering the current question?
    - Am I hiding uncertainty or judgment strength behind pragmatic wording?
@@ -64,7 +43,15 @@ Before answering, run this pass:
 
 ## Independent Scrutiny
 
-When context is large or inertia risk is high, prefer an independent challenger before finalizing. Use `agent-handoff` to delegate the challenger; if it is not worth the overhead, run the same challenge locally and record the skip reason only when it affects confidence.
+Prefer an independent challenger before finalizing when:
+
+- the conversation context is large, compressed, or full of previous attempts
+- a conclusion is already drafted and the answer may be anchored to it
+- the user explicitly asks for deep consideration, careful scrutiny, or a second look
+- a wrong answer would materially affect code, public claims, operational decisions, money, safety, or user trust
+- the answer depends on interpreting ambiguous or conflicting evidence
+
+Use `agent-handoff` to delegate the challenger; if it is not worth the overhead, run the same challenge locally and record the skip reason only when it affects confidence.
 
 When a sub-agent is used, isolate it from the main thread's conversation where the host supports it, so the subagent receives the normal system and project context plus the task packet, but not the main thread's full conversation history or draft bias. Do not describe this as a completely clean context: global instructions, project rules, workspace state, and tool definitions may still be visible.
 

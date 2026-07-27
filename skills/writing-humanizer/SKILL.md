@@ -1,36 +1,25 @@
 ---
 name: writing-humanizer
-description: "Humanize Chinese or English drafts. Use when the user asks to make writing less AI-like, more human, more natural, less generic, more authored, or when a draft feels over-polished, too symmetrical, generic, translated, or detached from the author's real judgment. Do not use this as an AI-word blacklist, synonym-replacement pass, fact-expansion pass, or request to make technical writing casually chatty."
+description: "Humanize Chinese or English drafts. Use when the user asks to make writing less AI-like, more human, more natural, less generic, more authored, or when a draft feels over-polished, too symmetrical, generic, translated, or detached from the author's real judgment. Do not use as an AI-word blacklist, synonym-replacement pass, or fact-expansion pass, or to make technical writing casually chatty. Near miss: for structural revision or a blog-specific rewrite, use writing-blog."
 ---
 
 # Writing Humanizer
 
 ## Goal
 
-Make the draft sound authored and situated while preserving the original artifact, meaning, evidence, and boundary.
+Make the draft sound authored and situated while preserving the original artifact, meaning, evidence, and boundary. A good pass leaves it sounding like the same author, with mechanical smoothness gone, each edited sentence's job clearer, and nothing turned generic, promotional, or chatty.
 
 Human writing is defined by fit, not synonym swaps or word blacklists: a real speaker, talking to a real reader, under a real purpose, with selective evidence and lived judgment.
 
-## Success Criteria
-
-A good rewrite:
-
-- sounds like the same author
-- keeps the original argument and factual claims
-- preserves useful density and technical precision
-- makes each changed sentence's job clearer
-- adds grounding only where needed and supported
-- removes mechanical smoothness without becoming generic or chatty
-
 ## Constraints
 
-Preserve the requested artifact type, genre, length, outline, factual claims, citations, links, code, diagrams, frontmatter, file paths, and technical terms unless the user asks to change them.
+Preserve the requested artifact type, genre, length, density, outline, factual claims, citations, links, code, diagrams, frontmatter, file paths, and technical terms unless the user asks to change them.
 
 Do not add new claims, examples, sources, sections, metrics, publication context, or a more promotional/casual tone just to sound human.
 
 Add grounding only from the provided text, author-known context, or explicitly cited sources. If grounding is missing, keep the claim more general, ask for the smallest missing fact, or mark the assumption.
 
-## Evidence And Retrieval Budget
+## Evidence And Retrieval
 
 Default to the user-provided draft and nearby provided context.
 
@@ -59,7 +48,7 @@ Common AI-smell patterns:
 
 ## Decision Rules
 
-If the user asks for editing, edit directly and keep the final note brief.
+If the user asks for editing, edit directly rather than returning a review.
 
 If missing audience, author stance, source context, or publication context would materially change the rewrite, ask one narrow question. Otherwise make the smallest reasonable assumption and continue.
 

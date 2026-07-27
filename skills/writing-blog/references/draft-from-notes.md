@@ -22,10 +22,9 @@ A draft succeeds when it has:
    direction.
 3. Draft an outline using `structure-framework.md`. Show the outline first and
    wait for confirmation unless the user explicitly asks for a direct draft.
-4. Write the article from the accepted outline. Put `audience`, `takeaway`, and
-   `description` in frontmatter when producing a complete Markdown article.
-5. Run a short self-check against the diagnosis checklist and mark only issues
-   that remain relevant.
+4. Write the article from the accepted outline.
+5. Run a short self-check against the checklist in `diagnosis.md` and mark only
+   issues that remain relevant.
 
 ## Material Preservation
 

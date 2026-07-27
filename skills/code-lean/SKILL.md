@@ -1,6 +1,6 @@
 ---
 name: code-lean
-description: "Force the smallest correct coding change. Use when the user asks for Code Lean, lean code, minimal implementation, YAGNI, less boilerplate, fewer dependencies, simpler code, deleting bloat, or avoiding over-engineering. Also use before implementing broad or speculative coding requests where a smaller existing capability may satisfy the goal."
+description: "Force the smallest correct coding change. Use when the user asks for Code Lean, lean code, minimal implementation, YAGNI, less boilerplate, fewer dependencies, simpler code, deleting bloat, or avoiding over-engineering. Also use before implementing broad or speculative coding requests where a smaller existing capability may satisfy the goal. Near miss: use code-review to judge a diff or plan as a whole rather than only what can be cut from it."
 ---
 
 # Code Lean
@@ -21,9 +21,9 @@ Before adding code, stop at the first rung that satisfies the requested outcome:
 4. **Native platform**: use browser, OS, database, framework, or infrastructure features before app code.
 5. **Existing project capability**: use an installed dependency, local helper, component, command, schema, or service owner already present.
 6. **One-line or local expression**: prefer a direct expression over a named abstraction when naming would not clarify repeated use.
-7. **Minimum new code**: add only the files, branches, parameters, and tests required for the current behavior.
+7. **Minimum new code**: add only the branches, parameters, and tests required for the current behavior, in the fewest existing files that already own it.
 
-When two options are similarly small, choose the one with better edge-case correctness and clearer ownership.
+When two options are similarly small, choose the one with better edge-case correctness and clearer ownership. Follow local project patterns before introducing a new style.
 
 ## Gates
 
@@ -39,8 +39,10 @@ Required evidence:
 
 Prohibited substitutes:
 
-- Do not build flexibility for an imagined second caller, future backend, optional provider, alternate UI, or configuration owner.
+- Do not build flexibility for an imagined second caller, future backend, optional provider, alternate UI, or configuration owner; extract an abstraction only after duplication or variation exists.
 - Do not add an interface, factory, registry, adapter, event layer, config flag, wrapper, or service class with only one real implementation unless the user explicitly asked for that boundary.
+- Do not add fallback paths, compatibility shims, migrations, or feature flags unless the current contract requires them.
+- Do not add a new dependency when the standard library, native platform, or an installed dependency covers the current requirement.
 - Do not ask for clarification when a reversible smaller path is available; implement the smaller path and name the assumption.
 
 Incomplete behavior:
@@ -97,7 +99,7 @@ Incomplete behavior:
 
 ### Runnable Check Gate
 
-Activation: when adding or materially changing non-trivial logic: a branch, loop, parser, formatter, validation rule, money/security path, state transition, concurrency path, migration, or external side effect.
+Activation: when adding or materially changing non-trivial logic: a branch, loop, parser, formatter, validation rule, money/security path, state transition, concurrency path, migration, or external side effect. Trivial one-line glue with no branch, state, parsing, security, or side effect does not activate this gate.
 
 Required evidence:
 
@@ -108,21 +110,10 @@ Required evidence:
 Prohibited substitutes:
 
 - Broad fixtures, generated suites, heavy mocks, test-only production seams, and framework setup do not satisfy lean unless the project already uses them for this boundary.
-- Trivial one-line glue with no branch, state, parsing, security, or side effect does not need a new test.
 
 Incomplete behavior:
 
 - If the environment cannot run the check, report the exact command that should be run and the reason it was not run.
-
-## Implementation Rules
-
-- Prefer deleting code over adding code when deletion preserves the requested outcome.
-- Keep changes in the fewest existing files that naturally own the behavior.
-- Use local project patterns before introducing a new style.
-- Add dependencies only when the standard library, native platform, and existing dependencies do not cover the current requirement.
-- Do not create abstractions for possible futures; extract only after duplication or variation exists.
-- Do not add fallback paths, compatibility shims, migrations, or feature flags unless the current contract requires them.
-- Code or the concrete change comes first. Then use at most three short lines for verification, skipped work, and the trigger to add it later. Explanation the user explicitly asked for is not bloat; give it in full.
 
 ## Review Mode
 
@@ -150,7 +141,7 @@ verified: [command/check actually run, or "not run: <reason>"]
 skipped: [unbuilt abstraction/dependency/feature]; add when [trigger]
 ```
 
-Omit lines that do not apply. Never expand into a design note, feature tour, or defensive essay unless the user asked for that explanation. If the explanation is longer than the change, cut the explanation first.
+Lead with the concrete change and omit lines that do not apply. Never volunteer a design note, feature tour, or defensive essay; explanation the user explicitly asked for is not bloat — give that in full. Otherwise, if the explanation is longer than the change, cut the explanation first.
 
 For lean reviews, use:
 
@@ -161,19 +152,8 @@ net: -[N] lines/files/deps possible.
 
 If there is nothing to cut: `Lean already. Ship.`
 
-## Self-Review
-
-Before finishing, check:
-
-- Could the answer sound lean while skipping the requested outcome? If yes, restore the outcome or ask for the boundary decision.
-- Did the first viable ladder rung get used, not merely the smallest code the agent wanted to write?
-- Did any cut weaken validation, error handling, security, accessibility, calibration, or explicit requirements?
-- Did every intentional ceiling get a `code-lean:` comment with an upgrade trigger?
-- Did non-trivial logic leave one runnable check, or did the response name exactly why it could not be run?
-- Did the final answer avoid selling unrequested future-proofing as quality?
-
 ## Stop Rules
 
-Stop when the requested outcome is satisfied by the smallest current boundary, quality gates are preserved, intentional ceilings are recorded, and verification status is stated.
+Stop when the requested outcome is satisfied by the first viable ladder rung — not merely by the smallest code you wanted to write — with quality gates preserved, intentional ceilings recorded as `code-lean:` comments, and verification status stated.
 
 Pause instead of finishing when the smallest path would sacrifice an explicit requirement, cross an unauthorized boundary, or accept a known ceiling without an owner or upgrade trigger.

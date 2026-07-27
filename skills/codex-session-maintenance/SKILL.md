@@ -18,14 +18,7 @@ The operating model:
 
 ## Success Criteria
 
-A good maintenance pass:
-
-- Identifies the main local hot spots before proposing cleanup.
-- Leaves live, current, pinned, dirty, ambiguous, and user-data state untouched unless the user explicitly confirms a safe action.
-- Creates backups or manifests before any confirmed mutation.
-- Produces handoff docs before archiving useful long sessions.
-- Verifies completed actions with exact commands or checks.
-- Reports what changed, what was not touched, and what residual risk remains.
+A maintenance pass succeeds when the user can see the local hot spots and what was left alone and why; when it mutated anything, local Codex state is measurably lighter or better organized and every mutation is reversible from a backup or manifest. `Hard Constraints` sets what may not be touched, `Cleanup Policy` how mutations stay reversible, and `Validation` and `Output` how each is checked and reported.
 
 ## Hard Constraints
 
@@ -116,35 +109,7 @@ Propose pruning clearly dead project paths only after backup. Execute config cha
 
 ## Handoff Docs
 
-Before archiving a long session that still matters, create a concise handoff:
-
-```markdown
-# Codex Handoff: [short task name]
-
-## Goal
-- [What this session was trying to accomplish]
-
-## Current State
-- [What is done]
-- [What remains]
-
-## Decisions
-- [Stable decisions worth preserving]
-
-## Files And Artifacts
-- [Important paths, branches, PRs, docs, or generated outputs]
-
-## Commands And Results
-- [Commands that matter and their observed results]
-
-## Risks Or Blockers
-- [Anything the next session must not miss]
-
-## Restart Prompt
-[A ready-to-paste prompt for a fresh Codex session]
-```
-
-Preserve decisions, current state, evidence, and the next prompt. Do not turn handoffs into transcripts.
+Before archiving a long session that still matters, create a concise handoff. Read `references/handoff-template.md` for the structure. Preserve decisions, current state, evidence, and the next prompt. Do not turn handoffs into transcripts.
 
 ## Archive Candidates
 
@@ -160,7 +125,7 @@ For `inspect`, report commands and observed sizes/processes, and state that no f
 
 For `cleanup`, verify backup exists, manifest entries match moved paths, config parses if config changed, databases open if touched or nearby, dirty worktrees were not moved, and before/after sizes or counts changed as expected.
 
-For `handoff`, verify the handoff file exists and includes `Goal`, `Current State`, and `Restart Prompt`.
+For `handoff`, verify the handoff file exists and includes every section of `references/handoff-template.md`, or names why a section is empty.
 
 For `automation`, do not claim scheduling verification unless the user approved scheduling and it actually happened.
 

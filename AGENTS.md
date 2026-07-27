@@ -52,7 +52,9 @@ Never gate on a self-assessed resource condition — budget, token cost, context
 
 Before finishing a skill, run an adversarial check: `Could an agent follow this skill and skip the user's hard requirement while still sounding compliant?` A yes answer means the requirement needs a stronger gate, output field, self-review check, or stop rule.
 
-When the requirement is a decomposition — a fan-out, a critique matrix, a multi-lens review — a conservative executor collapses it down whatever axis the skill leaves to judgment, and each tightening only pushes the collapse to the next-softest axis. (`agent-team` ran this gauntlet: dropped the adversarial pass entirely → split the question into analysis angles instead of competing candidates → ran one shared review instead of per-candidate → collapsed the distinct lenses into one reviewer.) Name the matrix on every load-bearing axis and add a red flag per collapse mode. Stop when the residual axis is low-value — be stakes-proportional, not count-maximal.
+When the requirement is a decomposition — a fan-out, a critique matrix, a multi-lens review — a conservative executor collapses it down whatever axis the skill leaves to judgment, and each tightening only pushes the collapse to the next-softest axis. (`agent-team` ran this gauntlet: dropped the adversarial pass entirely → split the question into analysis angles instead of competing candidates → ran one shared review instead of per-candidate → collapsed the distinct lenses into one reviewer.) Name the matrix on every load-bearing axis, and name each collapse mode as a prohibited substitute on the gate that owns that axis. Stop when the residual axis is low-value — be stakes-proportional, not count-maximal. <!-- 2026-07-27: earned — agent-team dropped its standalone Red Flags section and now enforces every collapse mode at its gate; a per-axis red-flag list re-creates the :47 duplication -->
+
+Bundled resources are load-bearing only while their pointer resolves. A skill that splits depth into `references/` owns the pointer as part of the gate it serves — a moved or renamed reference fails silently, and the skill loads without the depth it promised. <!-- 2026-07-27: earned — the Claude 5 context-engineering pass took bundled resources from 1 skill to 7 -->
 
 ## Verification
 
@@ -61,4 +63,5 @@ After adding, removing, renaming, or changing the functional behavior of a skill
 - Run `rg --files -g 'SKILL.md'`.
 - Check that each `SKILL.md` frontmatter `name:` equals its parent directory.
 - Check that `README.md` lists the current skills and describes their current user-visible purpose.
+- Check that every `references/` or `subagents/` pointer in a `SKILL.md` resolves, and that every bundled file has at least one pointer.
 - For renames, search for stale old names and remove any remaining hits.

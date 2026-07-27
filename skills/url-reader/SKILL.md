@@ -11,12 +11,7 @@ Read the main content of a specific webpage URL and use only the relevant extrac
 
 ## Success Criteria
 
-A good result:
-
-- Extracts enough page body content to answer the user.
-- Distinguishes article/content text from metadata, navigation, ads, and boilerplate.
-- Cites or names the original URL when making factual claims from the page.
-- Clearly reports extraction failure and uses the smallest useful fallback when the page cannot be read.
+A good result answers the user from the page's own body content, with article text separated from metadata, navigation, ads, and boilerplate, and is explicit about anything that could not be extracted.
 
 ## Constraints
 
@@ -35,7 +30,7 @@ Default to one `defuddle.md` extraction for public pages. If it returns empty co
 - the user asked for exhaustive coverage or comparison
 - the specified URL must be read and the first extraction failed
 
-Stop once the relevant content or facts are available. Do not fetch again only to improve phrasing or add decorative examples.
+Do not fetch again only to improve phrasing or add decorative examples.
 
 Fallback choices, in order:
 
@@ -48,19 +43,10 @@ Do not chain multiple fallbacks unless a required fact is still missing and the 
 
 ## Defuddle Command
 
-`defuddle.md` is a public service that extracts the main content from a webpage and returns Markdown with YAML frontmatter.
+`defuddle.md` is a public service that extracts the main content from a webpage and returns Markdown with YAML frontmatter. Strip `https://` or `http://` from the target URL and append the rest, path and query included:
 
 ```bash
-curl -sL "https://defuddle.md/<url>"
-```
-
-Strip `https://` or `http://` from the target URL before appending it to `https://defuddle.md/`.
-
-Examples:
-
-```bash
-curl -sL "https://defuddle.md/example.com/blog/some-post"
-curl -sL "https://defuddle.md/x.com/username/status/123456789"
+curl -sL "https://defuddle.md/<url>"   # https://example.com/blog/some-post -> https://defuddle.md/example.com/blog/some-post
 ```
 
 ## Output

@@ -7,15 +7,7 @@ description: "Maintain, audit, or rewrite existing GPT prompt artifacts from a c
 
 ## Outcome
 
-Rebuild a selected prompt from current requirements instead of editing legacy text in place. The result uses the smallest prompt and tool set justified by current invariants or observed evaluation gaps, and stale context is removed, refreshed, or explicitly unresolved.
-
-Success means:
-
-- current outcome, evidence, output, safety, and authorization requirements remain enforceable
-- no instruction survives only because it existed before
-- both starting and accumulated context receive a freshness audit
-- required content takes priority over generic brevity, style, or formatting
-- changes, validation, and unresolved evidence are reported
+Rebuild a selected prompt from current requirements instead of editing legacy text in place. The result uses the smallest prompt and tool set justified by current invariants or observed evaluation gaps, keeps the artifact's outcome, evidence, output, safety, and authorization requirements enforceable, and leaves stale context removed, refreshed, or explicitly unresolved.
 
 ## Boundaries
 
@@ -23,25 +15,21 @@ Use this skill after the target prompt has been selected. Use `agent-docs` to de
 
 Treat the existing prompt as evidence of possible requirements and past failure modes, not as a template or preservation baseline. Limit edits to the selected artifact and repository-required metadata. Do not rename, sync an installed copy, or change runtime configuration unless requested.
 
-Use only the `Use shorter prompts`, `Define autonomy and permissions clearly`, and `Personality and style` subsections of [OpenAI model guidance: Prompting best practices](https://developers.openai.com/api/docs/guides/latest-model#prompting-best-practices) as sources for this skill's reusable behavior. Do not import workflow guidance from other subsections of that page.
+Use only the `Use shorter prompts`, `Define autonomy and permissions clearly`, and `Personality and style` subsections of [OpenAI model guidance: Prompting best practices](https://developers.openai.com/api/docs/guides/latest-model#prompting-best-practices) as sources for this skill's reusable behavior.
 
 ## Core Rules
 
 ### Start Minimal
 
-Draft from a blank page using only current requirements. Add an instruction, tool, example, formatting rule, or style rule only when it protects a current invariant or an evaluation reveals a specific gap.
-
 Expose only task-relevant tools and describe them concisely. Remove duplicated guidance, speculative safeguards, decorative examples, global templates, repeated phrasing, and contrastive `X, not Y` patterns that do not prevent an observed failure.
 
-Minimal-first does not mean shortening the requested artifact. Preserve every required fact, decision, caveat, output field, and next action.
+Minimal-first does not mean shortening the requested artifact: preserve every required fact, decision, caveat, output field, and next action. Gate 2 decides what earns its place.
 
 ### Keep Context Fresh
 
-Treat the static prompt and injected context as one model input. Audit both starting context and accumulated context, including conversation history, retrieved material, tool output, retry transcripts, completed work, and carried-forward summaries.
+Treat the static prompt and injected context as one model input. Retain only current information that can change the next decision or final answer; remove superseded decisions, completed steps, stale facts, obsolete errors, old tool output, duplicate background, and context that encourages repeating finished work.
 
-Retain only current information that can change the next decision or final answer. Remove superseded decisions, completed steps, stale facts, obsolete errors, old tool output, duplicate background, and context that encourages repeating finished work.
-
-When a fact, rule, identifier, date, model behavior, or external state may have changed, refresh it from the closest authoritative source or mark it unresolved. Summarizing or compacting stale content does not make it fresh.
+When a fact, rule, identifier, date, model behavior, or external state may have changed, refresh it from the closest authoritative source or mark it unresolved. Gate 3 sets the audit scope and the evidence it requires.
 
 ### State Autonomy Once
 
@@ -91,13 +79,7 @@ Use a lightweight task-specific outline instead of a global template. Make tone 
 
 ## Workflow
 
-1. Extract current requirements from the user request and current authoritative sources. Do not line-edit the old prompt.
-2. Inventory starting and accumulated context; remove, refresh, or isolate stale material.
-3. Write the smallest invariant-backed prompt and task-relevant tool set from a blank page.
-4. Run representative evaluations when available. Add instructions only for observed failures, then rerun the affected case.
-5. Inspect the result for scope expansion and run repository-required structural checks.
-
-If evaluation is unavailable, keep the invariant-backed baseline, disclose the missing behavioral evidence, and do not add speculative guidance or claim reliability.
+Requirements first, then a blank-page draft, then evaluation — never a line-edit of the old prompt. Run representative evaluations when available; add an instruction only for an observed failure, then rerun the affected case. Finish by inspecting the result for scope expansion and running repository-required structural checks.
 
 ## Output Contract
 
@@ -110,20 +92,8 @@ Every result includes:
 - the allowed-source scope record and verification status for current or model-specific claims
 - validation run, observed results, unmet gates, waivers, and intentionally excluded work
 
-## Self-Review And Stop
+## Stop Rules
 
-Before completion, check:
-
-- would any instruction remain solely because it appeared in the old prompt?
-- does every retained element or explicit rule group map to a current invariant or observed evaluation failure?
-- did stale or superseded context survive through summary, compaction, replay, or copied examples?
-- were starting and accumulated context both inspected or explicitly marked inaccessible?
-- does every reusable OpenAI-derived rule come only from the three allowed subsections, and does every current or model-specific claim have direct official support?
-- are autonomy rules stated once and response guidance limited to required content priorities?
-- does the final report contain every active gate's evidence?
-
-If any answer exposes a bypass, revise or report the artifact as incomplete.
-
-Finish only when every active gate has its evidence or an allowed explicit waiver, the requested artifact is rewritten or reviewed, validation status is observed and reported, and the Output Contract is complete. Completion also requires the source-scope record to show that no reusable rule came from outside the three allowed subsections. A waiver never converts stale, inaccessible, or unverified context into verified current context.
+Finish only when every active gate has its evidence or an allowed explicit waiver, the requested artifact is rewritten or reviewed, validation status is observed and reported, and the Output Contract is complete. A waiver never converts stale, inaccessible, or unverified context into verified current context.
 
 Do not stop because of self-assessed token, context, time, or effort limits. If a gate cannot be met, name the exact missing evidence or decision. Ask one narrow question only when its answer changes behavior, authorization, the target artifact, or a validation claim. Stop wording optimization once the prompt is minimal, current, scoped, and testable.

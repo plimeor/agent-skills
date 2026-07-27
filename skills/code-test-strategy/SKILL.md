@@ -17,7 +17,7 @@ Ceiling: smallest useful target → lowest level that proves it → stop. Don't 
 
 1. **Target** — name the user-visible behavior, caller contract, or reproduced bug worth proving, and the public boundary you'll observe it through. If no public boundary exists, report a test gap instead of inventing a seam.
 2. **Level** — use the lowest level that proves the behavior through that boundary: unit for pure rules; integration for cross-module / external contracts; E2E for a small number of critical journeys; manual smoke when automation cost exceeds confidence value. When a lower-level public boundary can also catch a bug, prefer it over the higher-level test.
-3. **Stop** — write the minimum for current risk; report exact verification commands and results; record `Deferred tests` or `Test gap` only when real remaining behavior risk exists.
+3. **Stop** — write the minimum for current risk; report exact verification commands and results; record every remaining behavior risk as `Deferred tests` or `Test gap` with a reason code, and record neither when no real risk remains.
 
 ## Timing
 
@@ -59,7 +59,7 @@ Test target:
 
 ## Before Finishing
 
-Confirm: (1) every interface a test touches has a product use independent of the test; (2) the chosen level is the lowest public boundary that proves the behavior; (3) any unwritten behavior risk is recorded as `Deferred tests` or `Test gap` with a reason code. If a seam exists only for a test, remove it or report a gap and wait for authorization.
+Confirm that every interface a test touches has a product use independent of the test, and that the chosen level is the lowest public boundary that proves the behavior. If a seam exists only for a test, remove it or report a gap and wait for authorization.
 
 ## Common Judgments
 

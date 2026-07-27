@@ -1,6 +1,6 @@
 ---
 name: code-tasking
-description: "Turn an approved development plan plus the real codebase into a bottom-up, dependency-ordered graph of atomic execution tasks for an iterative or Goal-mode executor. Use when sequencing or bundling already-planned work so a foundation change lands in one go instead of accreting upper-layer patches, and when a memoryless per-turn executor with an additive bias will run the tasks. Near miss: use code-plan to create or revise the plan itself; use code-review to judge a draft plan or diff; not for executing the tasks."
+description: "Turn an approved development plan plus the real codebase into a dependency-ordered graph of atomic execution tasks. Use when sequencing or bundling already-planned work for an iterative or Goal-mode executor, especially a memoryless per-turn executor whose additive bias would otherwise patch upward instead of changing the foundation. Near miss: use code-plan to create or revise the plan itself; use code-review to judge a draft plan or diff; not for executing the tasks."
 ---
 
 # Code Tasking
@@ -15,7 +15,7 @@ Ceiling: classify → bundle → order → contract each task. Stop before execu
 
 ## Boundary And Handoff
 
-`code-plan` produces the plan: objective, scope, design shape and owner, work sequence, regression strategy, acceptance, stop condition. It also owns the root-cause-vs-symptom direction (which layer owns the behavior) and the irreducibility / no-false-incrementalism judgment (whether the change has a green intermediate); your Classification Gate PROVES that judgment against the real codebase, it does not originate it. You consume that plan and the codebase; you do not re-derive or re-emit any of it. You inherit the plan's regression bar — do not re-specify what "existing behavior still works" means; your Definition of Done adds only the anti-patch structural facts the plan does not assert. Drift firewall: if a statement is a judgment about the chosen approach's shape it belongs in `code-plan`; if it can only be checked by running a command against the real codebase it is execution-altitude and belongs here.
+`code-plan` owns the plan and everything in it — including the root-cause-vs-symptom direction (which layer owns the behavior), the irreducibility / no-false-incrementalism judgment (whether the change has a green intermediate), and the regression bar. You consume that plan and the codebase; you do not re-derive or re-emit any of it. Your Classification Gate PROVES the plan's ownership and irreducibility judgments against the real codebase, it does not originate them. Your Definition of Done adds only the anti-patch structural facts the plan does not assert — do not re-specify what "existing behavior still works" means. Drift firewall: if a statement is a judgment about the chosen approach's shape it belongs in `code-plan`; if it can only be checked by running a command against the real codebase it is execution-altitude and belongs here.
 
 A completed, approved plan is a hard input precondition. If no plan exists, the plan's designated owner/boundary is wrong against the real code, or a task needs a boundary change the plan did not authorize, pause back to `code-plan` (or `code-review` for design critique). Classify any needed change as avoided / authorized / blocked per the plan's Scope Triage Gate (recorded in its `Scope` / `Non-goals` / `Pause conditions`); do not bootstrap a plan, redesign, or self-authorize a boundary change here.
 
@@ -115,20 +115,14 @@ For an authorized `independently-green` (seam) change, emit the `expand` and `mi
 
 ## Self-Review
 
-Any no means the task graph is not done:
+Each gate above states its own required evidence and incomplete behavior, and the Output Contract lists the per-task fields; do not re-check those here. These are the graph-level failure modes no single gate catches:
 
 - **Adversarial test:** could an executor follow a task and satisfy it with an additive shortcut (shim, dual path, optional param, parallel `V2`, adapter, flag, duplicate block) while sounding compliant and keeping the build green? If yes, strengthen the gate, the named forbidden patch, the negative Definition of Done, or the no-green-partial enforcement until the shortcut is impossible or explicitly banned.
-- Was each change classified from the real codebase with a ripple set grounded by an actual query + count (not a method label or a guess), and pointed at the confirmed origin rather than the symptom site?
-- Does any ripple-set member still branch on the old decision after the change — i.e. is the root-cause location too shallow?
-- Does every atomic task enforce a red intermediate — incompatible in-place edit, or a red exhaustiveness assertion on a dynamic surface — and list its ripple set itemized, not "all callers"?
-- Is the order strictly foundation-first, with no task depending on a later task or assuming a not-yet-built lower layer?
-- Does every Definition of Done carry a negative post-condition and a Verify that can be failed by a pasted reverse-reference search, rather than accepting a green build or a self-reported "zero references"?
-- For any authorized seam, is impossibility proven by a named external consumer + publication/persistence site, is the contract/delete-old step a first-class terminal task, and does migrate forbid reporting the bundle done until contract is green?
-- Does each task verb read MODIFY/REPLACE/DELETE rather than ADD/SUPPORT/HANDLE?
+- Could an executor holding one record and no memory of the others run it and be wrong — because a prerequisite it assumes merged is ordered later, or because the record leans on context that lives only in a sibling task?
 - Is any record low-signal filler, or does it re-derive plan content — objective, scope, design ownership, root-cause direction, irreducibility judgment, regression bar — that `code-plan` owns? Remove it; pause to `code-plan` if the plan's owner is wrong, rather than self-authorizing a redesign or boundary change.
 
 ## Stop Rules
 
-Stop when the user has one leaf-first, dependency-ordered task graph where every task carries a confirmed root-cause location, a query-grounded ripple set, an atomicity verdict, an enforced red intermediate where atomic, a named forbidden patch, and a delete-the-old-path Definition of Done with a pasteable reverse-reference check — or a pause/blocker list naming the missing plan, the wrong design or owner to send back to `code-plan`/`code-review`, the unauthorized or out-of-boundary change for `code-plan`, or the low-confidence ripple set that blocks classification.
+Stop when the user has one leaf-first, dependency-ordered task graph in which every record is filled out against the Output Contract — or a pause/blocker list naming the missing plan, the wrong design or owner to send back to `code-plan`/`code-review`, the unauthorized or out-of-boundary change for `code-plan`, or the low-confidence ripple set that blocks classification.
 
-Do not stop with a graph in which any change is unclassified, any reachable atomic change is split or lacks a red intermediate, any order is not foundation-first, or any Definition of Done lacks its negative post-condition. Execution — file edits, test runs, commits, deployment — is a separate phase requiring the user's current request or an active execution task.
+Do not stop while any gate's incomplete-behavior condition still holds. Execution — file edits, test runs, commits, deployment — is a separate phase requiring the user's current request or an active execution task.

@@ -1,6 +1,6 @@
 ---
 name: agent-handoff
-description: "Hand one bounded unit of work to a single sub-agent with a clean contract — the task packet (objective, scope and ownership, tool boundary, return format, stop condition) — and treat the returned report as evidence to verify rather than truth. Use whenever delegating a single indivisible task to one sub-agent: an independent challenger before finalizing, a focused investigation, a bounded implementation slice, a verifier with a rubric. Delegation is assumed authorized — the only question is whether the handoff is worth its overhead and whether the contract is tight enough to trust the result. Near miss: use agent-team when decomposing a problem into multiple parallel sub-agents that must not conflict; this skill owns the per-delegation contract that agent-team reuses for each of its members. Do not use to add a coordination round-trip to work the main agent should simply do itself."
+description: "Use when delegating one bounded, indivisible unit of work to a single sub-agent: an independent challenger before finalizing, a focused investigation, a bounded implementation slice, or a verifier with a rubric. Near miss: use agent-team when decomposing a problem into multiple parallel sub-agents that must not conflict. Do not use to add a coordination round-trip to work the main agent should simply do itself."
 ---
 
 # Agent Handoff
@@ -41,21 +41,14 @@ Tool and permission boundary:
 [Read-only / allowed commands / allowed tools.]
 
 Execution rules:
-- Keep changes minimal and consistent with existing patterns.
 - If blocked, report the blocker instead of expanding scope.
-- Return distilled findings, not a raw transcript or large file dumps.
+- [Anything else this task needs beyond the boundaries above.]
 
 Verification:
 [Commands, checks, source requirements, or "read-only investigation".]
 
 Return format:
-- Summary
-- Decision-relevant findings
-- Evidence observed (with source pointers / file paths)
-- Files changed, if any
-- Commands or sources checked
-- Risks, conflicts, or unknowns
-- Recommended next step
+[Only the fields the main thread will consume — findings | evidence with source pointers | files changed | verification run | unknowns | next step. Distilled, never a raw transcript. Evidence with source pointers is not optional: an unverifiable claim is not a result.]
 
 Stop condition:
 [What counts as done, plus any time or depth limit.]
@@ -72,10 +65,3 @@ Do not re-do the delegated work locally while the sub-agent is still responsible
 Treat the return as evidence, not truth. Before integrating, check: did the agent stay in scope, give concrete evidence and source pointers, run the requested verification, and surface assumptions or conflicts?
 
 Verify proportionally — spot-check the high-impact claims, re-run the smallest relevant check, and lean harder on anything that changes a decision. If the report is weak, ask one focused follow-up rather than silently redoing the whole task; only take it local if the agent failed and the work is on the critical path.
-
-## Red Flags
-
-- Delegating, then immediately repeating the same exploration locally.
-- A packet with no stop condition, or a verifier with no rubric.
-- Pasting the sub-agent's transcript into the main context instead of its distilled findings.
-- Trusting a claim that arrives with no evidence pointer.

@@ -1,56 +1,27 @@
 # AGENTS.md Template (annotated)
 
 Reference for the `agent-docs` skill. Read this when creating a new AGENTS.md or
-restructuring an existing one. The HTML comments are maintainer notes designed to
-travel with the file — Claude Code strips block-level HTML comments from memory
-files before injection (documented in its memory docs), so they cost nothing
-there. Other harnesses, like Codex CLI, read AGENTS.md raw: when non-Claude
-agents are primary consumers, keep committed comments terse or leave the notes
-in this template. Every rule bullet below is a placeholder from a fictional
-project; replace all of them.
+restructuring an existing one. The section comments are authoring notes: Claude Code
+strips block-level HTML comments from memory files before injection, but Codex CLI
+and others read AGENTS.md raw, so keep whatever you commit terse and leave the rest
+here. Every rule bullet is a placeholder from a fictional project; replace all of them.
+
+The admission tests, the budget, and the edit contract live in the skill, not here —
+this reference carries file shape only.
 
 ---
 
 ```markdown
 <!-- ==========================================================
-HOW TO USE (maintainer notes; stripped before injection).
-
-Philosophy this template encodes:
-1. AGENTS.md is the ONLY durable agent-facing artifact. Plans /
-   requirements / tasking docs are deleted when work completes;
-   durable residue is distilled here as one-line earned rules.
-   There is no separate decision ledger — decisions live here as
-   current-state rules; git history of this file is the audit trail.
-2. Every line must pass FOUR admission tests:
-   - Earned: traceable to an observed trigger — an explicit user
-     or team decision, the same mistake twice, a review-caught
-     miss, a re-typed correction, or context a new teammate would
-     genuinely need. Never speculative.
-   - Non-derivable: the agent could NOT reconstruct it by reading
-     the code — official guidance says to leave derivable content
-     out (ETH Zurich 2602.11988 measured why: redundancy hurts).
-   - Universal: it applies to essentially every session at this
-     scope. Conditional content -> nested AGENTS.md, skill, linked doc.
-   - Removal test: "Would removing this cause the agent to make
-     mistakes?" If not, cut it.
-3. Budget: start 30-50 lines; steady state 60-150; ceiling ~200.
-   Bloat causes silent non-adherence, not an error.
-4. Never commit LLM-generated content unedited (/init output is a
-   draft — LLM-generated context files measured net-negative on
-   task success, ETH 2602.11988; hand-edited files helped).
-5. This file is advisory context, not enforcement. Must-happen
-   behavior goes to CI; linter-enforceable style goes to the
-   linter config, never prose here.
-
-Interop: this file is canonical. CLAUDE.md contains one line:
-    @AGENTS.md
-plus an optional Claude-specific section, or symlink it
+AGENTS.md is canonical. CLAUDE.md holds one line, @AGENTS.md,
+plus an optional Claude-specific section — or is a symlink
 (ln -s AGENTS.md CLAUDE.md) when nothing Claude-specific exists.
 
-Provenance: date each earned rule in an adjacent HTML comment on
-its own line, e.g. <!-- added 2026-07 after prod-migration incident -->,
-so the audit knows why it exists — free in Claude Code, terse
-everywhere else (non-Claude agents read comments raw).
+Every rule here is earned and current-state. Date each one in an
+adjacent HTML comment on its own line, in the form shown beside
+the earned rules below. Supersede by editing in place or by
+deleting, never by appending a correction next to the old rule;
+git history of this file is the ledger.
 =========================================================== -->
 
 One sentence on what this project is and its stack with versions.
@@ -140,10 +111,8 @@ format, PR expectations. -->
 <!-- The distillation target. When ephemeral work docs (plan /
 requirements / tasking) are deleted at completion, any durable,
 non-derivable residue lands here as a one-line current-state rule
-with a one-line WHY. Superseded rules are EDITED IN PLACE or
-deleted, never appended-to — git history is the ledger. Date via
-HTML comment. If this section outgrows ~15 lines, promote clusters
-to a nested AGENTS.md or a skill. -->
+with a one-line WHY. If this section outgrows ~15 lines, promote
+clusters to a nested AGENTS.md or a skill. -->
 
 - Product images live in Cloudinary, not the repo — upload via
   `pnpm upload-asset`.
@@ -166,25 +135,6 @@ in a skill, not above. -->
 - Deploy runbook: `docs/deploy.md`
 - Billing domain rules: `src/billing/AGENTS.md`
 - DB schema conventions: `docs/schema-conventions.md`
-
-<!-- ==========================================================
-MAINTENANCE CONTRACT (for the humans/skill governing this file):
-- Add: only on the earned triggers (see admission tests above).
-  Additions go through the same PR that changes the convention
-  when possible.
-- On every add: scan for an existing rule on the same topic and
-  resolve conflicts in the same edit — contradictions fail silently
-  (the model picks one arbitrarily and never flags it).
-- Prune: periodic per-line audit: still true? exercised recently?
-  agent already does it without the rule? linter/CI could own it?
-  If any answer says so, delete or move.
-- Diagnostic: a rule that keeps being violated means the FILE IS
-  TOO LONG (prune) or phrasing is ambiguous (rewrite) — not that
-  you need another rule or more emphasis.
-- Validate edits empirically: behavior must actually shift.
-- Review the whole file after major model releases (rules written
-  for today's models can constrain tomorrow's).
-=========================================================== -->
 ```
 
 ---

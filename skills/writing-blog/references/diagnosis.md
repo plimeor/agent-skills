@@ -3,13 +3,10 @@
 Use this reference when the user asks for article critique, review, diagnosis,
 structure feedback, readability feedback, or whether a draft reads well.
 
-## Success Criteria
+## Scope
 
-A diagnosis succeeds when it identifies the largest fixable problems, gives
-concrete locations, explains the reader impact, suggests revisions, and
-prioritizes fixes.
-
-Do not produce a full rewrite unless the user asks for one.
+Report the largest fixable problems, not every problem. Do not produce a full
+rewrite unless the user asks for one.
 
 ## Diagnostic Workflow
 
@@ -19,8 +16,6 @@ Do not produce a full rewrite unless the user asks for one.
 3. Simulate a first-time reader at the article level: what they know, what they
    expect next, and where the article breaks that expectation.
 4. Check the layers below and report only problems that appear.
-5. Provide a revision plan at outline or paragraph level when structure needs to
-   change.
 
 ## Diagnostic Checklist
 
@@ -76,7 +71,8 @@ Return diagnosis in two layers.
 1. One-sentence summary of the largest structural or readability problem.
 2. Itemized findings grouped by the relevant checklist layer. Each finding
    should include a location, reader impact, and revision suggestion.
-3. Structural reorganization suggestion when section order needs adjustment.
+3. Structural reorganization suggestion at outline or paragraph level when
+   section order or paragraph flow needs adjustment.
 4. Priority order for the highest-return fixes.
 
 ### Layer 2: Potential Improvement Space

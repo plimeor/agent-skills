@@ -1,6 +1,6 @@
 ---
 name: agent-docs
-description: "Own durable and ephemeral context for agent collaboration: AGENTS.md/CLAUDE.md rules files at every scope, plus disposable working docs under .agentdocs/. Use when creating, editing, pruning, or deduplicating an AGENTS.md, CLAUDE.md, or global rules file; deciding where a durable rule belongs — project rules, nested package file, skill, tool config, MCP, global, or nowhere; recording an earned rule after a repeated mistake, correction, or explicit decision; assembling a task context pack; placing plan/tasking/handoff docs during work; sweeping .agentdocs/ when work completes; migrating a legacy DECISIONS.xml or ADR folder; monorepo rule placement; or diagnosing why an agent keeps ignoring instructions. Near miss: code-plan and code-tasking own plan and task-graph content quality — this skill owns where those artifacts live and when they die; meta-gpt-prompt-maintenance owns GPT-specific prompt quality of an already-selected artifact."
+description: "Use when creating, editing, pruning, or deduplicating an AGENTS.md, CLAUDE.md, or global rules file; routing a durable rule to the right layer — project rules, nested package file, skill, tool config, MCP, global, or nowhere — or the right monorepo scope; recording an earned rule after a repeated mistake or decision; placing or sweeping ephemeral working docs — plans, tasking, handoff notes, task context packs — under .agentdocs/; migrating a legacy DECISIONS.xml or ADR folder; or diagnosing why an agent keeps ignoring its rules file. Near miss: code-plan and code-tasking own plan and task-graph content; meta-gpt-prompt-maintenance owns GPT prompt quality of an already-selected artifact."
 ---
 
 # Agent Docs
@@ -21,12 +21,15 @@ Place each candidate rule at the lowest layer that holds it; reroute or drop eve
 | Candidate | Route |
 |---|---|
 | Task-local context, one-off instruction | conversation or working doc — never a rules file |
+| Per-user fact the harness already writes to its own memory | harness auto-memory — do not restate it in a rules file |
 | Enforceable by linter, formatter, typechecker, test, or CI | the tool's config; delete any prose duplicate |
 | Live external state or systems the agent should query | MCP server config — not prose snapshots that rot |
 | Multi-step procedure, sometimes-relevant knowledge | skill or linked doc, with a pointer in AGENTS.md |
 | Rule about one package, consumed inside that package | that package's nested AGENTS.md |
 | Repo-wide, relevant to every session | root AGENTS.md |
 | Personal preference across projects | global rules: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` |
+
+Auto-memory and global rules share personal scope: hand-write a global rule only when it must load deterministically every session — auto-memory recall is relevance-based, not guaranteed.
 
 Monorepo: closest file wins; nested files are pure local deltas, never copies of root guidance. Route by who must read the rule, not what it is about: an ownership or boundary fact consumed outside a package belongs in the root boundaries section; package-internal conventions go nested. When a root section about one package outgrows a few lines, push it down.
 
@@ -59,11 +62,13 @@ Start a new file at 30–50 hand-written lines; steady state 60–150; treat ~20
 
 Every rules-file edit, within the same edit:
 
-- Scan for existing same-topic rules and resolve contradictions immediately — contradictory rules fail silently: the model picks one arbitrarily and never flags the conflict.
+- Scan the whole loaded chain — this file, the files above and below it, global rules — for same-topic rules and resolve contradictions immediately; contradictory rules fail silently: the model picks one arbitrarily and never flags the conflict.
 - Supersede by editing in place or deleting, never by appending a correction next to the old rule.
 - When the file contradicts the code, verify which is current and fix the loser before relying on either.
 - If the file is over budget, prune or push down in the same pass rather than adding on top.
 - Stay in scope: edits land at the scope the triggering work owns. Crossing to a layer the user never put in scope — a global rules file, tool config, another package's file — is proposed as concrete edit text, not silently applied.
+
+Re-audit the whole file on its own trigger — a major model release, not an edit: rules written to hobble an older model can constrain a newer one that no longer needs them.
 
 ## Output
 
@@ -113,25 +118,8 @@ When an agent keeps ignoring a rules file, check in order:
 3. Over budget or ambiguous phrasing — delete or rewrite; a repeatedly violated rule is a symptom of the file, never a reason to add emphasis or another rule.
 4. Wrong layer — must-happen behavior belongs in tool config or CI; prose is advisory.
 
-## Self-Review
-
-Any yes leaves the work incomplete:
-
-- Did any line enter a rules file without passing all four admission tests?
-- Is there a newly admitted line that cannot point to its named trigger — adjacent dated comment or commit message?
-- Does the touched file contain prohibited content — an overview, a lint-duplicate, a volatile fact, a patch note, narrative history?
-- Is there a NEVER without a paired DO?
-- After the edit, do two rules anywhere in the loaded chain answer the same question differently?
-- Was a candidate rule neither landed nor explicitly routed or dropped?
-- Did an edit land in a layer the user never put in scope?
-- Was a doc deleted without a stated distill outcome — or without being read?
-- Did a completed working doc survive as an archive copy, a status flip, or a "reference"?
-- Did the rules file grow past budget without a same-edit prune or push-down?
-- Is CLAUDE.md a fork of AGENTS.md instead of an import or symlink?
-- Did the session end with `cursor.md` stale, pointing at deleted docs, or left as an empty husk?
-
 ## Stop Rules
 
-Stop when the routing decision is made; admitted lines have landed with conflicts resolved, each carrying its named trigger; any triggered distill-then-delete left `.agentdocs/` holding only in-service docs, with a stated outcome per deleted doc; and the cursor reflects current state.
+Stop when every candidate rule has landed or been explicitly routed or dropped, the Output above is complete, any triggered distill-then-delete left `.agentdocs/` holding only in-service docs, and the cursor reflects current state.
 
 Stop and ask the user when: a deletion would discard an explicit human approval or sign-off not yet recorded anywhere; a distilled rule would overturn an existing human-written rule; ownership of a rule between two scopes is genuinely ambiguous; a legacy migration proposal is ready to apply; or the right fix lives in a layer outside the granted scope.
