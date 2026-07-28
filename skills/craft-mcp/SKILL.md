@@ -45,6 +45,7 @@ These common moves are not acceptable substitutes for planning:
 - `--include` terms AND together and accept quoted phrases; `--regexp` is RE2 (`(?i)` works); both repeatable.
 - Scope with `--document` (repeatable), `--location unsorted|trash|templates|daily_notes`, `--folder`, and created/modified/daily-note date ranges. `--location` excludes `--folder`; `--document` combines with neither.
 - Results carry the document rootBlockId, matching block IDs, a truncated snippet, and timestamps. Snippets wrap matches in `**…**` — that is highlighting, not source formatting, and it collides with real bold. Never quote snippets as document content; fetch the block.
+- Result sets come back whole: 166 matches returned in one response with no cursor (the REST API's documented top-20 cap does not apply at the MCP layer). The cost is response size — a common single word over a large space produced a 57k-character response, enough to overflow a tool-result limit. Make terms selective (quoted phrases, extra `--include` terms, scope filters) before searching broad. If a "Next page:" cursor ever does appear, follow it to the end before treating a recall-critical sweep as complete.
 - The index lags writes by minutes — roughly 2–10 in testing, new documents at the slow end. For recency questions use `documents list --modified-after <date>`, which is current.
 
 ## Playbook
@@ -62,7 +63,9 @@ Renames are safe: the index stores each link's *rendered* live title, and the ol
 
 Blind spot: links with customized display text don't contain the title and escape step 1 (verified: custom text is stored verbatim and indexed as-is). The only complete fallback is scanning every document's markdown for `block://<X's id>` — a space-wide sweep (see below), so name its cost before running it.
 
-**Outgoing links of a doc (1–2 calls).** `blocks get <root> --depth -1`, collect `block://<id>` targets from the markdown. Need target titles? Batch one `blocks get <id>` per target in a second call.
+Daily notes are referenced with `date://YYYY-MM-DD` links instead of `block://` (verified round-trip). Their display text is whatever the author left — locale-formatted dates, relative words, custom text — so title-style search recall is weak; for "what references this daily note", search several date renderings (`--regexp` helps) and verify `date://<the-date>` in the block markdown, or accept the sweep cost.
+
+**Outgoing links of a doc (1–2 calls).** `blocks get <root> --depth -1`, collect `block://<id>` (documents/pages) and `date://<date>` (daily notes) targets from the markdown. Need target titles? Batch one `blocks get <id>` per target in a second call.
 
 **Read a document (1 call).** Default depth is 3; `--depth -1` for full nesting; `--format json` for structure; `--fetchMetadata` for per-block timestamps and clickable links. More than 50 direct children paginate via a cursor ("Next page:" line). `CURSOR_INVALID` means the data changed — retry without the cursor.
 
@@ -87,3 +90,5 @@ Blind spot: links with customized display text don't contain the title and escap
 ## Unverified corners
 
 Collections, whiteboards, comments, and styling (themes/washi/unsplash) exist in the CLI but were not exercised in these experiments. Before first use, pull the real contract (`collections schema`, `blocks learn`, read-side `--help`) instead of guessing flags — silent flag-dropping makes guessing expensive.
+
+The MCP wraps the Craft Space API, documented at https://connect.craft.do/api-docs/space — useful for semantics the CLI help omits. Per those docs: collection relations are two-way and auto-synced (set one side only), and some REST capabilities (per-document context search with surrounding blocks, file upload) have no MCP command at all — don't hunt for flags that expose them. Note the docs and the MCP disagree in places (documented top-20 search cap vs observed full result sets); trust observed MCP behavior.
