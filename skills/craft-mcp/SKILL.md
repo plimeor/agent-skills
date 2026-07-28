@@ -5,90 +5,86 @@ description: Correct, call-efficient use of the Craft MCP tools (craft_read/craf
 
 # Craft MCP
 
-Two tools drive everything: `craft_read` and `craft_write`. Each takes a CLI-style command string and runs `cmd1; cmd2; ...` batches in a single call. Every MCP call is metered and rate-limited; commands inside a call are nearly free. **The unit you optimize is the call, not the command.** Everything below was verified by live experiment on 2026-07-28 unless marked otherwise.
+Craft MCP is two CLI-style tools — `craft_read` and `craft_write`, each running `cmd1; cmd2; ...` batches in a single call — plus `blocks_revert` for undo. You can get correct results from them without this skill; what it encodes is what live experiments revealed and the tool descriptions don't: where calls get wasted, which parts of a response to trust, and which capabilities only exist behind the JSON payload format. Claims here are experiment-verified unless marked otherwise.
 
 ## Call discipline
 
-Before touching the tools, plan the call graph: which IDs you already hold, which you must fetch, and which commands are independent of each other.
+Every MCP call is metered and rate-limited; commands inside a call are nearly free. Plan the call graph before touching the tools — which IDs you hold, which you must fetch, which commands are independent — then batch the independent ones.
 
-- Batch all independent same-tool commands into one call (7+ commands per call verified).
-- A batch is sequential and **non-transactional**: it stops at the first failing command and earlier commands stay applied. Order writes so a mid-batch stop leaves a consistent state; recover by re-issuing only the remaining commands.
-- Transient socket/transport errors happen even on valid batches; retry the identical batch once before splitting it.
-- Rate-limit specifics are unpublished; the mitigation is the same as the cost rule — fewer, denser calls — plus backing off on errors instead of rapid retries.
+Batches run sequentially and are not transactional: execution stops at the first failing command and earlier commands stay applied. Order dependent writes accordingly (e.g. delete a folder's documents before the folder) and recover by re-issuing only the remainder. Transient transport errors occur even on valid batches — retry the same batch once before splitting it. If rate-limited, consolidate and back off; limit specifics are unpublished.
 
-These common moves are not acceptable substitutes for planning:
+Four patterns waste calls and are never needed:
 
-- Paging `documents list` to find one title — resolve titles with `search` instead.
-- One-command-per-call loops over items you could batch.
-- Reading a document back to verify a write — the write response already contains the diff.
-- Verifying a fresh write via `search` — the index lags by minutes.
+- paging `documents list` to find a title — `search` resolves titles in one call
+- one-command-per-call loops over batchable items
+- re-reading a document to verify your own write — the write response already carries the diff
+- verifying fresh writes through `search` — the index lags by minutes
 
-## ID model
+## IDs
 
-- Documents are addressed by **rootBlockId**. The ID inside a Craft URL (its `documentId`) is a different ID and fails with "Block not found".
-- Convert any pasted Craft URL first: `documents resolve-link <url>` (craft_read).
-- `documents create` returns only a web URL, so create-and-populate is exactly 3 calls: create (write) → resolve-link (read) → one `blocks add` carrying the entire body (write).
-- `blocks get` accepts *any* block ID, not just roots — fetch the one block you need, not the whole document.
-- Duplicate titles are normal (imports leave same-title stubs, some empty). Before editing "the" document with a title, disambiguate candidates by Modified timestamp plus one batched content probe. An empty read (`<pageTitle>` only) means you probably have the stub.
+Documents are addressed by **rootBlockId**; the documentId inside a Craft URL is a different ID that fails with "Block not found". `documents resolve-link <url>` converts. `blocks get` accepts any block ID, not just roots — fetch the one block you need. Same-title duplicates are common in imported spaces, some of them empty stubs: before editing "the" document with a title, disambiguate by Modified timestamp and a content probe — a read returning only `<pageTitle>` is the stub.
 
-## What the CLI actually honors
+## Trusting what comes back
 
-- Help works on the read side only: `craft_read --help` and read-side `<command> --help` return real usage. **craft_write returns no usage at any level** — top/entity-level `--help` comes back as fake success ("N commands executed") and action-level returns internal markers. Discover write syntax from the tool description, from `blocks learn <topic> <topic>` (craft_read; batch topics in one call), and from errors — unknown *commands* fail with the real command list.
-- Unknown *flags* are **silently ignored**, and a success response does not mean your flags were honored. Verified ignored: `documents list --filter`, `tasks list --filter`, `documents create --markdown`, `search --format json`. If a filter seems to have no effect, it does not exist — filter results locally instead of retrying variants.
-- Write responses depend on batch size. A single-command write call returns the full diff — every new block's ID, JSON, and markdown — plus `revertInfo` (undoable via blocks_revert until the blocks change again). A multi-command write call returns only a summary: no IDs, no diff, no revert. So: writes whose new IDs you need next, or that you may want to undo, go one command per call; mechanical bulk edits go batched.
-- Cross-document links in write-response diffs can render as `invalid:out_of_scope`. That is the diff renderer masking targets outside the diff, not a broken link — confirm with `blocks get` only if it matters.
+- Help exists on the read side only. `craft_write` returns no usage at any level — top-level `--help` comes back as fake success, command-level as internal markers. Learn write syntax from the tool description, from `blocks learn <topic> <topic>` (craft_read; batch the topics), and from errors: an unknown command fails with the real command list.
+- A command honors exactly the flags its own usage lists; anything else is silently accepted and dropped, and the success response won't tell you. Verified drops: `documents list --filter`, `tasks list --filter`, `documents create --markdown`, `search --format json` (while `folders list --filter` is real — its usage lists it). Filter results locally rather than invent flags. The converse also holds: output that looks unfiltered may be genuinely unfiltered data (a mass-imported space makes every doc "recently modified"), so before declaring a flag dead, run a probe whose honored result must differ — a future-date filter must return nothing.
+- A single-command write call returns the authoritative diff — every new block's ID, JSON, and markdown — plus `revertInfo`. A multi-command write call returns only a summary. Writes whose new IDs you need next, or that you may want to undo, go one command per call; mechanical bulk edits go batched.
+- Within a write response, only `diff.after` for your own blocks is authoritative. The surrounding `context` rendering is not: it can show cross-document links as `invalid:out_of_scope` and table cells as empty while the real data is intact.
 
-## Search: what is indexed
+## Search
 
-`search` matches **display text only**: block text, titles, and the rendered text of links. It does not index URLs or block IDs (`--regexp <uuid>` and `craftdocs://` both return nothing), so you cannot search by link target.
+The index covers display text only — block text, titles, and the rendered text of links. It does not index URLs or block IDs, so you cannot search by link target. `--include` terms AND together and accept quoted phrases; `--regexp` is RE2 (`(?i)` works); both repeat. Scope with `--document`, `--location unsorted|trash|templates|daily_notes`, `--folder`, and created/modified/daily-note date ranges (`--location` excludes `--folder`; `--document` combines with neither).
 
-- `--include` terms AND together and accept quoted phrases; `--regexp` is RE2 (`(?i)` works); both repeatable.
-- Scope with `--document` (repeatable), `--location unsorted|trash|templates|daily_notes`, `--folder`, and created/modified/daily-note date ranges. `--location` excludes `--folder`; `--document` combines with neither.
-- Results carry the document rootBlockId, matching block IDs, a truncated snippet, and timestamps. Snippets wrap matches in `**…**` — that is highlighting, not source formatting, and it collides with real bold. Never quote snippets as document content; fetch the block.
-- Result sets come back whole: 166 matches returned in one response with no cursor (the REST API's documented top-20 cap does not apply at the MCP layer). The cost is response size — a common single word over a large space produced a 57k-character response, enough to overflow a tool-result limit. Make terms selective (quoted phrases, extra `--include` terms, scope filters) before searching broad. If a "Next page:" cursor ever does appear, follow it to the end before treating a recall-critical sweep as complete.
-- The index lags writes by minutes — roughly 2–10 in testing, new documents at the slow end. For recency questions use `documents list --modified-after <date>`, which is current.
+Result sets return whole — hundreds of matches in one response — so a broad term over a large space can overflow a tool-result limit; make terms selective before searching wide. Snippets wrap matches in `**…**` (highlighting, not source formatting) and truncate: fetch the block before quoting its content. The index lags writes by minutes, new documents at the slow end; when recency matters, `documents list --modified-after <date>` is current.
+
+## Content languages: markdown and JSON
+
+`blocks add` and `blocks update` take `--markdown` or `--json`. They are not alternatives at the same level — **markdown is the content language, JSON is the structure language** — and JSON text blocks still carry their content as a `markdown` field, so inline formatting is always markdown's job.
+
+**Markdown**: one string, blank line = new block; the fastest path for body content, and it expresses more than the obvious — headings `#`–`####` (which are *styles on flat blocks*, never hierarchy), lists, `- [ ]` todos, `+ toggle` headers with children as two-space-indented list items, `> quote`, `<callout>`, full tables (data round-trips), code fences (the language tag gets dropped), `***` separators, and inline links `[x](block://<id>)` / `[x](date://YYYY-MM-DD)` / https, which compile into real link attributes. Newlines must be actual newline characters, never the two characters `\n`.
+
+**JSON**: a typed envelope per block — `{"type": …, …typed fields}`, single object or array — and the only way to express:
+
+- **hierarchy**: `{"type":"page","markdown":"Title","content":[…]}` creates a subpage with its whole subtree in one call. When markdown "can't do it", this is usually the answer — never conclude the MCP lacks the capability before checking the JSON path.
+- **typed fields markdown drops or lacks**: code `language`, `richUrl` link cards (url/title/description/layout), `lineStyle` variants, media blocks (image/video/file with url, altText, size, layout).
+- **styling**: `textStyle` (caption, card + cardLayout), `font`, `textAlignment`, block color/decorations.
+- **surgical updates**: partial typed updates change one field without re-sending content, and an update array addresses many blocks by id in one command.
+
+Bare inline JSON works in the command string. Field tables for all block types, inline-attribute shapes, and the REST-side structures live in `references/block-json.md` — read it before composing payloads; `blocks learn` covers the same ground but costs a call.
 
 ## Playbook
 
 Call budgets assume the batching discipline above.
 
-**Resolve a title → document (1 call).** `search --include "<title>"` — the root-block match carries the rootBlockId. Resolve + read = 2 calls.
+**Resolve a title → document (1 call).** `search --include "<title>"` — the root-block match carries the rootBlockId.
 
-**Backlinks — "what references doc X" (2 calls).** There is no backlink command; this workaround works because a link's display text is the target's title and display text is indexed:
+**Backlinks — "what references doc X" (2 calls).** There is no backlink command; the workaround stands on links being indexed by their display text, which is the target's live title (rename-safe: old titles drop out of the index).
 
-1. `search --include "<X's exact current title>"` → candidate blocks. Common-word titles need extra `--include` terms or scope filters to stay usable.
-2. One batched call of `blocks get <blockId>` per candidate. A candidate is a real reference **only if** its markdown contains `block://<X's rootBlockId>`; everything else is a plain-text mention. Report links and mentions separately — presenting unverified search hits as backlinks is wrong (in live testing only 3 of 6 hits were real links).
+1. `search --include "<X's exact current title>"` → candidate blocks; common-word titles need extra terms or scope filters.
+2. One batched call of `blocks get <blockId>` per candidate. A candidate is a real reference **only if** its markdown contains `block://<X's rootBlockId>` — everything else is a plain-text mention. Report links and mentions separately; unverified search hits are not backlinks.
 
-Renames are safe: the index stores each link's *rendered* live title, and the old title drops out of the index entirely (verified by rename experiment) — always search the current title.
+Two recall limits, both disclosable: links whose display text was customized escape step 1 entirely (the only complete fallback is a space-wide sweep — name its cost first), and daily notes are referenced as `date://YYYY-MM-DD` with free-form display text, so search several date renderings and verify `date://` instead.
 
-Blind spot: links with customized display text don't contain the title and escape step 1 (verified: custom text is stored verbatim and indexed as-is). The only complete fallback is scanning every document's markdown for `block://<X's id>` — a space-wide sweep (see below), so name its cost before running it.
+**Outgoing links (1–2 calls).** `blocks get <root> --depth -1`; collect `block://` and `date://` targets from the markdown. Target titles come from one batched `blocks get` per target.
 
-Daily notes are referenced with `date://YYYY-MM-DD` links instead of `block://` (verified round-trip). Their display text is whatever the author left — locale-formatted dates, relative words, custom text — so title-style search recall is weak; for "what references this daily note", search several date renderings (`--regexp` helps) and verify `date://<the-date>` in the block markdown, or accept the sweep cost.
+**Read a document (1 call).** Depth defaults to 3; `--depth -1` for full nesting; `--fetchMetadata` for per-block timestamps and clickable links. Over 50 direct children paginate via a cursor; `CURSOR_INVALID` means the data changed — retry without it.
 
-**Outgoing links of a doc (1–2 calls).** `blocks get <root> --depth -1`, collect `block://<id>` (documents/pages) and `date://<date>` (daily notes) targets from the markdown. Need target titles? Batch one `blocks get <id>` per target in a second call.
+**Create a note (3 calls).** create → resolve-link → one `blocks add` carrying the entire body. The response returns every block's ID, so nothing needs re-reading.
 
-**Read a document (1 call).** Default depth is 3; `--depth -1` for full nesting; `--format json` for structure; `--fetchMetadata` for per-block timestamps and clickable links. More than 50 direct children paginate via a cursor ("Next page:" line). `CURSOR_INVALID` means the data changed — retry without the cursor.
+**Edit (2 calls typical).** One `blocks get` for state and IDs, one batched write. `blocks update --markdown` with several blocks: the first replaces the target, the rest insert after it. Renaming a document is `blocks update` on its rootBlockId — there is no `documents rename`. `blocks move` restructures without changing IDs.
 
-**Create a note (3 calls).** create → resolve-link → one `blocks add` with the whole body as multi-block markdown (blank line = new block). The response returns every created block's ID, so no read-back. Markdown headings do not create subpages; nested pages need `--json {"type":"page","markdown":"Title","content":[...]}` — bare inline JSON works.
+**Undo (1 call).** `blocks_revert` with the `revertInfo` from a single-command write response reverts it while the blocks remain untouched (stamp-guarded), and its response carries a fresh `revertInfo` that redoes. Batched writes return no `revertInfo` — undo those by hand.
 
-**Edit (2 calls typical).** One `blocks get` for current state and IDs, then one batched write. `blocks update --markdown` with multi-block markdown: the first block replaces the target, the rest insert after it. Rename a document = `blocks update` on its rootBlockId (there is no `documents rename`). `blocks move` restructures without changing IDs.
+**Daily notes (1 call).** `blocks get --date today` / `blocks add --date <date> --markdown …` — date addressing skips resolve-link. Space and requester timezones can differ (`connection info` shows both); check before trusting "today". Dates everywhere accept `YYYY-MM-DD` and `today|tomorrow|yesterday`.
 
-**Daily notes (1 call).** `blocks get --date today` / `blocks add --date today --markdown ...` — date addressing skips resolve-link entirely. Space timezone and requester timezone can differ (`connection info` shows both); check before trusting "today".
+**Folders (1–2 calls).** `folders list --filter <regex>` finds the folder; `documents create --folder <id>` files a new doc directly; `documents list --folder <id>` and `search --folder <id>` scope to it, subfolders included; `folders create/update/move/delete` manage the tree; `documents move` relocates docs.
 
-**Tasks (1–2 calls).** `tasks list --scope active|upcoming|inbox|logbook|document|all`; `all` covers every task block in the space, including in-document `- [ ]` blocks. Inbox tasks are standalone entities managed with `tasks add/update/delete`; in-document todos are ordinary blocks. No server-side task filtering exists — filter locally.
+**Tasks (1–2 calls).** `tasks list --scope active|upcoming|inbox|logbook|document|all` — `all` includes every in-document `- [ ]` block; filtering is local. `tasks add --markdown … [--schedule <date>] [--deadline <date>]` creates inbox tasks, but the response carries no task ID — recover it from the next `tasks list` before `tasks update/delete`. Todos that belong inside a document or daily note are `- [ ]` blocks added there.
 
-**Delete and recovery.** `documents delete --document <rootBlockId>` soft-deletes to trash (auto-purge ≈30 days); restore with `documents move`. Blocks inside trashed documents are immutable until restored. Confirm with the user before deleting anything they did not explicitly ask to remove.
+**Delete and recovery.** `documents delete --document <id>` soft-deletes to trash (auto-purge ≈30 days); restore with `documents move`; blocks in trashed documents are immutable until then. Confirm with the user before deleting anything they did not explicitly ask to remove.
 
-**Space-wide sweeps (link graph, orphans, audits).** Even fully batched this costs ~1 call per 8–10 documents. State the estimated call count and get a go-ahead first; within a session, reuse what you already fetched instead of re-reading.
-
-## Markdown-in-command gotchas
-
-- Newlines inside `--markdown` must be actual newline characters, never the two characters `\n`. Blank lines split blocks.
-- Toggle children must be indented list items ("  - child"), never flush-left text (per tool docs).
-- Dates accept `YYYY-MM-DD` and `today|tomorrow|yesterday`.
+**Space-wide sweeps (link graph, orphans, audits).** ~1 call per 8–10 documents even fully batched. State the estimated call count and get a go-ahead first; reuse what the session already fetched.
 
 ## Unverified corners
 
-Collections, whiteboards, comments, and styling (themes/washi/unsplash) exist in the CLI but were not exercised in these experiments. Before first use, pull the real contract (`collections schema`, `blocks learn`, read-side `--help`) instead of guessing flags — silent flag-dropping makes guessing expensive.
-
-The MCP wraps the Craft Space API, documented at https://connect.craft.do/api-docs/space — useful for semantics the CLI help omits. Per those docs: collection relations are two-way and auto-synced (set one side only), and some REST capabilities (per-document context search with surrounding blocks, file upload) have no MCP command at all — don't hunt for flags that expose them. Note the docs and the MCP disagree in places (documented top-20 search cap vs observed full result sets); trust observed MCP behavior.
+Collections, whiteboards, comments, and styling explorers exist in the CLI but were not exercised here — pull their real contract first (`collections schema`, `blocks learn`, read-side usage) rather than guessing flags. The MCP wraps the Craft Space API (https://connect.craft.do/api-docs/space), useful for semantics the CLI omits — per those docs, collection relations are two-way and auto-synced (set one side only), while some REST capabilities (per-document context search, file upload) have no CLI command at all, so don't hunt for flags exposing them. Where the docs and observed MCP behavior disagree, trust the observation.
