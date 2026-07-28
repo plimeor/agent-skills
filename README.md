@@ -48,6 +48,7 @@ Skills are grouped by primary mode.
 
 ### Knowledge
 
+- [craft-mcp](skills/craft-mcp/SKILL.md): Correct, call-efficient use of the Craft MCP tools (craft_read/craft_write): batching to cut MCP calls, the rootBlockId model, verified search-index behavior, and a workaround playbook for missing capabilities such as backlink lookup.
 - [agent-docs](skills/agent-docs/SKILL.md): Own durable and ephemeral agent context: AGENTS.md/CLAUDE.md is the single persistent collaboration artifact, with rules routed to the lowest layer that holds them (project rules, nested package files, skills, tool config, MCP, global) and admitted only when earned, non-derivable from code, and load-bearing. Working docs live in `.agentdocs/` and are distilled-then-deleted when work completes; owns document placement and lifecycle, not plan or task-graph content quality.
 
 ### Meta
