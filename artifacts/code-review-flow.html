@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code Review 流程导图</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+:root { color-scheme: light dark; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+input, button, textarea, select { font: inherit; }
+p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+</style>
+</head>
+<body>
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap");
+
+  :root {
+    --ink: #161a22;
+    --ink-soft: #3a4150;
+    --muted: #6b7385;
+    --line: #d8dce6;
+    --line-strong: #b8c0d0;
+    --paper: #f4f5f8;
+    --surface: #ffffff;
+    --surface-2: #eef0f5;
+    --accent: #1f4f9c;
+    --accent-soft: #e7eef9;
+    --accent-ink: #163a75;
+    --ok: #1f6b4a;
+    --ok-soft: #e4f3eb;
+    --warn: #9a6418;
+    --warn-soft: #f8efdc;
+    --crit: #a12f2f;
+    --crit-soft: #f8e6e6;
+    --raise: #8a4b12;
+    --nit: #4d5670;
+    --shadow: 0 1px 0 rgba(22, 26, 34, 0.04), 0 12px 32px rgba(22, 26, 34, 0.06);
+    --radius: 10px;
+    --max: 72rem;
+    --serif: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e8eaef;
+      --ink-soft: #c2c7d3;
+      --muted: #9199ab;
+      --line: #2b3140;
+      --line-strong: #3d465a;
+      --paper: #0f1218;
+      --surface: #171b24;
+      --surface-2: #1e2430;
+      --accent: #6ea0e8;
+      --accent-soft: #1a2740;
+      --accent-ink: #b7d0f7;
+      --ok: #5ec99a;
+      --ok-soft: #163327;
+      --warn: #e0b15c;
+      --warn-soft: #342812;
+      --crit: #f08a8a;
+      --crit-soft: #3a1c1c;
+      --raise: #e0a066;
+      --nit: #a8b0c4;
+      --shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+  }
+
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 500px at 10% -10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%),
+      var(--paper);
+    line-height: 1.55;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  .toc a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .shell {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 960px) {
+    .shell {
+      grid-template-columns: 15rem minmax(0, 1fr);
+      gap: 2.5rem;
+      padding: 2.5rem 2rem 5rem;
+      align-items: start;
+    }
+  }
+
+  /* TOC */
+  .toc {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1rem 1rem 1.1rem;
+    box-shadow: var(--shadow);
+  }
+  .toc-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.75rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .toc a {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr;
+    gap: 0.35rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding: 0.3rem 0.35rem;
+    border-radius: 6px;
+  }
+  .toc a:hover { background: var(--surface-2); color: var(--ink); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Header */
+  .hero {
+    display: grid;
+    gap: 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 2rem;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+    border-radius: 999px;
+    padding: 0.28rem 0.7rem;
+    width: fit-content;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.85rem, 3.5vw, 2.55rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .lede {
+    max-width: 46rem;
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    border-radius: 999px;
+    padding: 0.28rem 0.65rem;
+  }
+  .chip strong { color: var(--ink); font-weight: 600; }
+
+  /* Sections */
+  main { min-width: 0; }
+  section {
+    margin: 0 0 2.75rem;
+    scroll-margin-top: 1.25rem;
+  }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.45rem;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.85rem;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.02rem;
+    margin: 1.4rem 0 0.55rem;
+  }
+  p { margin: 0 0 0.85rem; max-width: 46rem; color: var(--ink-soft); }
+  p strong, li strong { color: var(--ink); font-weight: 600; }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.2rem; color: var(--ink-soft); max-width: 46rem; }
+  li { margin: 0.28rem 0; }
+  li::marker { color: var(--muted); }
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 0.88em;
+  }
+  code {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+  }
+
+  /* Callouts */
+  .callout {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 0.9rem 1rem;
+    margin: 1rem 0 1.25rem;
+    max-width: 48rem;
+    box-shadow: var(--shadow);
+  }
+  .callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .callout.ok { border-left-color: var(--ok); background: var(--ok-soft); }
+  .callout.crit { border-left-color: var(--crit); background: var(--crit-soft); }
+  .callout .label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.35rem;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* Pipeline steps */
+  .pipeline {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0 1.5rem;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.95rem 1rem;
+    box-shadow: var(--shadow);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+    width: 2.4rem;
+    height: 2.4rem;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .step h3 { margin: 0 0 0.3rem; font-size: 1rem; }
+  .step p { margin: 0; font-size: 0.95rem; }
+  .step .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.55rem;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    padding: 0.18rem 0.45rem;
+    border-radius: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+  }
+  .tag.gate { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); color: var(--warn); }
+  .tag.ledger { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); color: var(--accent-ink); }
+  .tag.stop { background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 35%, var(--line)); color: var(--crit); }
+
+  /* Equation */
+  .equation {
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    background: var(--surface);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    color: var(--ink);
+    line-height: 1.7;
+  }
+  .equation .eq {
+    white-space: nowrap;
+  }
+
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    min-width: 36rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+    font-weight: 500;
+  }
+  tr:last-child td { border-bottom: 0; }
+  td.mono, th.mono { font-family: var(--mono); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+  .sev {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    display: inline-block;
+  }
+  .sev.blocker { background: var(--crit-soft); color: var(--crit); }
+  .sev.raise { background: var(--warn-soft); color: var(--raise); }
+  .sev.nit { background: var(--surface-2); color: var(--nit); }
+
+  /* Two-col cards */
+  .grid-2 {
+    display: grid;
+    gap: 0.85rem;
+    margin: 1rem 0;
+  }
+  @media (min-width: 720px) {
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { margin: 0 0 0.45rem; }
+  .card p { margin: 0; font-size: 0.93rem; }
+  .card ul { margin: 0.4rem 0 0; max-width: none; }
+
+  /* Lens grid */
+  .lenses {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  @media (min-width: 720px) {
+    .lenses { grid-template-columns: 1fr 1fr; }
+  }
+  .lens {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 0.95rem 1rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .lens-name {
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .lens-name .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .lens p { margin: 0; font-size: 0.9rem; }
+  .lens.critic {
+    border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
+    background: color-mix(in srgb, var(--warn-soft) 55%, var(--surface));
+  }
+  .lens.critic .dot { background: var(--warn); }
+
+  /* Output order */
+  .order {
+    counter-reset: out;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: grid;
+    gap: 0.55rem;
+    max-width: 48rem;
+  }
+  .order li {
+    counter-increment: out;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: 0.7rem;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.75rem 0.9rem;
+  }
+  .order li::before {
+    content: counter(out, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+  }
+  .order strong { display: block; margin-bottom: 0.15rem; color: var(--ink); }
+  .order span { font-size: 0.9rem; color: var(--ink-soft); }
+
+  /* Diagram */
+  .diagram {
+    margin: 1rem 0 1.5rem;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  .diagram .caption {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.75rem;
+  }
+
+  /* Stop checklist */
+  .checks {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    max-width: 48rem;
+  }
+  .check {
+    display: grid;
+    grid-template-columns: 1.4rem 1fr;
+    gap: 0.55rem;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 0.93rem;
+    color: var(--ink-soft);
+  }
+  .check .box {
+    width: 1.05rem;
+    height: 1.05rem;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 3px;
+    margin-top: 0.15rem;
+  }
+  .check .when {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+
+  footer.note {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+    color: var(--muted);
+    max-width: 46rem;
+  }
+</style>
+
+<div class="shell">
+  <nav class="toc" aria-label="目录">
+    <p class="toc-label">目录</p>
+    <ol>
+      <li><a href="#overview"><span class="n">01</span>是什么</a></li>
+      <li><a href="#flow"><span class="n">02</span>主流程</a></li>
+      <li><a href="#ledger"><span class="n">03</span>Unit Ledger</a></li>
+      <li><a href="#gates"><span class="n">04</span>两道门</a></li>
+      <li><a href="#lenses"><span class="n">05</span>透镜</a></li>
+      <li><a href="#bar"><span class="n">06</span>升级门槛</a></li>
+      <li><a href="#output"><span class="n">07</span>输出与停</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="eyebrow">skill · code-review</span>
+      <h1>Code Review 流程导图</h1>
+      <p class="lede">
+        <code>code-review</code> 做的是对抗式审查：在用户划定的范围内<strong>穷尽覆盖</strong>，用 Unit Ledger 记账，再用门控与透镜决定方向与发现，最后按严重度升级成 findings。它不写代码、不改仓库——只交付可核对的审查结果。
+      </p>
+      <div class="meta-row">
+        <span class="chip"><strong>触发</strong> plan / spec / diff / 实现形态 / 对齐审计</span>
+        <span class="chip"><strong>近邻</strong> 写计划用 code-plan，不走本 skill</span>
+        <span class="chip"><strong>硬约束</strong> AGENTS.md · CONTRIBUTING · ADR</span>
+      </div>
+    </header>
+
+    <section id="overview">
+      <h2>一句话定调</h2>
+      <p>
+        固定<strong>原始目标</strong>，挑战<strong>实现路线</strong>。优先找：减层（透传包装、一次性抽象）、减复杂度（code-judo：能删分支/模式/助手就删，不是挪地方）、增可靠（正确性、契约、状态、并发、迁移风险）。
+      </p>
+      <div class="callout">
+        <p class="label">核心不变量</p>
+        <p>
+          <strong>Coverage 决定查什么；Ledger 记录每条结论；Bar 只决定哪些升级成 narrative finding。</strong>
+          风险权重可以调整审查顺序与深度，但绝不能决定某个 unit 是否进入清单、也不能降低阅读底线。
+        </p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>审查对象</h3>
+          <ul>
+            <li>代码计划草稿、规格、迁移设计</li>
+            <li>diff / 实现形态</li>
+            <li>与权威源的对齐 / 完整性审计</li>
+            <li>「这个方向对不对」类判断请求</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>明确不做</h3>
+          <ul>
+            <li>抽样式「挑重点看」</li>
+            <li>用自信度代替严重度过滤</li>
+            <li>无单独授权的编辑 / commit / push</li>
+            <li>把计划写作当成审查（那是 code-plan）</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="flow">
+      <h2>主流程：从范围到交付</h2>
+      <p>流程是序列；并行只发生在「单元过多 / 风险集中」时的透镜 fan-out。每一步的产物都要能回到 ledger。</p>
+
+      <div class="diagram">
+        <p class="caption">端到端流水线</p>
+        <pre class="mermaid">
+flowchart TD
+  A[用户划定范围] --> B[机械枚举 units]
+  B --> C[打开 Unit Ledger<br/>每行 ID + Subject + Locator]
+  C --> D{范围是否超单次?}
+  D -->|否| E[主审按透镜审查]
+  D -->|是| F[按 ledger 切片派 read-only 子代理]
+  F --> E
+  E --> G{是 plan/spec?}
+  G -->|是| H[Plan-Direction Gate<br/>+ High-Potential Preservation]
+  G -->|否| I[Attribution NEW / PRE-EXISTING]
+  H --> I
+  I --> J[写入 Verdict + Evidence]
+  J --> K[Bar：是否升级为 finding]
+  K --> L{高风险 / 证据冲突?}
+  L -->|是| M[Synthesis critic 挑战草稿]
+  L -->|否| N[组装交付物]
+  M --> N
+  N --> O[Coverage 账本 + Findings<br/>+ Open questions + Judgment]
+  O --> P{Stop rules 全满足?}
+  P -->|是| Q[结束]
+  P -->|否| R[命名未覆盖 / 未交付行<br/>不得伪装完整]
+        </pre>
+      </div>
+
+      <div class="pipeline">
+        <article class="step">
+          <div class="step-num">01</div>
+          <div>
+            <h3>定范围</h3>
+            <p>用户给出 diff、文件集、计划、或要对齐的权威源。范围由用户圈定；范围内覆盖必须穷尽，不得抽样。</p>
+            <div class="tags"><span class="tag">输入</span></div>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-num">02</div>
+          <div>
+            <h3>机械枚举 units</h3>
+            <p>从源材料推导清单：diff hunk 列表、文件列表、render/AST 树——<strong>禁止</strong>从「我觉得重要」的心智模型出发。说清枚举依据，使账本可核对。</p>
+            <div class="tags"><span class="tag">unit = 可独立偏离或失败的最小元素</span></div>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-num">03</div>
+          <div>
+            <h3>打开 Unit Ledger</h3>
+            <p>枚举完成的瞬间就建账：每行 <code>ID + Subject + Locator</code>，Verdict 先空。约 30 行以上或有委托时，落盘为 Markdown/CSV/JSON（临时目录、仓外），且<strong>永不删除</strong>。</p>
+            <div class="tags"><span class="tag ledger">Unit Ledger</span></div>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-num">04</div>
+          <div>
+            <h3>审查（透镜 + 可选委托）</h3>
+            <p>多数审查就地套透镜。单元过多或风险集中（多文件、公有 API/CLI/schema/迁移/持久化）时，按透镜派 read-only 子代理，<strong>按 ledger 切片</strong>，禁止采样。finder 只负责覆盖，不过滤。</p>
+            <div class="tags"><span class="tag">Design</span><span class="tag">Contract</span><span class="tag">Test</span><span class="tag">Fit</span></div>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-num">05</div>
+          <div>
+            <h3>门控（仅 plan/spec 等）</h3>
+            <p>方向是否正确、高价值意图是否被误砍，由两道门负责——验收标准与测试清单<strong>不能</strong>替代方向判断。</p>
+            <div class="tags"><span class="tag gate">Plan-Direction</span><span class="tag gate">High-Potential Preservation</span></div>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-num">06</div>
+          <div>
+            <h3>归因 + 写回 ledger</h3>
+            <p>对比 base：<code>[NEW]</code> vs <code>[PRE-EXISTING]</code>。替换/删除代码时，还要核对旧面强制的 guards/preconditions 是否存活。关闭 unit = 读完其全部行 + 写入明确 Verdict。</p>
+            <div class="tags"><span class="tag ledger">Verdict · Evidence</span></div>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-num">07</div>
+          <div>
+            <h3>Bar 过滤 + 可选 synthesis critic</h3>
+            <p>Bar 只决定叙事升级，不决定是否审查。高风险或证据冲突时派 synthesis critic：挑战草稿 findings，不生产新候选。</p>
+            <div class="tags"><span class="tag">blocker · raise · nit</span></div>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-num">08</div>
+          <div>
+            <h3>交付并过停机条件</h3>
+            <p>Coverage 账本（完整 ledger）→ Findings → Open questions → 总判断。任何未关闭范围必须以 <code>ID + Subject + Locator</code> 点名，禁止把部分覆盖说成完整。</p>
+            <div class="tags"><span class="tag stop">Stop Rules</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="ledger">
+      <h2>Unit Ledger：覆盖的账本</h2>
+      <p>
+        Ledger 不是报告装饰，而是<strong>覆盖声明的唯一载体</strong>。「已审查」是观察主张：只有「枚举了 N、关闭了 N」且账本可核对时才成立。
+      </p>
+
+      <h3>每一行必有字段</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>含义</th>
+              <th>约束</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">ID</td>
+              <td>本审查内唯一且稳定的 join key</td>
+              <td>禁止事后改号；裸 ID / 区间 / 文件标签不能代替覆盖主张</td>
+            </tr>
+            <tr>
+              <td class="mono">Subject</td>
+              <td>这个 unit 是什么</td>
+              <td>具体到能与其他 unit 区分</td>
+            </tr>
+            <tr>
+              <td class="mono">Locator</td>
+              <td>可独立使用的指针</td>
+              <td>文件+符号/行、diff hunk、文档节、AST 路径、源/目标对等</td>
+            </tr>
+            <tr>
+              <td class="mono">Verdict</td>
+              <td>关闭时的结论</td>
+              <td>correct/aligned · authorized divergence · defect · unreviewed（命名 blocker）</td>
+            </tr>
+            <tr>
+              <td class="mono">Evidence</td>
+              <td>证据或 blocker</td>
+              <td>缺证据 → 标 unreviewed，审查 partial</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>必须成立的等式</h3>
+      <div class="equation">
+        <div class="eq">enumerated units = ledger rows = unique IDs = reviewed + explicitly-unreviewed</div>
+      </div>
+
+      <h3>Identifier integrity（标识完整性）</h3>
+      <p>下列任一即 <strong>broken ID</strong>：</p>
+      <ul>
+        <li><strong>duplicate</strong> — 两行共用同一 ID</li>
+        <li><strong>orphan</strong> — 结果引用了不存在的行</li>
+        <li><strong>undefined</strong> — 行缺 Subject 或 Locator</li>
+        <li><strong>unresolved</strong> — 引用映射到 0 行或多于 1 行</li>
+        <li><strong>renumbered</strong> — 枚举后改了 ID</li>
+      </ul>
+      <p>有文件账本时，这些检查必须对文件<strong>机械执行</strong>（数行、数唯一 ID、列空 verdict），禁止凭记忆断言。</p>
+
+      <div class="callout warn">
+        <p class="label">委托时的身份所有权</p>
+        <p>
+          枚举者拥有 identity：任务包携带完整行（ID + Subject + Locator）与 Slice/owner；审查者用<strong>同一批 ID</strong>回写；只有枚举者可追加新行并更新总数，既有行永不改号。反驳或撤回的 finding 保留行与 ID，就地改 verdict 并注明原因。
+        </p>
+      </div>
+
+      <h3>什么算一个 unit</h3>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Diff / 代码</h3>
+          <p>每个变更 hunk + 它所触及的契约面。替换/删除代码时，旧 guards 与 preconditions 也要进枚举。</p>
+        </div>
+        <div class="card">
+          <h3>对齐 / 奇偶审计</h3>
+          <p>每个 render 节点、条件分支、handler、请求/载荷、状态写入、资产、文案与样式元素；缺侧也要显式标记。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="gates">
+      <h2>两道门：方向与高价值保留</h2>
+      <p>只在审查<strong>计划 / 规格 / 拟定实现路径 / 迁移设计</strong>，或被问「方向对不对、值不值得做」时激活。验收、测试、排期、措辞<strong>不能</strong>顶替门控证据。</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Plan-Direction Gate</h3>
+          <p>在评价「计划质量」之前必须齐备：</p>
+          <ul>
+            <li>目标结果与显式约束</li>
+            <li>计划试图保住的<strong>最高价值意图</strong></li>
+            <li>策略与归属点（数据源、状态写、共享契约、调用边界…）</li>
+            <li>问题 → 根因/决策点 → 改动 → 预期效果的逻辑链</li>
+            <li>同目标下的可信替代（更早修复点、更小范围、删层）</li>
+            <li>有界最优判断：best-supported / adequate / wrong / unjudged</li>
+          </ul>
+          <p style="margin-top:0.7rem">缺证据就标 <strong>unjudged</strong> 并写开放问题；可接受的妥协须写清牺牲的不变量、接受的风险、依赖约束与停止条件。</p>
+        </div>
+        <div class="card">
+          <h3>High-Potential Preservation Gate</h3>
+          <p>准备建议砍掉、推迟或降级某个组件前，先分类：</p>
+          <ul>
+            <li><strong>Unnecessary scope</strong> — 非所求、投机、重复所有权 → 可砍/ defer</li>
+            <li><strong>Under-specified core</strong> — 可能是高价值核心但边界不清 → 保意图，要求澄清/去风险</li>
+            <li><strong>Risky unauthorized boundary</strong> — 改公有行为/契约/持久化等未授权 → 暂停或问授权</li>
+          </ul>
+          <p style="margin-top:0.7rem">方向级砍减 finding 必填：Classification · Evidence · Preserved outcome · Lost outcome · Preservation path · Smallest correction。「更简单」 alone 不够。</p>
+        </div>
+      </div>
+
+      <div class="callout crit">
+        <p class="label">禁止的塌缩</p>
+        <p>
+          不得用「更小/更清晰/更少风险」静默压低计划天花板。若高价值结果依赖未决的意图边界，停在边界问题、假设检验或 learning slice，交给用户决策——而不是替用户缩小野心。
+        </p>
+      </div>
+    </section>
+
+    <section id="lenses">
+      <h2>透镜：查什么、谁过滤</h2>
+      <p>
+        透镜描述审查角度；需要 fan-out 时，透镜文案就是子代理 prompt。
+        <strong>Finder 的职责是覆盖，不是过滤</strong>——不确定与低严重度候选也要带回，带 confidence 与预估 severity；对照 Bar 的过滤发生在主审与 synthesis critic。
+      </p>
+
+      <div class="lenses">
+        <div class="lens">
+          <div class="lens-name"><span class="dot"></span>Design shape</div>
+          <p>浅接口、信息泄漏、战术补丁（只加分支/模式/回退不减根复杂度）、弱所有权、应被设计消掉的错误处理、纯转发层。设计发现必须用 APOSD 词汇：<strong>读者任务 + 症状（change amplification / cognitive load / unknown-unknown）+ 原因（dependency / obscurity）</strong>。拒绝无此映射的「cleaner / more DRY / 加注释」。</p>
+        </div>
+        <div class="lens">
+          <div class="lens-name"><span class="dot"></span>Contract surface</div>
+          <p>公有/共享契约：API、CLI、schema、持久状态、生成物、包装层、迁移。新能力承诺、静默改写/归一化、重新解释上游契约、派生身份碰撞、未文档化的行为变化、迁移丢掉源基线、动作仍在但 gating 谓词消失。</p>
+        </div>
+        <div class="lens">
+          <div class="lens-name"><span class="dot"></span>Test validation</div>
+          <p>回归证据：可能无覆盖就回归的行为；测私有状态/调用顺序/组件名而非公有行为；该真用却被 mock；仅为可测性开的生产缝；只证明新路径、不保护既有行为的计划。未触及代码的覆盖缺口不报。</p>
+        </div>
+        <div class="lens">
+          <div class="lens-name"><span class="dot"></span>Implementation fit</div>
+          <p>与本地代码库是否合身：重复现有 owner 的 helper、一次性抽象、错误层逻辑、近复制变体、为未来灵活性开的选项/分支、调用不存在或被绕过的 helper。除非是最小修正，不提议邻接重构。</p>
+        </div>
+        <div class="lens critic" style="grid-column: 1 / -1">
+          <div class="lens-name"><span class="dot"></span>Synthesis critic（不同角色）</div>
+          <p>
+            高风险或证据冲突时派出。不生产新候选，只挑战草稿：证据是否真实、归因是否对 base 正确、是否清过 Bar、APOSD 是否完整、子代理严重候选是否被静默丢掉、覆盖账是否闭合、枚举是否从源材料独立重导并 diff、ledger 是否通过 identifier-integrity、反驳是否就地改 verdict 而非静默删除、aligned 行是否被抽查而非盲目采信。
+            每条挑战返回：target · issue · evidence · action（keep / drop / retag / reword / reorder / verify / surface）。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="bar">
+      <h2>Bar：什么进入 findings</h2>
+      <p>
+        每个 unit 的 verdict 都在 ledger 里；Bar 只决定哪些已关闭 unit 升级为叙事 finding。
+        升级底线：可能造成错误行为、破坏契约、损坏或不一致状态、测试失败、或误导结果的问题。低于此线且不影响合并决策/后续计划的观察，可以只留在 ledger。
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>严重度</th>
+              <th>含义</th>
+              <th>排序</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="sev blocker">blocker</span></td>
+              <td>正确性 / 契约 / 状态类问题</td>
+              <td>最先</td>
+            </tr>
+            <tr>
+              <td><span class="sev raise">raise</span></td>
+              <td>真实问题，可接受后续跟进</td>
+              <td>中</td>
+            </tr>
+            <tr>
+              <td><span class="sev nit">nit</span></td>
+              <td>小抛光</td>
+              <td>最后</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout ok">
+        <p class="label">过滤纪律</p>
+        <p>
+          按严重度与合并相关性过滤，<strong>不按自信度</strong>过滤。对合理但不确定的正确性/契约/状态问题：标出不确定性与如何确认，而不是静默丢弃。不要为了「finding 少一点」压制真的低严重度问题——按真实严重度报告并排在后面。
+        </p>
+      </div>
+
+      <h3>归因规则（diff 有 base 时）</h3>
+      <ul>
+        <li><strong>NEW</strong> — 本次引入，或被本次显著恶化</li>
+        <li><strong>PRE-EXISTING</strong> — 基线上已成立；仅当触及同一表面且阻塞意图、被恶化、或用户要求更广审计时才报告</li>
+        <li>不确定就直说，不要默认 NEW</li>
+        <li>对齐审计无 base 时，用 per-unit 结论（aligned / authorized divergence / defect），不强贴 NEW/PRE-EXISTING</li>
+      </ul>
+    </section>
+
+    <section id="output">
+      <h2>输出契约与停机条件</h2>
+      <p>散文用用户主语言；代码符号、路径、错误信息保持原文。无单独授权时：不编辑、不 commit、不 push。</p>
+
+      <h3>交付顺序</h3>
+      <ol class="order">
+        <li>
+          <div>
+            <strong>Coverage 账本</strong>
+            <span>枚举依据；enumerated / reviewed / unreviewed 计数；完整 Unit Ledger（内联、附录或绝对路径链接）；identifier-integrity 例外；未覆盖行用 <code>ID + Subject + Locator</code></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Findings</strong>
+            <span>每条引用 <code>ID + Subject + Locator</code>，带严重度与 <code>[NEW]</code>/<code>[PRE-EXISTING]</code>（或对齐审计的 per-unit 结论）。plan/spec 时方向/前提/归属/逻辑链问题排在同等或更低严重度的验收/测试 finding 之前</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Open questions</strong>
+            <span>会实质性改变决策的问题</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Overall judgment</strong>
+            <span>短结论；点名 blocked/unreviewed 面。plan 方向 verdict：best-supported / adequate but suboptimal / wrong/unsupported / unjudged；高价值版合理但欠规格时写 under-specified，默认不要压成更小计划</span>
+          </div>
+        </li>
+      </ol>
+
+      <h3>Finish 前必须勾完</h3>
+      <div class="checks">
+        <div class="check">
+          <span class="box" aria-hidden="true"></span>
+          <div>
+            完整 Unit Ledger 已包含或可链接；Subject / Locator / Verdict 可从报告追溯
+            <span class="when">任何审查</span>
+          </div>
+        </div>
+        <div class="check">
+          <span class="box" aria-hidden="true"></span>
+          <div>
+            Identifier-integrity 通过（有文件则机械检查）；ledger 文件未删除
+            <span class="when">任何审查</span>
+          </div>
+        </div>
+        <div class="check">
+          <span class="box" aria-hidden="true"></span>
+          <div>
+            覆盖账闭合；归因、严重度、残余风险清晰
+            <span class="when">diff / 代码审查</span>
+          </div>
+        </div>
+        <div class="check">
+          <span class="box" aria-hidden="true"></span>
+          <div>
+            替换/删除代码时：guard / precondition 存活检查已做
+            <span class="when">Attribution</span>
+          </div>
+        </div>
+        <div class="check">
+          <span class="box" aria-hidden="true"></span>
+          <div>
+            Plan-Direction 有明确 verdict；每个重大砍/defer/narrow 满足 High-Potential Preservation；开放问题已点名；验收/测试观察未挤掉更重要的方向判断
+            <span class="when">plan / spec</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <p class="label">无法关闭时怎么结束</p>
+        <p>
+          点名未覆盖或未交付集合为 <code>ID + Subject + Locator</code>，并写清关闭所需条件——<strong>永远不要</strong>把部分覆盖呈现为完整。验证不可用或越界时，写明使用的次优证据。
+        </p>
+      </div>
+
+      <div class="diagram">
+        <p class="caption">三层职责（容易混，刻意分开）</p>
+        <pre class="mermaid">
+flowchart LR
+  C[Coverage<br/>查哪些 units] --> L[Unit Ledger<br/>每条结论与证据]
+  L --> B[Bar<br/>哪些升级为 finding]
+  B --> R[Report<br/>账本 + findings + 判断]
+        </pre>
+      </div>
+    </section>
+
+    <footer class="note">
+      本页依据仓库内 <code>skills/code-review/SKILL.md</code> 与
+      <code>references/aposd-complexity-review.md</code> 整理，用于解释流程，不替代 skill 原文。
+      设计/复杂度发现的词汇细节见 APOSD 参考。
+    </footer>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+(function () {
+  if (typeof mermaid === "undefined") return; /* CDN unreachable: leave diagram source visible */
+  var t = document.documentElement.dataset.theme;
+  var dark = t === "dark" || (t !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "default" });
+})();
+</script>
+</body>
+</html>

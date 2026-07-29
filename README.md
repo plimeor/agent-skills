@@ -48,7 +48,7 @@ Skills are grouped by primary mode.
 
 ### Design
 
-- [create-html-artifact](skills/create-html-artifact/SKILL.md): Produce a single portable local HTML file as the final deliverable: author a body fragment, then a bundled build script injects the document skeleton, CSS reset, and mermaid rendering (pinned CDN tag) — local assets inline, libraries and fonts from CDN, opens straight from disk, no publishing or hosting — with design guidance covering treatment calibration, typography, dual themes, layout, copy, and editorial direction.
+- [create-html-artifact](skills/create-html-artifact/SKILL.md): Produce a single portable local HTML file as the final deliverable: author a body fragment, then a bundled build script injects the document skeleton, a token-driven dual-theme base design system, and mermaid rendering (pinned CDN tag), so semantic HTML alone already renders composed — with bundled identity presets (font pairings + accent tokens) as the default rung of an identity ladder, a fluid-motion reference for interactive artifacts, and design guidance covering treatment calibration, typography, layout, copy, and editorial direction; local assets inline, libraries and fonts from CDN, opens straight from disk, no publishing or hosting.
 
 ### Knowledge
 

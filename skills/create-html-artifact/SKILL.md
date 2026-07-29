@@ -12,7 +12,7 @@ Approach this as the design lead at a small studio known for versatility: every 
 The finished artifact is a single, complete HTML file, produced in two steps: author a body fragment, then build it with the bundled script.
 
 - **Author a fragment, not a document.** Write only the page content — markup plus its own `<style>` and `<script>` blocks. Never hand-write `<!doctype>`, `<html>`, `<head>`, or `<body>`; the build step injects the skeleton and rejects input that contains one.
-- **Build with the bundled script.** `python3 scripts/build.py fragment.html -o page.html [--title ...] [--lang ...]` wraps the fragment in the full skeleton (`<!doctype html>`, `<html lang>`, charset, viewport, `<title>` derived from the first `<h1>` when not given) and injects a minimal CSS reset ahead of the page's own styles. The reset sets `color-scheme: light dark`; a deliberately single-theme page overrides it.
+- **Build with the bundled script.** `python3 scripts/build.py fragment.html -o page.html [--title ...] [--lang ...]` wraps the fragment in the full skeleton (`<!doctype html>`, `<html lang>`, charset, viewport, `<title>` derived from the first `<h1>` when not given) and injects a token-driven base design system ahead of the page's own styles: reset, dual-theme palette, type scale and rhythm, and styled core elements (headings, lists, tables, code, blockquotes, figures, forms). Semantic HTML wrapped in `<main>` renders as a composed document with zero custom CSS; page styles come after the base and may override any token or rule. The base sets `color-scheme: light dark`; a deliberately single-theme page overrides it.
 - **Mermaid renders out of the box.** Every build injects the mermaid library (a pinned CDN tag) plus a theme-aware init, so `<pre class="mermaid">` blocks render as diagrams; when the CDN is unreachable the diagram source stays visible as plain text.
 - **One portable file.** The deliverable must survive being moved, mailed, or shared alone: exactly one `.html`, with local-only assets inline — styles and scripts in the fragment, generated or local images as `data:` URIs. A relative path to a sibling file is the prohibited substitute. Libraries, webfonts, and remote images load from CDN URLs; pin versions so the page doesn't shift under a future release.
 - **Delivery is the file path.** Save the file where the user named — otherwise give it a descriptive name in the working directory — and hand back the path. Never upload, host, or publish the page.
@@ -31,11 +31,11 @@ When unsure: a well-composed page is never the wrong answer; an over-designed vi
 
 ## Fundamentals for every artifact
 
-**Honor what's already there.** Look for an existing design system first — CLAUDE.md, a tokens or theme file, existing component styles. When one exists, apply it; everything below fills gaps and never overrides. Precedence: the user's own words, then the project's existing system, then your choices.
+**Choose the identity down a ladder.** The user's own words win; then an existing project design system (CLAUDE.md, a tokens or theme file, component styles); then a preset from `references/presets.md` picked by subject; then the base system's own defaults, which are designed to stand alone. Building a custom identity from scratch is the top rung, not the default — climb there when the request is editorial and every choice can be grounded in the subject. When unsure of your footing, a preset with a subject-tuned accent is the reliable answer: the floor is engineered so that semantic HTML plus a preset is already a respectable deliverable.
 
 **Ground it in the subject.** Pin one concrete subject, its audience, and the page's single job. The subject's own world — its materials, instruments, vernacular — is where distinctive choices come from. Build with real content throughout, never lorem.
 
-**Pair typefaces.** Typography carries the page even when the page isn't about typography. Load webfonts from a CDN — pin the family, weights, and subsets you actually use — and give the stack a considered local fallback so the page still reads well while fonts load or if they fail. Keep running text near 65 characters wide; set a type scale and stay on it; give headings `text-wrap: balance`, body text room to breathe, and uppercase labels a touch of letter-spacing.
+**Pair typefaces.** Typography carries the page even when the page isn't about typography. Load webfonts from a CDN — pin the family, weights, and subsets you actually use — and give the stack a considered local fallback so the page still reads well while fonts load or if they fail. Keep running text near 65 characters wide; set a type scale and stay on it; give headings `text-wrap: balance` and uppercase labels a touch of letter-spacing. Tracking and leading are size-specific, never one value for all sizes: large display text tightens (negative letter-spacing, line-height near 1.1) while body stays near zero tracking with roomier leading. Build hierarchy from weight + size + leading as a set, not size alone; set `font-optical-sizing: auto` on variable faces; size spacing in `rem`/`em` so the layout scales with the reader's text-size setting.
 
 **Choose neutrals, don't default to them.** A pure mid-grey reads as unconsidered; a grey with a slight hue bias toward the page's accent reads as chosen. Pure white and near-black are fine grounds when they suit the subject — the point is that the neutral was picked, not inherited.
 
@@ -53,21 +53,22 @@ When unsure: a well-composed page is never the wrong answer; an over-designed vi
 
 **Structure is information.** Structural devices — numbering, eyebrows, dividers, labels — should encode something true about the content, not decorate it. Numbered markers (01 / 02 / 03) are only appropriate when the content actually is a sequence. Question such choices before incorporating them.
 
+**When it moves or responds to touch.** Before writing any gesture-driven or animated interaction — drags, swipes, sheets, carousels, springs, page transitions — read `references/motion.md`: response and latency, interruptibility, spring parameters with concrete values, velocity handoff, momentum projection, and reduced-motion equivalents. Static pages skip it.
+
 **When it's a UI, not a document.** A dashboard or tool is scanned and operated, not read top-to-bottom, so the craft shifts from typography to information design. Surface the summary before the detail; encode state in form as well as number — a pill, a chip, a severity stripe — so what needs attention reads at a glance. Semantic color (good / warning / critical) is separate from the accent hue and doesn't count as your accent. Give sparklines and charts the same care as type: an area fill, a faint grid, an emphasized endpoint. What's interactive should look interactive.
 
 ## Process
 
-Before writing code, sketch a short design plan — a compact token system:
+Before writing code, sketch a short design plan:
 
-- **Color**: the palette as 4–6 named hex values.
-- **Type**: typefaces for 2+ roles — a characterful display face used with restraint, a complementary body face, and a utility face for captions or data if needed.
+- **Identity**: name the ladder rung. Either the chosen preset plus any accent/neutral adjustment, or — for a custom identity — the palette as 4–6 named hex values and typefaces for 2+ roles (a characterful display face used with restraint, a complementary body face, a utility face for captions or data if needed).
 - **Layout**: a layout concept in one or two sentences.
 
 Then build, deriving every color and type decision from the plan.
 
 ## When the request is editorial
 
-The stance shifts: the client has already rejected proposals that felt templated and is paying for a distinctive point of view. Make opinionated calls, and take one real aesthetic risk where it serves the work.
+The stance shifts: the client has already rejected proposals that felt templated and is paying for a distinctive point of view. This is where the ladder's top rung — a custom identity — earns its keep. Make opinionated calls, and take one real aesthetic risk where it serves the work.
 
 Review the design plan against the subject before building: if any part reads like the generic default you would produce for any similar page, revise that part and note what changed and why. Only then write the code, following the revised plan exactly.
 
