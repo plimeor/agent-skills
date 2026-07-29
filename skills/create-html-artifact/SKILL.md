@@ -1,6 +1,6 @@
 ---
 name: create-html-artifact
-description: Produce a single self-contained local HTML file as the final deliverable — a report, doc, dashboard, landing page, demo, tool, or presentation rendered as one .html that opens offline from disk. Use when the user asks for an HTML page/file/artifact saved locally, a visual or interactive deliverable as a standalone web page, or when porting content into one HTML file. Not for publishing or hosting (claude.ai Artifacts, any upload flow — the output is a file path, never a URL) and not for multi-file web projects or apps with a build step.
+description: Produce a single portable local HTML file as the final deliverable — a report, doc, dashboard, landing page, demo, tool, or presentation rendered as one .html that opens straight from disk. Use when the user asks for an HTML page/file/artifact saved locally, a visual or interactive deliverable as a standalone web page, or when porting content into one HTML file. Not for publishing or hosting (claude.ai Artifacts, any upload flow — the output is a file path, never a URL) and not for multi-file web projects or apps with a build step.
 ---
 
 # Create HTML Artifact
@@ -9,15 +9,15 @@ Approach this as the design lead at a small studio known for versatility: every 
 
 ## Output contract
 
-The finished artifact is a single, complete, self-contained HTML file, produced in two steps: author a body fragment, then build it with the bundled script.
+The finished artifact is a single, complete HTML file, produced in two steps: author a body fragment, then build it with the bundled script.
 
 - **Author a fragment, not a document.** Write only the page content — markup plus its own `<style>` and `<script>` blocks — exactly as for a claude.ai artifact. Never hand-write `<!doctype>`, `<html>`, `<head>`, or `<body>`; the build step injects the skeleton and rejects input that contains one.
 - **Build with the bundled script.** `python3 scripts/build.py fragment.html -o page.html [--title ...] [--lang ...]` wraps the fragment in the full skeleton (`<!doctype html>`, `<html lang>`, charset, viewport, `<title>` derived from the first `<h1>` when not given) and injects a minimal CSS reset ahead of the page's own styles. The reset sets `color-scheme: light dark`; a deliberately single-theme page overrides it. The script's output is the deliverable — hand-assembling the skeleton is a prohibited substitute.
-- **Mermaid renders natively.** `<pre class="mermaid">` blocks keep working: when the fragment contains one, the build inlines the mermaid bundle plus a theme-aware init into the output. The bundle comes from `~/.cache/create-html-artifact/mermaid.min.js` (first use downloads it once, at build time only — the built file stays offline). If no bundle and no network, the build fails loudly; surface that to the user instead of substituting a CDN `<script>` tag.
-- **Self-contained and offline.** The built file must render fully from `file://` with the network disabled: all CSS and JS inline, images and fonts embedded as `data:` URIs. Prohibited substitutes: separate `.css`/`.js` files, CDN or webfont links, remote images, any fetch at load time. `<a>` links pointing to external sites are the only allowed external references.
+- **Mermaid renders by default.** The build always injects the mermaid library (a pinned CDN tag) plus a theme-aware init, so `<pre class="mermaid">` blocks just work; with no network the init degrades to showing the diagram source. Pass `--no-mermaid` only when the user wants it omitted; pass `--offline` (or `--mermaid-js`) to inline the ~3.5 MB bundle instead of the CDN tag when the file must render without network.
+- **One portable file.** The deliverable must survive being moved, mailed, or shared alone: exactly one `.html`, with every local asset inline — styles and scripts in the fragment, images and fonts as `data:` URIs. A relative path to a sibling file is the prohibited substitute. Network-hosted resources (CDN libraries, webfonts, remote images) are allowed; pin versioned URLs so the page doesn't shift under a future release. When the user needs the file to work offline, inline everything instead.
 - **No publishing.** Never upload, host, or publish the file (no Artifact tool, no deploy step). Delivery is the file path, at the location the user named — otherwise a descriptively named file in the working directory. There is no `window.claude` runtime; don't write code against it.
 
-Before delivering, verify the contract: scan the built file for `src=`, `href=`, and `url(` values that reach over the network — any hit outside `<a>` navigation breaks the offline requirement and means the artifact is not done.
+Before delivering, verify the contract: scan the built file for `src=`, `href=`, and `url(` values that point at local relative paths — any hit breaks single-file portability and means the artifact is not done.
 
 ## Read the request first
 
@@ -35,7 +35,7 @@ When unsure: a well-composed page is never the wrong answer; an over-designed vi
 
 **Ground it in the subject.** Pin one concrete subject, its audience, and the page's single job. The subject's own world — its materials, instruments, vernacular — is where distinctive choices come from. Build with real content throughout, never lorem.
 
-**Pair typefaces.** Typography carries the page even when the page isn't about typography. Webfont links violate the offline contract and risk silent fallback anyway — inline a face as a `@font-face` data URI, or compose a deliberate system-font stack. Keep running text near 65 characters wide; set a type scale and stay on it; give headings `text-wrap: balance`, body text room to breathe, and uppercase labels a touch of letter-spacing.
+**Pair typefaces.** Typography carries the page even when the page isn't about typography. Webfont CDN links are fine — pin the family, weights, and subsets you actually use — but they fall back silently when the network is absent, so give the stack a considered local fallback; when the file must work offline, inline the face as a `@font-face` data URI or compose a deliberate system-font stack. Keep running text near 65 characters wide; set a type scale and stay on it; give headings `text-wrap: balance`, body text room to breathe, and uppercase labels a touch of letter-spacing.
 
 **Choose neutrals, don't default to them.** A pure mid-grey reads as unconsidered; a grey with a slight hue bias toward the page's accent reads as chosen. Pure white and near-black are fine grounds when they suit the subject — the point is that the neutral was picked, not inherited.
 

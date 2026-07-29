@@ -48,7 +48,7 @@ Skills are grouped by primary mode.
 
 ### Design
 
-- [create-html-artifact](skills/create-html-artifact/SKILL.md): Produce a single self-contained local HTML file as the final deliverable: author a body fragment, then a bundled build script injects the document skeleton and CSS reset and inlines mermaid rendering when diagrams are present — all assets inline, renders offline from disk, no publishing or hosting — with design guidance covering treatment calibration, typography, dual themes, layout, copy, and editorial direction.
+- [create-html-artifact](skills/create-html-artifact/SKILL.md): Produce a single portable local HTML file as the final deliverable: author a body fragment, then a bundled build script injects the document skeleton, CSS reset, and mermaid rendering by default (CDN tag, with an opt-in fully-inlined offline mode) — local assets inline, CDN resources allowed, opens straight from disk, no publishing or hosting — with design guidance covering treatment calibration, typography, dual themes, layout, copy, and editorial direction.
 
 ### Knowledge
 
