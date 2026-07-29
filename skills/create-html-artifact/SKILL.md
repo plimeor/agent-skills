@@ -9,14 +9,15 @@ Approach this as the design lead at a small studio known for versatility: every 
 
 ## Output contract
 
-The finished artifact is a single, complete, self-contained HTML file:
+The finished artifact is a single, complete, self-contained HTML file, produced in two steps: author a body fragment, then build it with the bundled script.
 
-- **Complete document.** Nothing wraps this file at render time, so it carries its own skeleton: `<!doctype html>`, `<html lang>`, `<head>` with `<meta charset>`, `<meta name="viewport">`, and a concise `<title>`, then `<body>`. No runtime injects a CSS reset either — include a minimal one.
-- **Self-contained and offline.** The file must render fully from `file://` with the network disabled: all CSS and JS inline, images and fonts embedded as `data:` URIs. Prohibited substitutes: separate `.css`/`.js` files, CDN or webfont links, remote images, any fetch at load time. `<a>` links pointing to external sites are the only allowed external references.
-- **No publishing.** Never upload, host, or publish the file (no Artifact tool, no deploy step). Delivery is the file path, at the location the user named — otherwise a descriptively named file in the working directory.
-- **No artifact-runtime assumptions.** There is no viewer runtime: no native mermaid rendering (draw diagrams as inline SVG or Canvas, or inline the library if the user asks for mermaid specifically), no theme-toggle stamping from outside, no `window.claude` APIs.
+- **Author a fragment, not a document.** Write only the page content — markup plus its own `<style>` and `<script>` blocks — exactly as for a claude.ai artifact. Never hand-write `<!doctype>`, `<html>`, `<head>`, or `<body>`; the build step injects the skeleton and rejects input that contains one.
+- **Build with the bundled script.** `python3 scripts/build.py fragment.html -o page.html [--title ...] [--lang ...]` wraps the fragment in the full skeleton (`<!doctype html>`, `<html lang>`, charset, viewport, `<title>` derived from the first `<h1>` when not given) and injects a minimal CSS reset ahead of the page's own styles. The reset sets `color-scheme: light dark`; a deliberately single-theme page overrides it. The script's output is the deliverable — hand-assembling the skeleton is a prohibited substitute.
+- **Mermaid renders natively.** `<pre class="mermaid">` blocks keep working: when the fragment contains one, the build inlines the mermaid bundle plus a theme-aware init into the output. The bundle comes from `~/.cache/create-html-artifact/mermaid.min.js` (first use downloads it once, at build time only — the built file stays offline). If no bundle and no network, the build fails loudly; surface that to the user instead of substituting a CDN `<script>` tag.
+- **Self-contained and offline.** The built file must render fully from `file://` with the network disabled: all CSS and JS inline, images and fonts embedded as `data:` URIs. Prohibited substitutes: separate `.css`/`.js` files, CDN or webfont links, remote images, any fetch at load time. `<a>` links pointing to external sites are the only allowed external references.
+- **No publishing.** Never upload, host, or publish the file (no Artifact tool, no deploy step). Delivery is the file path, at the location the user named — otherwise a descriptively named file in the working directory. There is no `window.claude` runtime; don't write code against it.
 
-Before delivering, verify the contract: scan the file for `src=`, `href=`, and `url(` values that reach over the network — any hit outside `<a>` navigation breaks the offline requirement and means the artifact is not done.
+Before delivering, verify the contract: scan the built file for `src=`, `href=`, and `url(` values that reach over the network — any hit outside `<a>` navigation breaks the offline requirement and means the artifact is not done.
 
 ## Read the request first
 
