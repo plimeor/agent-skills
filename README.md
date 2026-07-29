@@ -46,6 +46,10 @@ Skills are grouped by primary mode.
 
 - [reconsider](skills/reconsider/SKILL.md): Reconsider a non-trivial answer before finalizing; challenge stale context, premature compromise, hidden uncertainty, and context-inertia risk to raise answer quality.
 
+### Design
+
+- [create-html-artifact](skills/create-html-artifact/SKILL.md): Produce a single self-contained local HTML file as the final deliverable — complete document skeleton, all assets inline, renders offline from disk, no publishing or hosting — with design guidance covering treatment calibration, typography, dual themes, layout, copy, and editorial direction.
+
 ### Knowledge
 
 - [craft-mcp](skills/craft-mcp/SKILL.md): Correct, call-efficient use of the Craft MCP tools (craft_read/craft_write): batching to cut MCP calls, the rootBlockId model, verified search-index behavior, the markdown-vs-JSON content model (subpages, typed blocks, block field reference), and a workaround playbook for missing capabilities such as backlink lookup.
