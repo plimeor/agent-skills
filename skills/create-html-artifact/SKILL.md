@@ -12,7 +12,7 @@ Approach this as the design lead at a small studio known for versatility: every 
 The finished artifact is a single, complete HTML file, produced in two steps: author a body fragment, then build it with the bundled script.
 
 - **Author a fragment, not a document.** Write only the page content — markup plus its own `<style>` and `<script>` blocks. Never hand-write `<!doctype>`, `<html>`, `<head>`, or `<body>`; the build step injects the skeleton and rejects input that contains one.
-- **Build with the bundled script.** `python3 scripts/build.py fragment.html -o page.html [--title ...] [--lang ...]` wraps the fragment in the full skeleton (`<!doctype html>`, `<html lang>`, charset, viewport, `<title>` derived from the first `<h1>` when not given) and injects a token-driven base design system ahead of the page's own styles: reset, dual-theme palette, type scale and rhythm, and styled core elements (headings, lists, tables, code, blockquotes, figures, forms). Semantic HTML wrapped in `<main>` renders as a composed document with zero custom CSS; page styles come after the base and may override any token or rule. The base sets `color-scheme: light dark`; a deliberately single-theme page overrides it.
+- **Build with the bundled script.** `python3 scripts/build.py fragment.html -o page.html [--title ...] [--lang ...]` wraps the fragment in the full skeleton (`<!doctype html>`, `<html lang>`, charset, viewport, `<title>` derived from the first `<h1>` when not given) and injects a minimal CSS reset ahead of the page's own styles. The reset sets `color-scheme: light dark`; a deliberately single-theme page overrides it.
 - **Mermaid renders out of the box.** Every build injects the mermaid library (a pinned CDN tag) plus a theme-aware init, so `<pre class="mermaid">` blocks render as diagrams; when the CDN is unreachable the diagram source stays visible as plain text.
 - **One portable file.** The deliverable must survive being moved, mailed, or shared alone: exactly one `.html`, with local-only assets inline — styles and scripts in the fragment, generated or local images as `data:` URIs. A relative path to a sibling file is the prohibited substitute. Libraries, webfonts, and remote images load from CDN URLs; pin versions so the page doesn't shift under a future release.
 - **Delivery is the file path.** Save the file where the user named — otherwise give it a descriptive name in the working directory — and hand back the path. Never upload, host, or publish the page.
@@ -31,7 +31,7 @@ When unsure: a well-composed page is never the wrong answer; an over-designed vi
 
 ## Fundamentals for every artifact
 
-**Choose the identity down a ladder.** The user's own words win; then an existing project design system (CLAUDE.md, a tokens or theme file, component styles); then a preset from `references/presets.md` picked by subject; then the base system's own defaults, which are designed to stand alone. Building a custom identity from scratch is the top rung, not the default — climb there when the request is editorial and every choice can be grounded in the subject. When unsure of your footing, a preset with a subject-tuned accent is the reliable answer: the floor is engineered so that semantic HTML plus a preset is already a respectable deliverable.
+**Honor what's already there.** Look for an existing design system first — CLAUDE.md, a tokens or theme file, existing component styles. When one exists, apply it; everything below fills gaps and never overrides. Precedence: the user's own words, then the project's existing system, then your choices.
 
 **Ground it in the subject.** Pin one concrete subject, its audience, and the page's single job. The subject's own world — its materials, instruments, vernacular — is where distinctive choices come from. Build with real content throughout, never lorem.
 
@@ -59,16 +59,17 @@ When unsure: a well-composed page is never the wrong answer; an over-designed vi
 
 ## Process
 
-Before writing code, sketch a short design plan:
+Before writing code, sketch a short design plan — a compact token system:
 
-- **Identity**: name the ladder rung. Either the chosen preset plus any accent/neutral adjustment, or — for a custom identity — the palette as 4–6 named hex values and typefaces for 2+ roles (a characterful display face used with restraint, a complementary body face, a utility face for captions or data if needed).
+- **Color**: the palette as 4–6 named hex values.
+- **Type**: typefaces for 2+ roles — a characterful display face used with restraint, a complementary body face, and a utility face for captions or data if needed.
 - **Layout**: a layout concept in one or two sentences.
 
 Then build, deriving every color and type decision from the plan.
 
 ## When the request is editorial
 
-The stance shifts: the client has already rejected proposals that felt templated and is paying for a distinctive point of view. This is where the ladder's top rung — a custom identity — earns its keep. Make opinionated calls, and take one real aesthetic risk where it serves the work.
+The stance shifts: the client has already rejected proposals that felt templated and is paying for a distinctive point of view. Make opinionated calls, and take one real aesthetic risk where it serves the work.
 
 Review the design plan against the subject before building: if any part reads like the generic default you would produce for any similar page, revise that part and note what changed and why. Only then write the code, following the revised plan exactly.
 
