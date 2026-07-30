@@ -1,25 +1,19 @@
 ---
 name: agent-team
-description: "Use when delegating to sub-agents: one bounded handoff — an independent challenger before finalizing, a focused investigation, a bounded implementation slice, a verifier with a rubric — or two or more agents for parallel coverage, independent verification, exhaustive review or audit, broad research, codebase mapping, migration or sweep work, or adversarial critique of a decision. Also use when the user asks to fan out, delegate, run a team, or cross-check work across independent agents. Do not use to add a coordination round-trip to work the main agent should simply do itself, or for overlapping mutators without disjoint ownership or isolation."
+description: "Run a team of sub-agents under an orchestration blueprint: scout the surface, split it into atomic work units, dispatch them with baked context packets, have independent skeptic lanes attack every material claim, and synthesize one result with coverage and gaps named. Use for parallel coverage across independent evidence roots, inventorying an unknown-size surface, exhaustive review or audit, broad research needing cross-checked claims, codebase mapping, migration or sweep work, or adversarial critique of a decision — and whenever the user asks to fan out, delegate, run a team, or cross-check work across independent agents. Do not use for work the main agent should simply do itself, or for overlapping mutators without disjoint ownership or isolation."
 ---
 
 # Agent Team
 
-Delegate to sub-agents — one bounded handoff, or a team compiled into an orchestration blueprint — and integrate what returns as evidence rather than truth. Delegation is assumed authorized. The judgment this skill owns is whether a delegation is worth its overhead, how tight each contract must be, and what shape a team takes.
+Delegate to sub-agents as a team compiled into an orchestration blueprint, and integrate what returns as evidence rather than truth. Delegation is assumed authorized. The judgment this skill owns is whether the work is worth delegating at all, how tight each contract must be, and what shape the team takes.
+
+Every run goes through Scout, Mode, Bake, Structure, Launch, and Integrate, and passes the three hard gates. Work that does not justify that structure stays local.
 
 The value comes from disciplined shape, not agent count. A broad fan-out without a blueprint is a parallel dump; a small team with complete scout evidence, atomic work units, shared context, and independent verification can be stronger than a larger unstructured fan-out. A small team is never justified by coarse labels that hide multiple evidence roots; it is justified when the scouted surface is small, or when a larger surface is explicitly sampled or capped in `LIMITS` with the Topology Floor completeness lane named.
 
-## Route
-
-**One handoff** when the work is a single atomic unit under Unit Atomicity — one evidence root, one inspect type, one owner, finishable without dropping a named sub-surface. Typical shapes: an independent challenger before finalizing, a focused investigation, a bounded implementation slice, a verifier with a rubric.
-
-**A team** when the work has two or more independent evidence roots, an unknown-size surface that must be inventoried, or material claims that need an independent lane to refute them.
-
-The Delegation Contract governs every sub-agent on either path. Only the team path adds Scout, Mode, Bake, Structure, Launch, and Integrate, and only it runs the three hard gates. Calling multi-root work "just one handoff" is the collapse this skill guards against: the test is Unit Atomicity, not how heavy the task feels.
-
 ## The Delegation Contract
 
-Applies to a lone handoff and to every member of a team alike.
+Governs every sub-agent in the run.
 
 ### When A Delegation Earns Its Cost
 
@@ -66,7 +60,7 @@ Stop condition:
 
 For a verifier, include a **rubric**. An agent asked only to "check if this is good" produces the appearance of quality control without signal — give it the concrete criteria to check against.
 
-On the team path the packet is assembled from the context pack rather than written from scratch: `Objective` and `Context` from `SHARED` and `NOT_A_BUG`, `Scope` and `Tool and permission boundary` from that agent's `WORK_UNIT`, `Return format` from `OUTPUT_CONTRACT`, limits and caps from `LIMITS`. Packet `Verification` is what the agent runs on its own work; it is never the independent check, which `VERIFY_MATRIX` owns.
+The packet is assembled from the context pack rather than written from scratch: `Objective` and `Context` from `SHARED` and `NOT_A_BUG`, `Scope` and `Tool and permission boundary` from that agent's `WORK_UNIT`, `Return format` from `OUTPUT_CONTRACT`, limits and caps from `LIMITS`. Packet `Verification` is what the agent runs on its own work; it is never the independent check, which `VERIFY_MATRIX` owns.
 
 ### While Sub-Agents Run
 
@@ -76,11 +70,13 @@ Do not re-do delegated work locally while a sub-agent is still responsible for i
 
 Treat every return as evidence, not truth. Before integrating, check: did the agent stay in scope, give concrete evidence and source pointers, run the requested verification, and surface assumptions or conflicts?
 
-Verify proportionally — spot-check the high-impact claims, re-run the smallest relevant check, and lean harder on anything that changes a decision. If a report is weak, ask one focused follow-up rather than silently redoing the whole task; only take it local if the agent failed and the work is on the critical path.
+Parent checks do not satisfy `VERIFY_MATRIX`. The parent spot-checks only after a skeptic lane returns, and only to resolve conflicts, judge whether that lane was substantive, or catch an obvious packet failure — never as the first or only check on a material claim.
+
+If a report is weak, ask one focused follow-up or dispatch a bounded replacement packet. Take the work local only when the agent failed outright and it blocks the critical path.
 
 ## Hard Gate: Blueprint Before Launch
 
-Activation: every team use before spawning more than one sub-agent.
+Activation: before spawning any sub-agent except scout.
 
 Required artifact: an internal or user-visible blueprint with these fields:
 
@@ -92,7 +88,7 @@ Required artifact: an internal or user-visible blueprint with these fields:
 - `Structure`: stages, pipeline/barrier choices, verification matrix (including topology-floor lane owners), completeness pass, and synthesis owner.
 - `Launch Gate`: atomic work units, topology floor, disjoint ownership, edit isolation when needed, parent relay boundary, caps, batching, stall limits, and stop criteria.
 
-Prohibited substitutes: an agent count; a list of vague angles; "have several agents look around"; subsystem labels treated as discovery units; independent packets that each rediscover scope; a multi-root or unknown-size task declared a single handoff so this gate never activates.
+Prohibited substitutes: an agent count; a list of vague angles; "have several agents look around"; subsystem labels treated as discovery units; independent packets that each rediscover scope; a run begun without a blueprint because the task felt small.
 
 Incomplete behavior: scout locally or with a single scout agent until the blueprint is specific enough. If a critical scope fact remains unavailable and affects the topology, ask one focused question or return a plan-only blueprint with the missing fact named.
 
@@ -119,7 +115,7 @@ After the first scout pass, classify coverage shape:
 
 Mixed tasks: if any in-scope substream is `open-discovery`, record overall Coverage Shape as `open-discovery` and apply inventory plus completeness rules to every open substream. Closed substreams still bake from their pinned lists and keep pinned cardinality.
 
-Derive cardinality from the inventory result — never from a preferred headcount, from a handful of logical areas, or from a single discovery round on an unknown-size surface. When scout finds no real work-list, keep the task local or run it as a single handoff under the Delegation Contract.
+Derive cardinality from the inventory result — never from a preferred headcount, from a handful of logical areas, or from a single discovery round on an unknown-size surface. When scout finds no real work-list, keep the task local.
 
 ## Mode
 
@@ -153,7 +149,7 @@ Incomplete behavior: refine the scout or split/merge work units before launch. A
 
 ## Hard Gate: Unit Atomicity
 
-Activation: after Bake candidate units exist and before Launch, for every `WORK_UNIT`; and at Route, to test whether work claimed as a single handoff is really one unit.
+Activation: after Bake candidate units exist and before Launch, for every `WORK_UNIT`.
 
 Required evidence per unit: exactly one `evidence_root`, exactly one `inspect_type`, and a deep-inspect or transform scope one agent can finish without dropping a named sub-surface already visible in scout or inventory — except where homogeneous batching is allowed below.
 
@@ -187,9 +183,11 @@ Every Structure must specify stages and owners; which stages run in parallel and
 
 Verification is adversarial by default. A material finding that no independent agent tried to refute is a hypothesis, not a result. For high-stakes claims, use several skeptics or distinct lenses and require the stated threshold to pass.
 
+`skeptic` and `critique-lens` lanes are read-mostly by default. A lane that finds a defect returns `fail` plus a concrete fix list for a bounded fix-pass owner rather than fixing it itself; `VERIFY_MATRIX` may name a verifier as its own fixer, but that fix then needs its own verification row. A fix no lane checked is an unverified change, not a resolved finding.
+
 ## Hard Gate: Topology Floor
 
-Activation: before Launch, for every team that will emit material findings, load-bearing claims, candidate rulings, maps of unknown-size systems, or an inventory-style list.
+Activation: before Launch, for every run that will emit material findings, load-bearing claims, candidate rulings, maps of unknown-size systems, or an inventory-style list.
 
 The `VERIFY_MATRIX` roster, mirrored in blueprint `Structure`, must meet all three floors:
 
