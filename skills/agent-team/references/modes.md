@@ -10,10 +10,10 @@ Each preset's four bullets carry the five blueprint properties: `Scout` states t
 
 Use for code reviews, security audits, behavioral parity checks, risk hunts, and "find anything wrong" requests.
 
-- Scout for changed or suspicious evidence roots, systemic risk, contracts, and not-a-bug items. Treat unbounded audits as `open-discovery`.
+- Scout for changed or suspicious evidence roots, systemic risk, contracts, and not-a-bug items. Treat unbounded audits as `open-discovery`. Coarse labels are inventory seeds, not units, until split to single evidence roots.
 - Bake one `WORK_UNIT` per independent evidence root (caller tree, interface or contract surface, state machine, behavior path, or review dimension). A module or feature path is a unit only when it has a single evidence root; otherwise split by root.
 - Structure as `review each unit -> adversarially verify every material finding -> completeness critic -> report`.
-- Done means every reported material finding survived independent refutation, and skipped scope is named.
+- Done means every reported material finding survived independent refutation, skipped scope is named, and positive absence claims cover only roots that were inventoried and probed.
 
 ## Research
 

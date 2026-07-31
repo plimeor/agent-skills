@@ -115,7 +115,7 @@ After the first scout pass, classify coverage shape:
 
 Mixed tasks: if any in-scope substream is `open-discovery`, record overall Coverage Shape as `open-discovery` and apply inventory plus completeness rules to every open substream. Closed substreams still bake from their pinned lists and keep pinned cardinality.
 
-Derive cardinality from the inventory result — never from a preferred headcount, from a handful of logical areas, or from a single discovery round on an unknown-size surface. When scout finds no real work-list, keep the task local.
+Derive cardinality from the inventory result — never from a preferred headcount, from a handful of logical areas, from coarse labels when finer evidence roots are listable, or from a single discovery round on an unknown-size surface. When scout finds no real work-list, keep the task local. If inventory is incomplete, keep scouting, sample with an explicit `LIMITS` cap and a completeness lane, or return a plan-only blueprint — do not launch over a fabricated unit count.
 
 ## Mode
 
@@ -156,7 +156,7 @@ Required evidence per unit: exactly one `evidence_root`, exactly one `inspect_ty
 Mandatory split — any hit means the blueprint is incomplete until the unit is split, or the unsplit remainder is an explicit `LIMITS` coverage gap/cap (not batching):
 
 - Two or more sibling entry points each with their own interface or contract surface and independent caller or dependency tree.
-- A container that already names multiple independently inventoryable sub-surfaces with different evidence roots.
+- A container or coarse label that already names multiple independently inventoryable sub-surfaces with different evidence roots.
 - A primary workflow mixed with unrelated cross-cutting infrastructure in the same packet.
 - Two or more incompatible evidence methods required inside one packet (for example static reference-graph absence vs dynamic or reflective invocation proof).
 - Heterogeneous inventory items merged solely to reduce agent count.
@@ -169,7 +169,7 @@ Merge is allowed only when either:
 
 "Same directory", "same epic", or "feels related" is not enough for either merge path.
 
-Prohibited substitutes: non-overlapping directories treated as atomic units; subsystem labels used as `open-discovery` units when finer surfaces are listed or listable; intentional homogeneous batches labeled as gaps/caps.
+Prohibited substitutes: non-overlapping directories treated as atomic units; subsystem or other coarse labels used as `open-discovery` units when finer surfaces are listed or listable; intentional homogeneous batches labeled as gaps/caps.
 
 Independence means non-overlapping deep-inspect scope under one evidence root — not merely disjoint ownership on a map.
 
@@ -193,14 +193,15 @@ The `VERIFY_MATRIX` roster, mirrored in blueprint `Structure`, must meet all thr
 
 - `probe`: one probe or transform lane per atomic `WORK_UNIT`, or per Decision candidate proposal. Homogeneous Migration/Sweep batches count as one probe lane each.
 - `skeptic` or `critique-lens`: at least one named independent owner when material findings or load-bearing claims are expected to enter the final answer.
+  - Review/Audit satisfies this only when every material finding that will enter the final answer is itself the target of an independent refutation pass. A single pass over a bundled finding list without attacking each finding fails this floor. High-stakes claims use enough distinct lenses that a wrong yes cannot survive on one weak angle.
   - Decision Mode satisfies this only through the candidate × critique-lens gauntlet: every serious candidate is attacked under each named lens, and each lens has its own owner. One reviewer carrying several lenses, one shared review spanning candidates, and a parent skim all fail this floor.
   - Understand/Map satisfies it when the deliverable is only a map with named gaps and the completeness critic is a named owner; if the run also reports material defects or contested risk claims, those claims need an independent skeptic lane.
-  - Research satisfies it through independent verification of load-bearing claims.
-- `completeness`: a named owner when coverage shape is `open-discovery`, when the work-list is sampled or capped, or when the Mode skeleton requires a completeness critic.
+  - Research satisfies it through independent verification of each load-bearing claim.
+- `completeness`: a named owner when coverage shape is `open-discovery`, when the work-list is sampled or capped, or when the Mode skeleton requires a completeness critic. Completeness judges returned evidence against the inventory or declared unit list, not a planned roster alone.
 
 Agent count follows from atomic `WORK_UNITS` plus required skeptic, completeness, critique, and judge lanes — never from probe count alone, and never from a preferred headcount.
 
-Prohibited substitutes: a roster whose rows are all `role: probe` on material-claim or open-discovery work; an empty `VERIFY_MATRIX`; the parent's own self-check standing in for a `skeptic` or `completeness` owner.
+Prohibited substitutes: a roster whose rows are all `role: probe` on material-claim or open-discovery work; an empty `VERIFY_MATRIX`; the parent's own self-check standing in for a `skeptic` or `completeness` owner; one shared verify packet that does not target each material finding or claim.
 
 Incomplete behavior: add the missing named lanes, narrow the objective so material claims are out of scope, or mark the corresponding claims and scope as unverified or incomplete in the final synthesis.
 
@@ -234,11 +235,14 @@ Synthesize one result from sub-agent evidence. The final answer is a synthesis r
 
 The final synthesis must include, in the user's requested format:
 
+- Whether the run is complete or incomplete. Incomplete is valid; a polished clean result over unexamined scope is not.
 - The conclusion, decision, or confirmed findings.
 - The evidence that supports each material claim.
 - Coverage: what units, candidates, sources, or slices were inspected.
 - Verification: what was independently checked, refuted, confirmed, or left unverified. A material claim no independent lane checked enters the final answer only under an explicit `unverified` label — tracing to a probe's returned evidence is not verification.
 - Gaps and limits: skipped scope, caps, sampling, batching, failed agents, uncertainty, and why the team stopped.
+
+Positive absence claims (no issues, safe to proceed, fully covered) require a closed inspect list. Unexamined surface stays in gaps — never folded into a clean conclusion. A write-up that implies full coverage without units and gaps is incomplete.
 
 Resolve conflicts explicitly. Contradictory reports resolve through a narrowed question, one targeted verifier, a focused question, or an unresolved-gap label. Equivalent verifier loops and parent-local investigation are stall signals, not conflict resolution.
 
