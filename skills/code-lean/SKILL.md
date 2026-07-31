@@ -1,6 +1,6 @@
 ---
 name: code-lean
-description: "Force the smallest correct coding change. Use when the user asks for Code Lean, lean code, minimal implementation, YAGNI, less boilerplate, fewer dependencies, simpler code, deleting bloat, or avoiding over-engineering. Also use before implementing broad or speculative coding requests where a smaller existing capability may satisfy the goal. Near miss: use code-review to judge a diff or plan as a whole rather than only what can be cut from it."
+description: "Force the smallest correct coding change. Use when the user asks for Code Lean, lean code, minimal implementation, YAGNI, less boilerplate, fewer dependencies, simpler code, deleting bloat, or avoiding over-engineering. Also use before implementing broad or speculative coding requests where a smaller existing capability may satisfy the goal. Near miss: not for exhaustive correctness, contract, or design-direction review of a whole diff or plan — only for cutting removable complexity and owned surface."
 ---
 
 # Code Lean
