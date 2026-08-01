@@ -1,9 +1,9 @@
 ---
-name: role-mining
+name: agent-role-mining
 description: 从本机 Claude Code / Grok 历史会话逆向工程用户的「隐性角色与决策人格」，跑完整五阶段管道（发现→清洗过滤→信号提取→角色推断→回放验证），最终生成 roles.md 供 multi-agent 落地。当用户提到 role mining、角色挖掘、逆向工程自己的角色/决策人格、从 session 数据生成或更新 roles.md、重跑/重放 agent-analysis 管道、分析自己的会话历史提炼工作模式时使用；即使用户只说「重新跑一遍分析」「用最新 session 更新角色」也应使用本 skill。
 ---
 
-# Role Mining
+# Agent Role Mining
 
 从真实会话行为逆向用户的角色分工与决策人格：人很难凭空列出自己身上的角色，但会话史里有他主动发起了什么、怎么纠正 agent、什么必须亲自拍板。工具 stdout / 文件全文几乎不含人格信息，管道会大幅压缩它们，完整保留用户原话。
 
