@@ -93,7 +93,9 @@ const fileNameFor = (e: { source: string; id: string }) => `${e.source}_${e.id}.
 
 // ---------- commands ----------
 function cmdInit() {
-  const workdir = flag("workdir") || process.cwd();
+  // Default keeps run artifacts inside the project the user is working in,
+  // under a namespaced folder that is easy to gitignore or clean up.
+  const workdir = flag("workdir") || path.join(process.cwd(), ".artifacts", "agent-role-mining");
   const label = flag("label") || "run";
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 13).replace("T", "-");
   const run = path.join(path.resolve(workdir), "runs", `${stamp}-${label}`);

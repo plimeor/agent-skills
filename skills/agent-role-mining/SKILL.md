@@ -40,8 +40,10 @@ description: 从本机 Claude Code / Grok 历史会话逆向工程用户的「�
 ### Stage 0 — 初始化
 
 ```bash
-bun scripts/pipeline.ts init --workdir <目标目录> --label <名字>   # 打印 run 目录
+bun scripts/pipeline.ts init --label <名字>   # 打印 run 目录
 ```
+
+workdir 默认为 `<当前目录>/.artifacts/agent-role-mining/`（不存在会自动创建）；用户点名了位置才传 `--workdir` 覆盖。跑完第一步要把 run 目录路径告诉用户。
 
 默认 config 排除 `english-coach` 项目、丢低干预、中干预主题白名单 `review/bugfix/migration/i18n-docs`、cleaned ≥20KB。用户域不同就先改 `config.json` 再继续——阈值是启发式，不是真理。
 
