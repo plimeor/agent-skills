@@ -531,6 +531,16 @@ function cmdLintRoles() {
     if (n > 6) v.push({ file: "roles.md", line: bIdx + 1, rule: "boundary-block-too-long", text: `${n} lines, limit is 6` });
   }
 
+  // Spec section (stage3 §3D): mountable short surface; progressive disclosure
+  if (!/^##\s+(Spec|规格)\b/m.test(roles)) {
+    v.push({ file: "roles.md", line: 0, rule: "missing-spec-section", text: "no ## Spec (or ## 规格) section — mount surface required" });
+  }
+
+  // Boundary sources table (stage3 §3C′): dual-source census/friction audit
+  if (method && !/^##\s+(Boundary sources|边界来源)\b/m.test(method)) {
+    v.push({ file: "roles-method.md", line: 0, rule: "missing-boundary-sources", text: "no ## Boundary sources (or ## 边界来源) table" });
+  }
+
   // Quote join (stage3 §3.0): every quote in roles.md must resolve to a row in the evidence table
   const norm = (s: string) => s.replace(/[\s`｜|\\『』「」…\.·]/g, "");
   const unjoined: string[] = [];

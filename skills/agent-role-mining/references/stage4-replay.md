@@ -55,7 +55,7 @@ Harness-agnostic. No multi-agent runtime required.
 
 For each selected session:
 
-1. Read only what a deployer would mount: role list, **triggers**, **absorbs**, **escalates**, shared constraints. Do not require prompt skeletons or orchestration sections.
+1. Read only **`roles.md` Spec** (role cards: **triggers**, **absorbs**, **escalates**, phase, optional shared constraints in Spec). Do not require Depth, skeletons, or orchestration. If Spec is missing, Stage 3 is incomplete — stop.
 2. From the session's **INITIAL** user turn (and phase signals visible without later turns), judge:
    - Which role(s) **should trigger**
    - Which later Owner interventions (from full `user-turns/`) fall under **escalate** vs **absorb** under the catalog

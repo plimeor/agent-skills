@@ -1,34 +1,44 @@
 # Stage 3 — Role Inference
 
 Input: `signals/` + `signals-manifest.md` + `census/census.md` + the open-schema control conclusions in `signals/_open-schema/`.
-Output: `roles.md` (portable role catalog) + `roles-method.md` (method, residuals, limitations, validation record) + `roles-evidence.md` (citation provenance).
+Output: `roles.md` (portable role catalog: **Spec** + optional **Depth**) + `roles-method.md` (method, residuals, limitations, validation record) + `roles-evidence.md` (citation provenance).
 
 ## What Stage 3 must produce
 
-From first principles: the user will mount this catalog on **their** harness. Most harnesses are single-agent or loosely routed. Multi-agent dialogue in one session is ideal and rare. So Stage 3 optimizes for **transferable judgment specs**, not for a runtime.
+From first principles: the user will mount this catalog on **their** harness. Most harnesses are single-agent or loosely routed. Multi-agent dialogue in one session is ideal and rare. Context is scarce. So Stage 3 optimizes for **transferable judgment specs that fit in a small mount surface**, not for a long essay or a runtime.
 
-**Acceptance (catalog completeness).** Every role in `roles.md` must carry all of:
+### Two inputs for every boundary (dual-source)
 
-| Field | Question it answers |
-|---|---|
-| **Name + core responsibility** | What judgment function is this? |
-| **Trigger** | When does it engage? (intent type, phase signal, or user-visible switch — operational, not vibes) |
-| **Absorbs autonomously** | What may it finish without the Owner? |
-| **Escalates to Owner** | What must stop and ask the human? |
-| **Phase type** | `batch` or `dialogic` |
-| **Success criteria** | How would you know this role did its job? |
-| **≥2 corpus examples** | Quotes only; provenance in `roles-evidence.md` |
+Judgment has two complementary records in the corpus:
 
-Optional (progressive disclosure — include when they help a deployer who already has a capable harness; never as a substitute for the table above):
+| Source | What it shows | Default field it fills |
+|---|---|---|
+| **Friction** (high-intervention signals, anger points, corrections) | What the Owner seizes, rejects, or insists on | **Escalates to Owner** |
+| **Census** (low-intervention / successfully delegated sessions) | What the Owner already lets finish without them | **Absorbs autonomously** |
 
-- Hand-off to another role (if the corpus shows a stable switch)
-- Short prompt skeleton for that role alone
-- Collaboration order among roles
-- Shared constraints block
+Using only friction produces a control-biased catalog (everything escalates). Using only census produces a naive catalog (everything absorbs). **Both sources enter Stage 3 at equal rank** — not "friction first, census if time remains."
 
-**Prohibited substitutes for acceptance:** a role list with responsibilities but no triggers; triggers that only name a tool or repo; "run the multi-agent pipeline" as the only usage path; orchestration prose that outgrows the boundary fields.
+**Dual-source gate.** When `census/census.md` lists repeated delegated task types, absorb clauses must draw on that list (source `census` or `both`). Escalate clauses must draw on friction/anger/must-rule signals (source `friction` or `both`). Record the mapping in `roles-method.md` under **Boundary sources** (see §3C′). If the census is empty, state that once and allow absorb lines from other evidence with an explicit waiver — silence is not a waiver.
 
-Gate: if any kept role lacks trigger, absorbs, or escalates, Stage 3 is incomplete — do not proceed to Stage 4 and do not present the catalog as deployable.
+**Prohibited substitutes:** absorb/escalate written only from high-friction sessions while census has matching task types; census summary present in the run but never cited in any absorb line; "relatively tolerated" without census support (see §3A).
+
+### Acceptance fields (every role)
+
+| Field | Question it answers | Lives in |
+|---|---|---|
+| **Name + core responsibility** | What judgment function is this? | **Spec** |
+| **Trigger** | When does it engage? (intent, phase signal, or user-visible switch — operational, not vibes) | **Spec** |
+| **Absorbs autonomously** | What may it finish without the Owner? | **Spec** |
+| **Escalates to Owner** | What must stop and ask the human? | **Spec** |
+| **Phase type** | `batch` or `dialogic` | **Spec** |
+| **Success criteria** | How would you know this role did its job? | **Spec** |
+| **≥2 corpus examples** | Quotes only; provenance in `roles-evidence.md` | **Depth** (or Spec if short) |
+
+Optional depth (never a substitute for Spec fields): hand-off to another role, short prompt skeleton, collaboration order, long shared-constraint essays.
+
+**Prohibited substitutes for acceptance:** a role list with responsibilities but no triggers; triggers that only name a tool or repo; "run the multi-agent pipeline" as the only usage path; orchestration or four-list narrative that outgrows Spec; Spec that is incomplete unless the reader opens Depth.
+
+**Gates before Stage 4:** every role has Spec fields complete; dual-source gate satisfied; `## Spec` present and mountable alone. Incomplete → do not present as deployable.
 
 ## 3.0 The deliverable must be clean: no IDs, no turn numbers in `roles.md`
 
@@ -64,87 +74,134 @@ Forbidden forms: "formerly X, now Y", "originally named …", "removed", "deprec
 
 ## 3A. Decision and friction pattern extraction
 
-From the signals, first derive four lists (each entry backed by ≥1 session):
+From the **signals**, derive four lists (each entry backed by ≥1 session). These lists feed Spec boundaries and live in **Depth**, not in Spec.
 
-1. **Decision types the Owner must rule on personally** (with the archetypal forms found in the corpus)
-2. **Questions that drain judgment the most / trigger irritation** (anger points)
-3. **High-frequency correction directions toward the agent** (wanted / unwanted / relatively tolerated — "relatively tolerated" must also cite delegation evidence from `census.md`, and may not come only from high-friction sessions)
-4. **Stable phase transitions** (the recurring in-session phase sequence and the hard signals that mark each switch)
+1. **Decision types the Owner must rule on personally** (archetypal forms from the corpus) → feeds **escalate**
+2. **Questions that drain judgment / trigger irritation** (anger points) → feeds **escalate**
+3. **High-frequency correction directions** (wanted / unwanted / relatively tolerated) — "relatively tolerated" **must** cite `census.md` task types and may not come only from high-friction sessions
+4. **Stable phase transitions** (recurring phase sequence and hard switch signals) → feeds **trigger**
+
+In parallel, read `census/census.md` and extract the **delegation whitelist**: task types repeatedly completed with low Owner intervention. That list feeds **absorb** at the same priority as lists 1–2 feed escalate. Do not finish clustering before this read.
 
 ## 3B. Cluster into roles
 
-- **Let the data set the count.** No target range: a stated range becomes a target, and clustering converges on it instead of on the evidence. If the corpus supports three roles, write three; if it supports nine, write nine. Residual accounting (§3C) forces honesty, not a bound.
+- **Let the data set the count.** No target range: a stated range becomes a target, and clustering converges on it instead of on the evidence. Residual accounting (§3C) forces honesty, not a bound.
 - A role is a **recurring judgment function**, not a pipeline station name and not the proper name of a repository or tool.
-- Fill every acceptance field in the table above for each role.
-- **The Owner (the user) is always outside the system**: irreversible preferences, authority conflicts, scope, public-facing form, and sign-off belong to the human and are not made into an agent.
+- Fill every Spec acceptance field for each role. Write absorb and escalate **in the same pass**, each tied to its source (census vs friction).
+- **The Owner is always outside the system**: irreversible preferences, authority conflicts, scope, public-facing form, and sign-off are not agent roles.
 - **Phase-type annotation (mandatory)**:
   - **Batch:** compress Owner turns (one decision packet, one full checklist).
-  - **Dialogic:** higher quality per turn, not fewer turns — survive chained interrogation, demos, self-consistency, interruptibility. Design/shaping roles are almost always dialogic; writing one as "one-pass proposal" fails on contact with real work.
+  - **Dialogic:** higher quality per turn, not fewer turns — chained interrogation, demos, self-consistency, interruptibility. Design/shaping roles are almost always dialogic; "one-pass proposal" fails on contact with real work.
 
 ## 3C. Residual accounting (mandatory, never skipped)
 
-After clustering, walk **every high-value signal** once more: each session either maps to ≥1 role (as a role example or trigger) or goes into the residual list in `roles-method.md`:
+After clustering, walk **every high-value signal** once more: each session either maps to ≥1 role or goes into the residual list in `roles-method.md`:
 
 ```markdown
 ## Residuals (high-value, unbucketed)
 | Judgment axis involved | Why no existing role holds it | Disposition |
 ```
 
-The residual table carries no session IDs (§3.0) — which session lands on which residual axis is recorded in `roles-evidence.md`.
+The residual table carries no session IDs (§3.0) — session→axis mapping is in `roles-evidence.md`.
 
 - ≥3 sessions residual on the same judgment axis → **candidate new role**; decide explicitly: add / extend / out-of-domain with reason.
-- Divergence axes from the open-schema control (stage2 §2B) also enter this table.
+- Open-schema divergence axes (stage2 §2B) also enter this table.
 - Silently discarding non-conforming high-value samples is a fidelity defect.
 
-## 3D. Three artifacts, split by reader
+### 3C′. Boundary sources table (mandatory in `roles-method.md`)
 
-**`roles.md` carries only what a deployer needs.** Methodology, audit chains, and validation records stay out.
+After Spec boundaries are drafted, record every absorb and escalate clause:
 
-Test: **would someone mounting these roles do the wrong thing without this section?** Yes → keep it in `roles.md`. No → move it out.
+```markdown
+## Boundary sources
+| Role | Direction | Clause (short) | Source | Backing |
+|---|---|---|---|---|
+| … | absorb \| escalate | … | census \| friction \| both \| waiver | census task-type or signal pattern |
+```
+
+- **Source = census** only for absorb (or both). **Source = friction** only for escalate (or both).
+- If census is empty: one row or note `census: empty — absorb waiver: <reason>`.
+- Dual-source gate fails if census has repeated task types and no absorb row cites `census` or `both`.
+- This table is audit-only — it does not enter `roles.md` Spec.
+
+## 3D. Artifacts and progressive disclosure
+
+**`roles.md` is what a deployer mounts. Method and evidence are audit.**
+
+Test: **would someone mounting these roles do the wrong thing without this section?** Yes → `roles.md`. No → method/evidence.
 
 | Artifact | Contents | Reader |
 |------|------|------|
-| **`roles.md`** | Known-limits; four lists (3A); raw roles (acceptance fields); optional generic roles; shared constraints; **deployment menu**; optional skeletons / collaboration hints | People who will **use** these roles |
-| **`roles-method.md`** | Evidence tiers, biases, decision-persona summary, residuals (3C), distillation table, raw→generic mapping, coverage (3E), Stage 4 validation record | People who will **audit** these roles |
-| **`roles-evidence.md`** | Session + turn for every citation (§3.0) | People who will **check** provenance |
+| **`roles.md` → Spec** | Known-limits; deployment menu; role cards with Spec fields only; optional one-line shared constraints | Default **mount** surface |
+| **`roles.md` → Depth** | Four lists (3A); examples/quotes; Part 2 generic roles; skeletons; collaboration hints | Humans or rich harnesses |
+| **`roles-method.md`** | Evidence tiers, biases, persona summary, residuals, **Boundary sources**, distillation, coverage, Stage 4 record | **Audit** |
+| **`roles-evidence.md`** | Session + turn for every citation | **Provenance** |
 
-### Progressive disclosure inside `roles.md`
+### Spec vs Depth (mandatory shape of `roles.md`)
 
-Put load-bearing content first; depth only when a harness can use it.
+Context is general across many requests; it cannot be a dump of every practice. Prefer a small interface the model or human can mount, and load depth only when needed.
 
-1. **Always:** known-limits → four lists → each role's acceptance fields (trigger, absorb, escalate, phase).
-2. **When useful:** shared constraints; hand-off rules; one short skeleton per role.
-3. **Never required for acceptance:** multi-agent session wiring, product-specific tool recipes, long orchestration playbooks.
-
-Prefer **interfaces over examples**: a clear trigger and boundary beats three narrative walkthroughs of a fictional multi-agent run. Prefer **judgment over stacked rules**: state the real escalate/absorb line once; do not restate it as five overlapping "must / never" paragraphs that fight each other.
-
-### Two layers (Part 1 / Part 2)
-
-- **Part 1 (descriptive):** raw roles from this corpus. May couple to dominant scenarios; naming may follow corpus stations. Contains the four lists of 3A plus role definitions with full acceptance fields.
-- **Part 2 (normative, optional compression):** generic roles across domains. Each generic role points back to raw roles (one-to-many). Domain-neutral names; no repository proper names.
-- Merging two raw roles requires a stated basis (usually "same type of question escalates to the human") — basis in `roles.md`, mapping table in `roles-method.md`.
-- Evidence-tier declaration (L0 → L1 → L2–3 → L4 → L5) lives in `roles-method.md`.
-
-### Deployment menu (mandatory short section in `roles.md`)
-
-State that mounting is user-owned. Give a menu, not a single recipe:
+Required outline:
 
 ```markdown
-## Deployment
+**Known limits** (basis in `roles-method.md`)
+- …
+
+## Spec
+
+Self-contained mount surface. Do not require Depth to apply triggers or boundaries.
+
+### Deployment
+(menu table — see below)
+
+### Roles
+
+#### <Role name>
+- **Responsibility:** …
+- **Trigger:** …
+- **Absorbs:** …          # dual-source: census-backed when census exists
+- **Escalates:** …        # dual-source: friction-backed
+- **Phase:** batch | dialogic
+- **Success:** …
+
+## Depth
+
+### Decision patterns
+(four lists from 3A)
+
+### Role detail
+(examples with 「quotes」, hand-offs, optional skeletons)
+
+### Generic roles (Part 2, if any)
+```
+
+Rules:
+
+1. **Spec is mountable alone.** A reader who stops after `## Spec` has every trigger and boundary.
+2. **Depth never invents new escalate/absorb axes** that Spec lacks. Depth may illustrate and qualify; Spec is authoritative for Stage 4 and for deployment.
+3. **Prefer interfaces over examples** in Spec: operational trigger + two boundary lines beat multi-paragraph stories.
+4. **Prefer judgment over stacked rules:** one clear escalate line, not five overlapping must/never paragraphs.
+5. **Part 1 raw roles** fill Spec (+ Depth detail). **Part 2 generic roles** are optional compression in Depth (or a short Spec subsection if the user deploys only generics); each generic points back to raw roles. Mapping table in method.
+6. Merging two raw roles requires a stated basis in Spec or Depth; mapping table in method.
+
+### Deployment menu (inside Spec)
+
+```markdown
+### Deployment
 
 This catalog is harness-agnostic. Pick a mount that fits your tools:
 
 | Option | Use when |
 |---|---|
-| Single agent + shared constraints (+ role triggers as guidance) | Default for most current tools |
-| One role definition selected per task | You can route or paste one role at a time |
+| Single agent + Spec shared constraints and role triggers | Default for most current tools |
+| One role card from Spec selected per task | You can route or paste one role at a time |
 | Separate agents or skills per role | Your harness isolates roles cleanly |
-| Multi-agent dialogue in one session | Only if your harness supports it — not required by this catalog |
+| Multi-agent dialogue in one session | Only if your harness supports it — not required |
 
-Mount the **triggers and boundaries** first. Skeletons and collaboration order are optional depth for harnesses that can use them.
+Mount **Spec** first. Depth is optional.
 ```
 
-Do not prescribe a named product's tool graph. Do not imply that multi-agent same-session dialogue is the intended or validated deployment.
+Do not prescribe a named product's tool graph.
 
 ## 3E. Coverage and limitations (written in `roles-method.md`)
 
@@ -183,10 +240,19 @@ Every rule above is the kind an LLM drops, including the model that wrote the ru
 | `dangling-section` | — | A `§12` reference survives an artifact split |
 | `subsection-parent-mismatch` | — | `### 11.1` under `## §7` |
 | Known-limits block | §3E | Missing, or grown past 6 lines |
+| `missing-spec-section` | §3D | No `## Spec` / `## 规格` |
+| `missing-boundary-sources` | §3C′ | No Boundary sources table in method |
 | Quote join | §3.0 | Quote in `roles.md` with no row in `roles-evidence.md` |
 
-Also enforce **catalog acceptance** by inspection before Stage 4: every role has trigger, absorbs, escalates, phase type. Missing fields → incomplete, not "good enough prose".
+Also enforce by inspection before Stage 4 (not all are scriptable):
+
+| Check | Fail if |
+|---|---|
+| Spec fields | Any role lacks trigger, absorbs, escalates, or phase |
+| Spec mountable alone | Applying boundaries requires reading Depth |
+| Dual-source | Census has repeated task types but Boundary sources has no census/both absorb rows |
+| Boundary sources table | Missing from `roles-method.md` |
 
 Results land in `inventory/lint-roles.json`. The only false positives from `「」` as emphasis — fix the writing, not the check.
 
-Once lint passes and acceptance fields are complete, proceed to Stage 4 boundary validation (`references/stage4-replay.md`). Until the primary path has run, the catalog is taxonomy, not validated design.
+Once lint passes and the gates above hold, proceed to Stage 4 (`references/stage4-replay.md`). Until the primary path has run, the catalog is taxonomy, not validated design. Stage 4 validators mount **Spec** only unless a Depth-only clause is under test.

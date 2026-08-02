@@ -48,13 +48,21 @@ The template above presupposes an "adjudicating Owner" frame (feedback / rejecti
 
 ## 2C. Delegation census (the excluded low-intervention sessions)
 
-Low-intervention sessions dropped by the funnel are positive evidence of **what can already be safely delegated** — looking only at friction material biases the role definitions toward control. Annotate each session in `census/census-list.json` **lightly** (no full signal extraction; three lines each):
+Low-intervention sessions dropped by the funnel are positive evidence of **what can already be safely delegated**. Friction signals show what the Owner seizes; census shows what they already release. **Stage 3 treats both at equal rank** — census is not a footnote after role clustering.
+
+Annotate each session in `census/census-list.json` **lightly** (no full signal extraction; three lines each):
 
 ```markdown
 - `<file>`: task type=<one line>; outcome=completed|abandoned|n/a; closing=<user's last line, or none>
 ```
 
-Aggregate into `census/census.md`, ending with a summary of **which task types were repeatedly delegated successfully**. That list is the main evidence source for each role's "absorbs autonomously" boundary and for the Act delegation whitelist in Stage 3.
+Aggregate into `census/census.md`, ending with:
+
+1. **Delegation whitelist** — task types repeatedly completed with low intervention (this is co-equal input to Stage 3 **absorb** lines, not optional color).
+2. Counts: how many census sessions, how many distinct task types, which types recur (≥2 sessions).
+3. Explicit note if the census is empty or too thin to support absorb claims (Stage 3 must then waive dual-source with a reason).
+
+Do not skip census aggregation because kept-set signal extraction is large. A roles draft whose absorb lines ignore a non-empty census fails Stage 3's dual-source gate.
 
 ## 2D. signals-manifest.md
 

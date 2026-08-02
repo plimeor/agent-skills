@@ -30,20 +30,25 @@ A run is successful when `roles.md` is a catalog a stranger could mount on *thei
 
 1. **Role list** — recurring judgment functions, count set by the data (via residual accounting), not by a target range.
 2. **Trigger / definition** — for each role: when it engages (intent, phase signal, or user-visible switch), what it is for, batch vs dialogic.
-3. **Boundaries** — what it absorbs alone, what it escalates to the Owner (and, if useful, when another role should take over). Owner stays outside the system.
-4. **Boundary validation** — triggers and boundaries have been checked against real sessions (Stage 4 primary path). Until then, known-limits says so.
+3. **Boundaries** — what it absorbs alone, what it escalates to the Owner (and, if useful, when another role should take over). Owner stays outside the system. Absorb and escalate are dual-sourced (census + friction) when both exist.
+4. **Mountable Spec** — a stranger can apply triggers and boundaries from Spec alone without reading Depth.
+5. **Boundary validation** — Spec triggers and boundaries have been checked against real sessions (Stage 4 primary path). Until then, known-limits says so.
 
-**Not success criteria:** multi-agent same-session chatter works; a full role pipeline was instantiated; prompt skeletons run under a particular CLI.
+**Not success criteria:** multi-agent same-session chatter works; a full role pipeline was instantiated; prompt skeletons run under a particular CLI; Depth is long and polished.
 
-Weak substitutes that do **not** satisfy success: a taxonomy without triggers; roles named after repos or pipeline stations; "deploy by running N subagents" as the only usage story; pipeline-replay metrics offered as proof the catalog is valid when boundary check was skipped.
+Weak substitutes that do **not** satisfy success: a taxonomy without triggers; roles named after repos or pipeline stations; "deploy by running N subagents" as the only usage story; pipeline-replay metrics as proof when boundary check was skipped; absorb/escalate written only from friction while census has repeated delegated task types; Spec incomplete unless Depth is read.
 
 ## Deliverable
 
-- `roles.md` — the catalog (and only what a deployer needs to use it)
-- `roles-method.md` — method, residuals, limits, validation record
+- `roles.md` — the catalog, split for progressive disclosure:
+  - **Spec** (required mount surface): known-limits, deployment menu, each role's trigger + absorb + escalate + phase + success
+  - **Depth** (optional): decision-pattern lists, quotes/examples, Part 2 generic roles, skeletons, collaboration hints
+- `roles-method.md` — method, residuals, **boundary sources** (census vs friction), limits, validation record
 - `roles-evidence.md` — quote → session/turn provenance
 
-Two layers inside `roles.md` (see `stage3-roles.md`): Part 1 corpus-faithful raw roles; Part 2 optional cross-domain generic roles. Progressive disclosure: **boundaries and triggers first**; long skeletons and orchestration hints only if they help a deployer who already has a harness that can use them.
+**Spec must be mountable alone.** Depth must not invent new escalate/absorb axes missing from Spec. Part 1 raw roles fill Spec; Part 2 is optional compression in Depth (see `stage3-roles.md`).
+
+**Dual-source boundaries:** absorb lines are co-equal with census (what was already delegated); escalate lines with friction signals (what the Owner seized). A catalog written only from high-friction sessions is control-biased and incomplete when census evidence exists.
 
 ## Deployment (user-owned)
 
