@@ -566,7 +566,8 @@ function firstUserTurn(run: string, file: string, max = 300): string {
   const p = path.join(run, "cleaned", file);
   if (!fs.existsSync(p)) return "(cleaned file missing)";
   const t = fs.readFileSync(p, "utf8");
-  const m = /\n## \[\d+\] user\n\n([\s\S]*?)(?=\n## \[|\n> |\Z)/.exec(t);
+  // End-of-string with no /m flag: `$` matches EOS (JS has no `\Z` anchor).
+  const m = /\n## \[\d+\] user\n\n([\s\S]*?)(?=\n## \[|\n> |$)/.exec(t);
   const body = (m ? m[1] : "").replace(/\s+/g, " ").trim();
   return body.length > max ? body.slice(0, max) + "…" : body || "(no user turn)";
 }

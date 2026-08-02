@@ -116,14 +116,45 @@ export function summarizeArgs(args: unknown, limits: Limits): string {
   return truncate(JSON.stringify(out), limits.toolArgsMax, "head");
 }
 
+// Session-bootstrap / IDE context blocks that arrive in the user channel.
+// Grok packs these into one opening user turn: user_info, rules, agent_skills, MCP inventory.
+const HARNESS_BLOCK_RE = [
+  /<user_info>[\s\S]*?<\/user_info>/gi,
+  /<rules\b[^>]*>[\s\S]*?<\/rules>/gi,
+  /<agent_skills\b[^>]*>[\s\S]*?<\/agent_skills>/gi,
+  /<mcp_file_system\b[^>]*>[\s\S]*?<\/mcp_file_system>/gi,
+  // Hyphen and underscore forms both appear in the wild.
+  /<system[-_]reminder>[\s\S]*?<\/system[-_]reminder>/gi,
+  /<git_status>[\s\S]*?<\/git_status>/gi,
+  /<skill_information>[\s\S]*?<\/skill_information>/gi,
+  /<local-command-caveat>[\s\S]*?<\/local-command-caveat>/gi,
+];
+
+function stripHarnessBlocks(text: string): string {
+  let t = text;
+  for (const re of HARNESS_BLOCK_RE) t = t.replace(re, "");
+  return t.trim();
+}
+
 // Harness/system noise that must never enter the user channel — it carries no
 // human intent and would poison intervention counts and signal extraction.
 export function isNoiseUserText(text: string): boolean {
   if (!text) return true;
   const t = text.trim();
-  if (t.startsWith("<system-reminder>") && !t.includes("<user_query>")) return true;
+  if (/^<system[-_]reminder>/i.test(t) && !t.includes("<user_query>")) return true;
   if (t.startsWith("You are Grok") || t.startsWith("You are Claude")) return true;
-  if (t.includes("<user_info>") && !t.includes("<user_query>") && t.length < 2000) return true;
+  // Opening session bootstrap: starts with environment/rules/skills dump, no real query wrapper.
+  // The human turn follows as a later user message; counting the dump inflates intervention.
+  if (!t.includes("<user_query>") && (
+    t.startsWith("<user_info>") ||
+    /^<rules\b/i.test(t) ||
+    t.startsWith("<agent_skills>")
+  )) {
+    const rest = stripHarnessBlocks(t);
+    if (!rest) return true;
+    // Residual machine lines that sit outside the closed tags (tool-availability notices).
+    if (/^You don'?t have tools\b/i.test(rest)) return true;
+  }
   if (t.includes("<teammate-message") || t.includes("Another Claude session sent a message")) return true;
   if (t.includes("<agent-message") && !t.includes("<user_query>")) return true;
   if (/^A background workflow stopped/i.test(t)) return true;
@@ -156,11 +187,8 @@ export function extractUserText(text: string): string {
   if (!text) return "";
   const m = text.match(/<user_query>\s*([\s\S]*?)\s*<\/user_query>/i);
   if (m) return m[1].trim();
-  const t = text
-    .replace(/<local-command-caveat>[\s\S]*?<\/local-command-caveat>/gi, "")
-    .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/gi, "")
-    .replace(/<user_info>[\s\S]*?<\/user_info>/gi, "")
-    .replace(/<skill_information>[\s\S]*?<\/skill_information>/gi, "")
+  const t = stripHarnessBlocks(text)
+    .replace(/<(command-name|command-message|command-args|local-command-stdout)>[\s\S]*?<\/\1>/gi, "")
     .replace(/\[Full request offloaded to file\][\s\S]*?(?=\n\n|$)/g, "[request offloaded to file]")
     .trim();
   return t || text.trim();
