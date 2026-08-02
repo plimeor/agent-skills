@@ -126,7 +126,7 @@ When the user asks to eval create-crew or an **installed crew** (“用当前安
 - Tool arguments and results stay in `tool-details/`; cleaned trajectories keep tool name + turn only.
 - Strip harness injection on the user channel; list repeated openings in `inventory/injected-turns.md`.
 - Judge feedback by intent after stripping pastes.
-- Drop self-referential pipeline-design sessions above marker threshold; list hits in `inventory/self-referential.md`.
+- Drop sessions that invoke or polish create-crew (marker `create-crew`; see `config.json` `filter.selfReference`); list hits in `inventory/self-referential.md`.
 - Default filters are behavioural only: no topic filter, no size floor, no project-name exclusion.
 
 Before Stage 2:

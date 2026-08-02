@@ -37,13 +37,15 @@ interface Config {
     // by two orders of magnitude between sessions and says nothing about signal density.
     minUserTextBytes: number;
     dropLowIntervention: boolean;
-    // Corpus self-reference filtering: keep sessions where the user was designing or
-    // evaluating create-crew / crew packaging itself out of the analysis set. Without it
-    // the pipeline rediscovers its own framework inside its own output.
+    // Drop sessions that invoke or polish create-crew itself. Without it, Stage 3
+    // re-ingests prior crew packages and design talk about this pipeline — not real
+    // work behavior.
     selfReference: {
       enabled: boolean;
+      // Product identity only (`create-crew`). Not section headers, abstract concepts,
+      // or retired names — those either appear in agent prose or are obsolete.
       markers: string[];       // case-insensitive; scored by distinct marker types hit
-      minDistinctHits: number; // distinct markers required to judge a session self-referential
+      minDistinctHits: number; // 1 is correct when every marker is product-specific
     };
   };
 }
@@ -83,11 +85,8 @@ const DEFAULT_CONFIG = (): Config => ({
     dropLowIntervention: true,
     selfReference: {
       enabled: true,
-      markers: [
-        "create-crew", "crew skill", "Evaluation combos", "Boundary sources",
-        "signals-manifest", "决策人格", "角色挖掘",
-      ],
-      minDistinctHits: 2,
+      markers: ["create-crew"],
+      minDistinctHits: 1,
     },
   },
 });
@@ -209,16 +208,20 @@ function cmdFilter() {
   // Self-reference detection lives in filter, not normalize, for two reasons:
   //   1. an existing run gains the filter without re-running the cleaning pass;
   //   2. markers are part of config, so changing them should only require re-running filter.
-  // Hits are cached into session_stats.json so re-runs do not recompute.
-  const sr = cfg.filter.selfReference ?? { enabled: false, markers: [], minDistinctHits: 2 };
+  // Cache is keyed by the marker list; a config edit invalidates prior hits.
+  const sr = cfg.filter.selfReference ?? { enabled: false, markers: [], minDistinctHits: 1 };
+  const srKey = [...sr.markers].map((m) => m.toLowerCase()).sort().join("\0");
   const srHits = (file: string): string[] => {
-    const cached = (statsMap[file] as any)?.selfRefHits;
-    if (Array.isArray(cached)) return cached;
+    const st = statsMap[file] as any;
+    if (st && st.selfRefKey === srKey && Array.isArray(st.selfRefHits)) return st.selfRefHits as string[];
     const p = path.join(run, "cleaned", file);
     if (!fs.existsSync(p)) return [];
     const text = fs.readFileSync(p, "utf8").toLowerCase();
     const hits = sr.markers.filter((m) => text.includes(m.toLowerCase()));
-    if (statsMap[file]) (statsMap[file] as any).selfRefHits = hits;
+    if (st) {
+      st.selfRefHits = hits;
+      st.selfRefKey = srKey;
+    }
     return hits;
   };
 
@@ -264,10 +267,9 @@ function cmdFilter() {
       (a, b) => (b.selfRefHits!.length - a.selfRefHits!.length) || a.file.localeCompare(b.file));
     const lines = [
       "# Corpus Self-Reference Audit", "",
-      "When this pipeline's own artifact names and concepts appear in the corpus, that session is",
-      "**the user designing or evaluating this pipeline itself**. Extracting signals from such a",
-      "session feeds the previous round's conclusions back into this one — part of the clustered",
-      "roles then comes from the user's existing thinking about roles rather than from behavior.", "",
+      "Sessions that **invoke or polish create-crew** are dropped so Stage 3 does not re-ingest",
+      "prior crew packages and design talk about this pipeline. Marker is product identity only",
+      "(`create-crew`) — not section headers, abstract concepts, or retired names.", "",
       `**Threshold**: >= ${sr.minDistinctHits} distinct markers hit is dropped (reason=\`self-referential\`).`,
       `**Markers**: ${sr.markers.join(", ")}`, "",
       `| Session | Hits | Markers hit | Status |`, `|---------|-----:|-------------|--------|`,
