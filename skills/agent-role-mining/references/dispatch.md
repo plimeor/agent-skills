@@ -2,13 +2,13 @@
 
 Stage 2 signal extraction, Stage 4 replay, and Stage 4 scoring are all "one instruction × N sessions" batch LLM work. The executor can be a Task subagent or an external CLI (Grok, Codex, …). **The rules below are executor-agnostic**; Grok-CLI-specific traps are in the appendix.
 
-Why this file exists: every trap below was rediscovered the hard way during a real run, cost 15–40 minutes each, and every one of them disguises itself as either "the model isn't capable" or "the network flaked."
+Every trap below disguises itself as either "the model isn't capable" or "the network flaked". Frequencies and runtimes are in `findings.md`.
 
 ## D1. The success check must sit on the actual payload
 
 **The most expensive failure class: the signal you check for success and the thing you actually wanted are not the same object.**
 
-Observed twice in one run — the dispatch script judged success by "did the target `.md` land on disk", while the structured output (the real scoring data) went to stdout. The model returned the JSON and skipped writing the file, so it was recorded as FAIL while the data sat intact in `.raw`. The mirror case happens just as easily: file written, structured output empty.
+A dispatcher that judges success by "did the report file land on disk" records a FAIL whenever the model returns its structured payload and skips the file — and the mirror case, file written and payload empty, happens just as easily.
 
 Rules:
 
@@ -33,7 +33,7 @@ Log failure types separately; the handling differs completely:
 
 ## D3. Set timeouts from the slowest task, not the average
 
-Batch LLM runtimes are long-tailed. Measured: most extractions finish in 6–10 minutes, the tail runs past 40. A 20-minute cap **kills tasks mid-write**, leaving half a file behind and looking like a model-capability problem.
+Batch LLM runtimes are long-tailed, and a cap set near the median **kills tasks mid-write**, leaving half a file behind and looking like a model-capability problem.
 
 - Start the cap at **2× the slowest observed task**, and expose it as an environment variable so retries don't require editing the script.
 - **Always re-dispatch timed-out tasks** — their partial files make "skip if output exists" idempotence report success. Check that output is *complete*, not merely present.
@@ -46,20 +46,11 @@ Give a hard cap in the prompt ("no more than N lines"). It is far cheaper than r
 
 ## D5. Use a work queue, never a barrier
 
-**Keep N tasks in flight and start a replacement the moment any one exits.** Do not dispatch in fixed groups of N and wait for the whole group — a group's wall-clock equals its slowest member, and batch LLM runtimes are long-tailed (D3), so the slowest member is routinely 10× the median.
+**Keep N tasks in flight and start a replacement the moment any one exits.** Never dispatch in fixed groups and wait for each group: a group's wall-clock equals its slowest member, and with long-tailed runtimes (D3) one straggler idles every other slot in its group. Barrier dispatch measured 51% slot-time idle where the concurrency number itself was fine (`findings.md`).
 
-Measured on a real 95-task batch dispatched in barrier groups of 8:
+Concurrency sizing: these are **network-bound API calls, not CPU-bound local work**, so core count is the wrong input. Size against the provider's rate limit.
 
-| | |
-|---|---|
-| Total work | 656 min |
-| Ideal wall-clock at 8-way saturation | 82 min |
-| Actual wall-clock with barriers | **167 min** |
-| **Slot-time idle** | **51%** |
-
-One 3902-second task held seven slots idle for 65 minutes. The concurrency number was not the problem — the barrier was.
-
-Concurrency sizing: these are **network-bound API calls, not CPU-bound local work**, so core count is the wrong input. Size against the provider's rate limit, and confirm before raising — a real batch at 8-way showed zero rate-limit errors and ~59 MB resident per process, so local resources are not the constraint either. Do not infer a limit from failures without reading them: in the same batch, grepping raw output for `429|rate limit|quota` produced 8 apparent hits, **all of them report body text** (a turn number `[423]`, a session ID containing `4296`, the phrase "quota fact") and **not one real rate-limit error**.
+**Never infer a rate limit by grepping raw output.** Searching for `429|rate limit|quota` matches report *content* — turn numbers, session IDs, the word quota in prose — and yields confident false alarms. Read the actual error records instead. The same mistake recurs whenever a search runs over material that discusses the thing being searched for (`findings.md`).
 
 Implementation note: `wait -n` gives a work queue in bash ≥4.3, but macOS ships bash 3.2. `xargs -P N -n 1 <worker-script>` is a genuine work queue everywhere and avoids `export -f` (which also breaks on multibyte arguments — see the appendix).
 

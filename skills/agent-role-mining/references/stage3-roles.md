@@ -83,7 +83,7 @@ Test: **would someone deploying these roles do the wrong thing without this sect
 | **`roles-method.md`** | Evidence tiers, measured biases, decision-persona summary, residual list (3C), distillation-principle table, raw→generic mapping, coverage and limitations (3E), Stage 4 replay results | People who will **audit** these roles |
 | **`roles-evidence.md`** | Session + turn for every citation (§3.0) | People who will **check** provenance |
 
-Skipping this split produces an outcome already observed in practice: the methodology prose outgrows the role definitions themselves — in one real run, "coverage and limitations" took 21% of the file, more than all raw roles combined.
+Without the split the methodology prose outgrows the role definitions themselves (`findings.md`).
 
 `roles.md` still has two layers internally; they coexist and do not override each other:
 
@@ -121,7 +121,7 @@ With no replay run, write "not replay-tested". Leaving it blank is not allowed, 
 bun scripts/pipeline.ts lint-roles --run <run>
 ```
 
-Every rule above is the kind an LLM drops — **in a real run, the rule was written into this document in the morning and violated by its own author the same afternoon**. So a script must sweep the artifacts before delivery; a non-zero exit means the work isn't finished. Checks and the clauses they enforce:
+Every rule above is the kind an LLM drops, including the model that wrote the rule (`findings.md`). A script sweeps the artifacts before delivery; a non-zero exit means the work isn't finished. Checks and the clauses they enforce:
 
 | Check | Clause | Typical miss |
 |---|---|---|

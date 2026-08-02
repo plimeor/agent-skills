@@ -72,8 +72,8 @@ const DEFAULT_CONFIG = (): Config => ({
     claude: { enabled: true, root: path.join(os.homedir(), ".claude", "projects") },
     grok: { enabled: true, root: path.join(os.homedir(), ".grok", "sessions") },
   },
-  // Empty by default and filled in with the user at Stage 0.5 — what counts as an
-  // irrelevant project is a property of the person's machine, not of this pipeline.
+  // Empty by default: what counts as an irrelevant project is a property of the person's
+  // machine, not of this pipeline, and behavioural filters usually already drop it.
   excludeProjectPatterns: [],
   limits: { ...DEFAULT_LIMITS },
   filter: {
@@ -344,7 +344,7 @@ function cmdFilter() {
   })));
 
   console.log(`kept ${kept.length}, dropped ${rows.length - kept.length} → manifest.md`);
-  console.log(`ACTION: run \`preview\` and have the user confirm the funnel before Stage 2.`);
+  console.log(`ACTION: run \`stats\` and \`preview\`, read them, and resolve what you can before Stage 2.`);
 }
 
 function extractUserTurns(cleanedFile: string): { n: number; text: string }[] {
@@ -580,9 +580,9 @@ function cmdPreview() {
   if (!rows.length) die("no manifest.json — run filter first");
 
   const out: string[] = ["# Funnel Preview — confirm before Stage 2", ""];
-  out.push("Thresholds are heuristics. Read the samples below and confirm that what was kept is",
-    "worth analyzing and that nothing valuable was dropped. Adjust `config.json` and re-run",
-    "`filter` until this looks right; changing thresholds after Stage 2 means a new run.", "");
+  out.push("Filters are behavioural, so this is a check rather than an approval gate. Read the samples,",
+    "confirm the kept set is this person working and that nothing valuable was dropped, and adjust",
+    "`config.json` plus a re-run of `filter` if not. Thresholds changed after Stage 2 mean a new run.", "");
 
   out.push("## Active filter settings", "",
     `- Excluded project patterns: ${cfg.excludeProjectPatterns.length ? cfg.excludeProjectPatterns.map((x) => `\`${x}\``).join(", ") : "_(none — confirm this is intended)_"}`,
@@ -625,7 +625,7 @@ function cmdPreview() {
   fs.writeFileSync(dest, out.join("\n") + "\n", "utf8");
   console.log(out.join("\n"));
   console.log(`\n→ ${dest}`);
-  console.log("ACTION: show this to the user and get explicit confirmation before Stage 2.");
+  console.log("ACTION: read this yourself. Escalate to the user only for what you cannot resolve — see SKILL.md.");
 }
 
 // ---------- tool-detail ----------

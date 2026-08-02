@@ -32,7 +32,7 @@ Template for each signal file:
 
 Value-rating criteria (heuristic, not ground truth): signal density, clarity of corrections, completeness of decision rulings. High intervention ≠ high value (example: a research session unrelated to coding can be high-intervention and low-value).
 
-Batching: dispatch subagents in batches of 20–30 sessions in parallel; each subagent receives only a list of cleaned file paths, never another session's conclusions (avoids cross-contamination). Batches this size are affordable because Stage 1 keeps tool arguments and results out of `cleaned/` — a session that used to cost 30 KB now costs closer to 7 KB. If a session genuinely needs its tool detail, the subagent queries `pipeline.ts tool-detail` rather than carrying it by default. Failures must be re-dispatched, never silently missing. Dispatch mechanics — timeouts, success criteria, failure typing — are in `references/dispatch.md`.
+Batching: dispatch subagents in batches of 20–30 sessions in parallel; each subagent receives only a list of cleaned file paths, never another session's conclusions, which would cross-contaminate the extractions. Batches this size are affordable because Stage 1 keeps tool arguments and results out of `cleaned/`; a subagent that genuinely needs tool detail queries `pipeline.ts tool-detail` rather than carrying it by default. Failures must be re-dispatched, never silently missing. Dispatch mechanics — timeouts, success criteria, failure typing — are in `references/dispatch.md`.
 
 ## 2B. Open-schema control group (anti-circularity control)
 
