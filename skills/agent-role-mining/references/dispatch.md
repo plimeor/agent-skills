@@ -1,6 +1,6 @@
 # Batch LLM Dispatch Contract
 
-Stage 2 signal extraction, Stage 4 replay, and Stage 4 scoring are all "one instruction × N sessions" batch LLM work. The executor can be a Task subagent or an external CLI (Grok, Codex, …). **The rules below are executor-agnostic**; Grok-CLI-specific traps are in the appendix.
+Stage 2 signal extraction, Stage 4 boundary validation (primary path and optional pipeline stress test), and Stage 4 scoring are all "one instruction × N sessions" batch LLM work. The executor can be a Task subagent or an external CLI (Grok, Codex, …). **The rules below are executor-agnostic**; Grok-CLI-specific traps are in the appendix.
 
 Every trap below disguises itself as either "the model isn't capable" or "the network flaked".
 

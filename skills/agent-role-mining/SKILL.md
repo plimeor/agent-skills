@@ -1,13 +1,62 @@
 ---
 name: agent-role-mining
-description: Reverse-engineer a user's implicit roles and decision persona from local Claude Code / Grok session history, running the full five-stage pipeline (discover → clean+filter → signal extraction → role inference → replay validation) to produce a roles.md for multi-agent deployment. Use when the user mentions role mining, "角色挖掘", reverse-engineering their own roles or decision persona, generating or updating roles.md from session data, re-running or replaying the agent-analysis pipeline, or analyzing their own session history to distill working patterns; also use for short asks like "rerun the analysis", "重新跑一遍分析", or "update the roles with the latest sessions".
+description: Reverse-engineer a user's implicit roles and decision persona from local Claude Code / Grok session history, running the pipeline (discover → clean+filter → signal extraction → role inference → boundary validation) to produce a portable roles catalog (role list, triggers, absorb/escalate boundaries) for the user to deploy on whatever harness they use. Use when the user mentions role mining, "角色挖掘", reverse-engineering their own roles or decision persona, generating or updating roles.md from session data, re-running the agent-analysis pipeline, or analyzing their own session history to distill working patterns; also use for short asks like "rerun the analysis", "重新跑一遍分析", or "update the roles with the latest sessions".
 ---
 
 # Agent Role Mining
 
-People struggle to enumerate the roles they occupy, but their session history records what they initiated, how they corrected agents, and what they insisted on ruling personally. This pipeline reads that history and infers the division of labour and decision persona behind it.
+People struggle to enumerate the roles they occupy. Their session history already records what they started, how they corrected agents, and what they insisted on ruling themselves. This pipeline reads that history and writes it down as a **portable role catalog**.
 
-Deliverable: a two-layer `roles.md` — Part 1 data-faithful raw roles, Part 2 reusable cross-domain generic roles — plus `roles-method.md` and `roles-evidence.md`.
+## First principles
+
+Three facts fix the design:
+
+1. **The scarce object is judgment, not orchestration.** What transfers across tools is *who does which kind of judgment*, *when that role engages*, and *what must stay with the human*. How many agents sit in one session is a property of the harness, not of the person.
+2. **Most harnesses cannot run multi-agent dialogue in one session.** An ideal harness might; this skill must not require it, measure it, or treat it as proof that the catalog is good.
+3. **Deployment belongs to the user.** Different people paste into `AGENTS.md`, split skills, run one agent, or wire a custom orchestrator. The skill ships **definitions**; the user picks the **mount point**.
+
+From that:
+
+| This skill produces | This skill does not produce |
+|---|---|
+| A role list | A harness implementation |
+| Trigger and phase signals for each role | A mandatory multi-agent runtime |
+| Absorb / escalate-to-Owner boundaries | Proof that a specific tool can host those roles |
+| Optional deployment menu (how a human might mount the catalog) | A single "correct" paste target |
+
+## Success criteria
+
+A run is successful when `roles.md` is a catalog a stranger could mount on *their* tools:
+
+1. **Role list** — recurring judgment functions, count set by the data (via residual accounting), not by a target range.
+2. **Trigger / definition** — for each role: when it engages (intent, phase signal, or user-visible switch), what it is for, batch vs dialogic.
+3. **Boundaries** — what it absorbs alone, what it escalates to the Owner (and, if useful, when another role should take over). Owner stays outside the system.
+4. **Boundary validation** — triggers and boundaries have been checked against real sessions (Stage 4 primary path). Until then, known-limits says so.
+
+**Not success criteria:** multi-agent same-session chatter works; a full role pipeline was instantiated; prompt skeletons run under a particular CLI.
+
+Weak substitutes that do **not** satisfy success: a taxonomy without triggers; roles named after repos or pipeline stations; "deploy by running N subagents" as the only usage story; pipeline-replay metrics offered as proof the catalog is valid when boundary check was skipped.
+
+## Deliverable
+
+- `roles.md` — the catalog (and only what a deployer needs to use it)
+- `roles-method.md` — method, residuals, limits, validation record
+- `roles-evidence.md` — quote → session/turn provenance
+
+Two layers inside `roles.md` (see `stage3-roles.md`): Part 1 corpus-faithful raw roles; Part 2 optional cross-domain generic roles. Progressive disclosure: **boundaries and triggers first**; long skeletons and orchestration hints only if they help a deployer who already has a harness that can use them.
+
+## Deployment (user-owned)
+
+`roles.md` may include a short **deployment menu** — options, not a single recipe:
+
+| Option | When it fits |
+|---|---|
+| Single agent + shared constraints | Default for almost every current harness |
+| One agent, role selected by trigger | Harness or human picks one role definition per task |
+| Multiple agents / skills | Only if the user's tools can isolate or route roles |
+| Multi-agent dialogue in one session | Ideal harness capability; never assumed or required |
+
+Write *what to mount* (which clauses, which role). Do not write *how a named product must wire tools*. Product-specific steps belong with the user, not in the catalog.
 
 ## Prerequisites
 
@@ -29,7 +78,7 @@ Deliverable: a two-layer `roles.md` — Part 1 data-faithful raw roles, Part 2 r
 ├── census/              # delegation census
 ├── signals/             # Stage 2 signals; _open-schema/ is the control group
 ├── roles.md             # Stage 3 deliverable (+ roles-method.md, roles-evidence.md)
-└── validation/          # Stage 4 replay results
+└── validation/          # Stage 4 boundary-validation results
 ```
 
 Reproducibility comes from the config snapshot, deterministic ordering and seeded sampling, a full audit trail of every drop, and idempotent scripts. Comparing two rounds means comparing two run directories.
@@ -45,7 +94,7 @@ Scripts are invoked as `bun <skill>/scripts/pipeline.ts <cmd> --run <runDir>`.
 | 1.5 Census and user turns | `user-turns` | `stage2-signals.md` §2C |
 | 2 Signal extraction | subagent batches | `stage2-signals.md` |
 | 3 Role inference | LLM work, then `lint-roles` | `stage3-roles.md` |
-| 4 Replay validation | subagent replay, then scoring | `stage4-replay.md` |
+| 4 Boundary validation | primary path required; optional pipeline stress test | `stage4-replay.md` |
 
 Batch dispatch mechanics for Stages 2 and 4 — concurrency, timeouts, failure typing, re-dispatch — are in `dispatch.md`.
 
@@ -89,7 +138,7 @@ Skipping any of these voids the run:
 3. **Residual accounting.** Every high-value signal either enters a role or enters the residual list. Silently dropping non-conforming samples from a descriptive conclusion is a fidelity defect.
 4. **The Owner is outside the system.** Irreversible preferences, authority conflicts, scope, public-facing form and sign-off belong to the human. Naming and layering are Owner rulings, never "proven by the data".
 5. **`lint-roles` passes before delivery.** Deliverable hygiene is not maintainable by memory — the model that writes a hygiene rule breaks it the same day.
-6. **Replay before claiming validity.** Until it is replay-tested, a role definition is taxonomy. An unreplayed `roles.md` says so in its known-limits block.
+6. **Boundary validation before claiming validity.** Until Stage 4's **primary** path has been run, a role definition is taxonomy. An unvalidated `roles.md` says so in its known-limits block. Optional multi-agent / pipeline stress tests never substitute for the primary path.
 
 ## Iteration
 
@@ -99,7 +148,7 @@ Skipping any of these voids the run:
 
 ## Honesty clause
 
-Value and intervention labels are heuristics, not ground truth, and are described that way in every artifact. What was covered and what was not goes into the output. This pipeline configures agents that act on the user's behalf, and inflated completeness turns directly into an overreaching agent.
+Value and intervention labels are heuristics, not ground truth, and are described that way in every artifact. What was covered and what was not goes into the output. This pipeline produces catalogs that configure agents acting on the user's behalf; inflated completeness turns directly into an overreaching agent.
 
 ## Maintaining this skill
 

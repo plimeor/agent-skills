@@ -1,89 +1,140 @@
-# Stage 4 — Forward Replay Validation
+# Stage 4 — Boundary Validation
 
-Purpose: up to this point `roles.md` has only been **explained** by history, never **tested** against it. Replay measures three quantities against real sessions, turning the role definitions from taxonomy into tested design. Results go in `validation/`.
+## First principles
 
-## 4A. Sampling: two kinds of replay, an order of magnitude apart in resolution
+Up to this point `roles.md` has been **explained** by history. Stage 4 **tests** it.
 
-**Decide first which question this round answers.** The two questions have completely different sample-size requirements, and mixing them produces a number that supports no conclusion at all.
+What must be true for the catalog to be useful on an unknown harness:
 
-| | **Descriptive replay** | **Comparative replay (A/B)** |
+- When a session looks like role R's **trigger**, the catalog's **escalate / absorb** lines should match what the Owner actually did.
+- That test does not require spinning up multiple agents in one session.
+- Most harnesses cannot host multi-agent dialogue anyway; validating "a role pipeline runs" would measure a runtime the user may never have.
+
+So Stage 4 has two paths:
+
+| Path | Required? | Question it answers |
 |---|---|---|
-| Question | Roughly how well do these roles perform? | Did changing §N make it better? |
-| Sample | **≥5 sessions**, covering different shapes (at minimum: one batch-adjudication, one design/shaping, one execution/repair) | Every session scored **once, with both versions in the same pass** — see below |
-| Output | Magnitude of the three metrics + per-session records | The delta between versions, and only after clearing the noise floor |
+| **Primary — boundary check** | **Yes** (before claiming validity) | Do triggers and absorb/escalate lines fit real sessions? |
+| **Optional — pipeline stress test** | No | If you instantiate multi-role orchestration, how does it behave blind? |
+
+Optional results never replace the primary path. Optional metrics must not be written into `roles.md` known-limits as if they were catalog validity.
+
+Results go in `validation/`.
+
+## 4A. Sampling
+
+**Decide which question this round answers.** Mixing descriptive magnitude with A/B delta in one number supports no conclusion.
+
+| | **Descriptive** | **Comparative (A/B)** |
+|---|---|---|
+| Question | Roughly how well do these boundaries fit? | Did changing §N improve fit? |
+| Sample | **≥5 sessions**, different shapes (at minimum: one batch-adjudication, one design/shaping, one execution/repair) | Every session scored **once, with both versions in the same pass** |
+| Output | Magnitude of primary metrics + per-session records | Delta only after clearing the noise floor |
 
 ### A comparison scores both versions in one pass, or it is confounded
 
-**Never score the two versions independently.** Escalation accuracy and friction prevention are ratios over ground truth — how many points the user really intervened at, how many real friction points a session contained. Ground truth belongs to the session, not to the version, so a scorer counting it twice gives two different answers, and that disagreement lands directly in the denominators being compared.
+Escalation accuracy is a ratio over ground truth — how many points the user really intervened at. Ground truth belongs to the session, not to the version. Scoring two versions independently lets the scorer count interventions twice differently; that disagreement lands in the denominators.
 
-So: give one scorer the session, both versions' predictions, and have it **count the ground truth once** and score both predictions against it. Version-independent quantities are then identical by construction, and the difference that remains is the effect.
+Give one scorer the session and both versions' predictions; **count ground truth once**; score both against it.
 
-**Sample size does not fix this.** Scorer disagreement about what counts as an intervention point is systematic, not random: it does not average out, so a bigger denominator buys nothing. The tell is comparing the same version-independent quantity across two batches — if the signed difference is a meaningful fraction of the total rather than near zero, the comparison is confounded and the numbers cannot be read, whatever the sample size.
+**Sample size does not fix systematic scorer disagreement.** If a version-independent quantity differs across two batches by a meaningful fraction of the total, the comparison is confounded — do not read the delta.
 
-**Measure the noise floor on this corpus, never assume one.** Below it no difference is readable in either direction — including "the change did nothing". Do not take noise as a conclusion and edit `roles.md` on it.
+**Measure the noise floor on this corpus; never assume one.** Below it, no difference is a conclusion — including "the change did nothing".
 
-`user-turns/<file>.md` already isolates the user turns; the first one is marked `(INITIAL)`.
+`user-turns/<file>.md` isolates user turns; the first is marked `(INITIAL)`.
 
-### Stage ordering (getting it backwards contaminates the control)
+### Stage ordering (independent chain vs open-schema)
 
-If one round includes both an **independent-chain rerun** (re-deriving roles from scratch with a different extractor or model) and an **open-schema control analysis**: **the independent rerun must come first.** Reversed, the independent chain has already seen the control's conclusions, its independence no longer holds, and both experiments are void.
+If one round includes both an **independent-chain rerun** (re-deriving roles from scratch) and an **open-schema control**: **independent rerun first.** Reversed, independence is void.
 
-## 4B. Replay method
+---
+
+## 4B. Primary path — boundary check
+
+Harness-agnostic. No multi-agent runtime required.
 
 For each selected session:
 
-1. Instantiate the roles from the prompt skeletons in `roles.md`.
-2. Give the role pipeline only the session's **INITIAL user turn** (plus necessary project background), and **none of the later user turns**.
-3. Let the pipeline run until it decides Owner input is required, recording: which points it escalates to the Owner, what it asks, and what work it absorbs on its own.
-4. Compare against the real session (all subsequent turns in `user-turns/` are the record of real Owner intervention).
+1. Read only what a deployer would mount: role list, **triggers**, **absorbs**, **escalates**, shared constraints. Do not require prompt skeletons or orchestration sections.
+2. From the session's **INITIAL** user turn (and phase signals visible without later turns), judge:
+   - Which role(s) **should trigger**
+   - Which later Owner interventions (from full `user-turns/`) fall under **escalate** vs **absorb** under the catalog
+3. Compare predictions to the real intervention trace.
+4. Record mismatches: missed trigger, wrong role, false escalate, missed escalate, absorb that the Owner actually seized.
 
-Replay may be executed by subagents; the replaying subagent must not read the session's real subsequent turns (leak prevention). Only the comparison stage may read the full transcript. For dispatch mechanics — timeouts, re-dispatch, success criteria — see `references/dispatch.md`.
+**Who may read what**
 
-### Three leak paths; any one of them voids the round
+- The judge that assigns triggers/boundaries from INITIAL only must **not** see later user turns while predicting.
+- The scorer that compares to reality **may** read the full `user-turns/` file.
+- Give validators `roles.md` only — never `roles-evidence.md` or `roles-method.md` (provenance and residuals leak identity and prior conclusions).
 
-"Don't read the later turns" is **not sufficient**. All three below have actually happened:
+Structural isolation still applies when the validator is an agent with tools: put only readable material in its working directory; real copies, not symlinks that escape via `../`. Isolation proof: inspect **path arguments of tool calls**, not path-like strings in log prose (`roles.md` text will false-positive).
 
-1. **If `roles.md` carries provenance, it is itself the leak source** — the replay agent **must** read it, and `session_id [turn]` directly exposes the identity and key moments of the session being replayed. Stage 3 §3.0 moves provenance out of `roles.md`; **run `lint-roles` before starting** (stage3 §3F) and confirm `session-id` and `turn-ref` are both zero.
-   **Give the replay agent only `roles.md`, never `roles-evidence.md` or `roles-method.md`** — the first is the provenance table, the second holds the residual list and per-session replay records.
-   > "I told it in the prompt not to look" is not a countermeasure — reachable material will be read. **Make isolation structural**: put only what should be read into the replay agent's working directory and leave the rest physically unreachable. Note that symlinks escape via `../`; use real copies.
+### Primary metrics (per session → `validation/boundary-<file>.md`)
 
-2. **The repository may already contain this session's own output.** The nature of the corpus guarantees it: one session's output is the next session's input — landed code, written documents, updated guidelines are all sitting there. **The replay agent should be barred from reading project source**; where background is genuinely needed, give only what the INITIAL turn already contains.
+1. **Trigger fit** — did the catalog's trigger fire on the sessions where that judgment function was actually in play? Misses and false fires, with short evidence.
+2. **Escalation accuracy** — catalog escalate points vs real Owner intervention points:
+   - **precision:** of predicted escalations, fraction the Owner really cared about or seized (low → chatty catalog)
+   - **recall:** of real interventions, fraction the catalog marks as escalate (low → overreach risk)
+3. **Absorb / friction read** (lightweight):
+   - real turns classed as `absorbable` | `real Owner decision` | `friction correction` | `dialogic`
+   - anger points: would the stated boundary have forbidden the failure mode? `preventable` | `not` | `uncertain`
+   - **dialogic is not a turn-savings target**
 
-3. **Re-testing on the same sample.** Clauses revised on the strength of last round's replay, checked again against the same sessions, is testing on the training set. **Use a different batch of sessions**; if the goal is to test whether last round's revision took effect, run and report the old batch and the new batch **separately**, never merged into one number.
+### Leak and contamination (primary path)
 
-### Isolation must be verified afterwards, and only one verification method is correct
+1. **Provenance in `roles.md`** voids the round — run `lint-roles` first; `session-id` and `turn-ref` must be zero.
+2. **Same-sample re-test after editing clauses from that sample** is training-set test — use a different batch; report old and new separately if both matter.
+3. **Contamination audit at scoring:** predictions that could only come from later turns or repo state are excluded from precision/recall; report with and without. Labeled contamination is useful; unlabeled is poison.
 
-Once structural isolation is in place, **prove it held** — from each replay agent's session log, extract **only the path arguments of tool calls** (the values of `file_path` / `path` / `pattern` / `cmd` / `command` / `glob`) and check for any access outside the working directory.
+### Same-input noise floor
 
-**Do not grep the log body for path-like strings.** `roles.md`'s own text contains project and directory names, so a replay agent merely restating a clause matches and every run reads as an escape (dispatch.md D5 covers the general form of this mistake). **The criterion is what it accessed, not what it mentioned.**
+Required each round: either rerun the same catalog on the same sessions twice, or compare a version-independent quantity (real intervention counts) across batches — difference is the floor. **Deltas below the floor are not conclusions.**
 
-### Same-input rerun group
+---
 
-**Required every round**: run the same `roles.md` over the same sessions twice; the difference between the two results is this evaluation's noise floor. A cheaper check that needs no extra run: compare a version-independent quantity (real intervention points, real friction points) across the batches you already have — it must come out identical, and whatever it differs by is your floor. **A difference smaller than the noise floor may not be reported as a conclusion** — including as a conclusion that the change did nothing.
+## 4C. Optional path — pipeline stress test
 
-**Contamination audit is mandatory at scoring time**, not optional: check each prediction for content that could only come from later turns or from repository state; anything that hits **must be excluded from precision/recall**, and both figures — with and without that item — must be reported. **A labeled contaminated replay is useful; an unlabeled one is poison.**
+Only when the user (or a harness under test) actually cares about multi-role instantiation. **Skip by default.**
 
-## 4C. The three metrics
+For each selected session:
 
-Each session produces `validation/replay-<file>.md`:
+1. Instantiate roles from skeletons / collaboration hints in `roles.md` *if present*.
+2. Give the runtime only the **INITIAL** user turn (plus background already in that turn).
+3. Run until it demands Owner input; record escalations, questions, absorbed work.
+4. Compare to real `user-turns/`.
 
-1. **Escalation accuracy**: the points where the role pipeline escalates to the Owner vs. the points where the user really intervened.
-   - precision: of the points the pipeline escalated, the fraction where the user really did intervene or care (low = the roles are chatty and will annoy).
-   - recall: of the real user intervention points, the fraction the pipeline flagged in advance as needing escalation (low = the roles will overreach or miss).
-2. **Friction prevented**: for each anger point in the real session (overreach, false completion, fence-sitting, wrong reference…), judge whether executing under the role constraints would have prevented it entirely. Record as preventable / not preventable / uncertain.
-3. **Participation-density reduction estimate**: classify each real user turn:
-   - `absorbable`: the role system would have handled it (or the question never arises)
-   - `real Owner decision`: a human should rule on it regardless
-   - `friction correction`: caused by an agent behavior defect that the role constraints ought to prevent
-   - `dialogic`: design back-and-forth — **not a savings target** (the value of a dialogic phase is per-turn quality, not turn count)
+**Additional leak path:** the repository may already contain this session's output. Bar the stress-test agent from project source; background only from INITIAL.
+
+Stress-test metrics may reuse escalation precision/recall and friction labels, stored as `validation/pipeline-<file>.md`. They answer "how does *this orchestration* behave," not "is the catalog valid."
+
+If skeletons or orchestration sections are missing, **do not invent a pipeline to stress-test** — the optional path is simply N/A; the primary path still stands.
+
+Dispatch mechanics (timeouts, re-dispatch, success checks): `references/dispatch.md`.
+
+---
 
 ## 4D. Aggregation and write-back
 
-`validation/summary.md`: a three-metric summary table plus conclusions. Reading guide:
+`validation/summary.md`:
 
-- Low recall → the roles' "escalate to human" definition is missing an axis; go back to Stage 3 and fix it.
-- Low precision → the roles are handing up absorbable work; tighten "absorbs autonomously".
-- Low friction prevention → the role constraints are empty words; the prompt skeletons need hard boundaries that actually hold.
-- Session shapes with a high `dialogic` share → verify that the "dialogic phases promise no turn reduction" caveat is honestly stated in `roles.md` and in overall expectations.
+- Primary: trigger fit + escalation precision/recall + absorb/friction summary + noise floor note
+- Optional (if run): pipeline stress-test metrics, clearly labeled **optional / harness-specific**
+- Conclusions tied to catalog fields, not to a fantasy runtime
 
-Write conclusions back: **metrics and per-session records go to `roles-method.md`**; **`roles.md` changes in exactly two places** — clauses the replay falsified, and the handful of numbers in the top "known limits" block (stage3 §3E). Replay data itself does not enter `roles.md`. Re-run `lint-roles` after write-back. Only then is the iteration complete. Use a different batch of sessions on the next Stage 4 round to avoid overfitting to one sample.
+Reading guide (primary):
+
+- Low recall → escalate definition missing an axis → fix Stage 3 boundaries
+- Low precision → absorb too narrow or escalate too broad → tighten triggers / absorb
+- Poor trigger fit → role list or trigger wording wrong → fix Stage 3, do not paper over with orchestration
+- High `dialogic` share → confirm dialogic roles do not promise turn reduction in `roles.md`
+
+Write-back:
+
+- Metrics and per-session records → **`roles-method.md`**
+- **`roles.md` changes in exactly two places:** clauses the **primary** path falsified, and known-limits numbers from the **primary** path
+- Optional pipeline numbers stay in `roles-method.md` only
+- Re-run `lint-roles` after write-back
+- Next Stage 4 round: different session batch
+
+Until the primary path has completed, known-limits must say boundary check was not run. Completing only the optional path does **not** clear that line.
