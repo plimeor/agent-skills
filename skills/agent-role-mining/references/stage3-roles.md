@@ -46,8 +46,9 @@ From the signals, first derive four lists (each entry backed by ≥1 session):
 3. **High-frequency correction directions toward the agent** (wanted / unwanted / relatively tolerated — "relatively tolerated" must also cite delegation evidence from `census.md`, and may not come only from high-friction sessions)
 4. **Stable phase transitions** (the recurring in-session phase sequence and the hard signals that mark each switch)
 
-## 3B. Cluster into roles (4–7)
+## 3B. Cluster into roles
 
+- **Let the data set the count.** No target range: a stated range becomes a target, and clustering converges on it instead of on the evidence. If the corpus supports three roles, write three; if it supports nine, write nine. What forces the count to be honest is residual accounting (§3C), not a bound.
 - A role is a **recurring judgment function**, not a pipeline station name and not the proper name of a repository or tool.
 - Each role definition: core responsibility / typical trigger / absorbs autonomously / escalates to human / success criteria / ≥2 corpus examples (**quotes only, provenance goes to `roles-evidence.md`**, see §3.0).
 - **The Owner (the user) is always outside the system**: irreversible preferences, authority conflicts, scope, public-facing form, and sign-off belong to the human and are not made into an agent.

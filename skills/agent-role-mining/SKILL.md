@@ -5,7 +5,7 @@ description: Reverse-engineer a user's implicit roles and decision persona from 
 
 # Agent Role Mining
 
-Reverse-engineer a user's role division and decision persona from real session behavior: people struggle to enumerate the roles they occupy, but session history records what they initiated, how they corrected agents, and what they insist on ruling personally. Tool stdout and full file contents carry almost no persona information — the pipeline compresses them heavily and preserves the user's own words in full.
+Reverse-engineer a user's role division and decision persona from real session behavior: people struggle to enumerate the roles they occupy, but session history records what they initiated, how they corrected agents, and what they insist on ruling personally. Tool arguments and results carry almost no persona information — the pipeline moves them out of the analysed trajectory and preserves the user's own words in full.
 
 The final deliverable is a two-layer `roles.md`: Part 1 data-faithful raw roles + Part 2 reusable cross-domain generic roles.
 
@@ -14,6 +14,7 @@ The final deliverable is a two-layer `roles.md`: Part 1 data-faithful raw roles 
 - Requires `bun` (scripts have zero third-party dependencies).
 - Source data is read-only: `~/.claude/projects/` and `~/.grok/sessions/` are never written to. All artifacts land inside the run directory.
 - A full round is heavy work (Stages 2/3/4 are large amounts of LLM work). Tell the user the expected scale up front (session count × extraction cost); batch large extractions across subagents.
+- Tool arguments and results are kept out of the analysed trajectory (Stage 1), so the analysis set runs several times more sessions at a fraction of the bytes: measured, 3.1× the sessions at 60% of the corpus size.
 - Artifacts are written in the corpus's own language; quoted user speech is never translated.
 
 ## Run directory and reproducibility contract
@@ -21,8 +22,9 @@ The final deliverable is a two-layer `roles.md`: Part 1 data-faithful raw roles 
 ```
 <workdir>/runs/<stamp>-<label>/
 ├── config.json          # snapshot of every parameter; changing a parameter = a new run
-├── inventory/           # discovery list, exclusion audit (every drop has a reason), themes.json, stats.json, lint-roles.json
+├── inventory/           # discovery list, exclusion audit (every drop has a reason), funnel-preview.md, injected-turns.md, stats.json, lint-roles.json
 ├── cleaned/             # Stage 1 trajectories (all main sessions, including filtered-out ones, for auditability)
+├── tool-details/        # tool arguments and results, one .jsonl per session — queryable, out of the way
 ├── manifest.md          # funnel results + kept list
 ├── user-turns/          # per-session user-turn extraction (for Stage 4 replay + open-schema control)
 ├── census/              # delegation census (excluded low-intervention sessions)
@@ -46,7 +48,20 @@ bun scripts/pipeline.ts init --label <name>   # prints the run directory
 
 `workdir` defaults to `<cwd>/.artifacts/agent-role-mining/` (created if absent); pass `--workdir` only when the user named a location. After this first step, tell the user the run directory path.
 
-The default config excludes the `english-coach` project, drops low-intervention sessions, whitelists mid-intervention themes `review/bugfix/migration/i18n-docs`, requires cleaned ≥20KB, and **enables corpus self-reference filtering**. If the user's domain differs, edit `config.json` before continuing — the thresholds are heuristics, not truths.
+The default config ships **one** preset filter: corpus self-reference (this pipeline's own artifact names), which is universal because it is about the pipeline, not about the user. Everything else is empty or off by default and gets settled with the user in Stage 0.5.
+
+### Stage 0.5 — Settle the funnel with the user (mandatory, interactive)
+
+**Filter conditions are a property of this person's machine and habits, not of the pipeline.** Hardcoding one user's exclusions into the skill makes it silently ineffective for everyone else. So the funnel is agreed with the user before any analysis, and confirmed against real samples afterwards.
+
+1. Run `discover`, then show the user the project list with session counts.
+2. Ask which projects are irrelevant to their working identity (throwaway tooling, unrelated experiments, sessions that are really another tool's scratch space) → write them into `excludeProjectPatterns`.
+3. **Do not filter by topic or theme.** A person's roles outside coding are part of the answer, not noise — filtering by theme cuts exactly the evidence that shows how their judgment generalizes. There is no theme whitelist in this pipeline by design.
+4. **Do not filter by size.** With tool arguments and results moved out of `cleaned/` (see Stage 1), the analysis set is small enough that a size cut only risks dropping a short session that ruled on something important. `minUserTextBytes` exists as a knob and defaults to off.
+
+What remains is behavior-based and stays: empty sessions, self-referential sessions, and low-intervention sessions (which become the delegation census, not a discard).
+
+**Name-based exclusions are usually redundant — check before adding them.** Measured on a real corpus: 158 sessions from an unrelated tool's workdir, with no project exclusion configured at all, were dropped anyway — 154 by low intervention, the rest as empty, thin, or self-referential. **Zero survived into the analysis set.** Behavior-based filters had already done the job the name-based exclusion was written for.
 
 ### Stage 1 — Discover, clean, filter
 
@@ -57,9 +72,25 @@ bun scripts/pipeline.ts filter --run <run>
 ```
 
 - Main-session definition: Claude = `<project>/<uuid>.jsonl` (excluding `agent-*.jsonl` and `subagents/`); Grok = `session_kind ∉ {subagent, subagent_resume}`.
-- If `filter` leaves any `pending-theme`: read `inventory/pending-themes.md`, read each cleaned file to judge its theme, write the results into `inventory/themes.json` (dropped sessions get their real theme name too, so the audit stays readable), then re-run `filter`. Theme bucketing needs judgment — this step is agent work, not script work.
+- **Tool arguments and results do not go into `cleaned/`.** The trajectory keeps the tool *name* and turn number; arguments and results are written to `tool-details/<session>.jsonl` and queried on demand:
+  ```bash
+  bun scripts/pipeline.ts tool-detail --run <run> --file <cleaned.md> [--turn N] [--grep S]
+  ```
+  Measured on a 329-session corpus: tool arguments and results were **83.5% of all cleaned bytes and the source of 0 of 1397 signal quotes**. Tool *names* do carry a real pattern (dispatching an independent subagent to re-check) and stay. Effect on one representative session: 31.5 KB → 6.7 KB.
+- **Hook output is the one contamination the pipeline cannot fully detect.** Per the Claude Code hook contract, `hookSpecificOutput.additionalContext` is wrapped in a `<system-reminder>` — normalize strips those, so that path is covered. But **`UserPromptSubmit`, `UserPromptExpansion`, `SessionStart` and `Setup` inject raw stdout as context with no marker at all**, structurally identical to the user speaking. Two defences:
+  - Content with a fixed harness signature is dropped outright: slash-command tags, local-command output and caveats, injected skill bodies (`Base directory for this skill:`), compaction hand-off text. Measured on a real corpus, injected skill bodies alone were counted as user turns in 37 sessions.
+  - Everything else is caught statistically: an opening that repeats **verbatim across ≥3 sessions** is machine-generated. `filter` writes these to `inventory/injected-turns.md` and `preview` surfaces the count. **They are never dropped automatically** — a genuine user turn re-sent across retried sessions has been observed in that table, so the call belongs to the user. On the reference corpus this caught a prompt-rewriting hook that had produced 349 turns that read exactly like user speech.
+- **Feedback turns are detected by intent, not length.** A user turn counts as feedback pressure when the prose it contains is corrective or directive, with **no character cap** — capping it discards exactly the most substantive corrections, which tend to be the longest. Pasted material is stripped first (fenced code, indented blocks, log runs, verbatim spec documents) so that a long paste is not mistaken for engagement. This count feeds the intervention level, which drives the whole funnel.
 - **Corpus self-reference filtering**: if sessions where the user designed or evaluated this very pipeline enter the analysis set, the pipeline rediscovers its own framework **inside its own prior output** — part of the clustered roles then comes from the user's existing thinking about roles in the corpus, rather than being discovered from behavior. `filter` detects this automatically (default: ≥2 distinct marker types → dropped, reason=`self-referential`) and writes **every session with ≥1 hit** into `inventory/self-referential.md`. **Sessions hitting below threshold remain in the analysis set** — if Stage 3 conclusions look like a restatement of a framework already present in the corpus, come back to this table first. Detection lives in `filter` rather than `normalize`, so an existing run only needs `filter` re-run after a config change.
 - Afterwards run `stats` to reconcile the funnel numbers, and spot-check 2–3 cleaned files for cleaning quality (user's words intact, noise stripped).
+
+**Then show the user the funnel and get explicit confirmation before Stage 2:**
+
+```bash
+bun scripts/pipeline.ts preview --run <run> [--n 4]
+```
+
+`preview` prints the active filter settings plus **real session summaries** — a sample of what was kept and, for every drop reason separately, a sample of what was dropped, each with its opening user turn. The user reads it and confirms that the kept set is worth analyzing and that nothing valuable was dropped. Adjust `config.json` and re-run `filter` until it looks right. **Thresholds changed after Stage 2 mean a new run**, so this gate is where it is cheap to be wrong.
 
 ### Stage 1.5 — Delegation census + user-turn extraction
 

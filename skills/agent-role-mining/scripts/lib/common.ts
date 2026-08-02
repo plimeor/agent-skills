@@ -131,6 +131,20 @@ export function isNoiseUserText(text: string): boolean {
   if (t.includes("workflow completion reminder") && !t.includes("<user_query>")) return true;
   if (t.includes("<skill_information>") && !t.includes("<user_query>")) return true;
   if (t.startsWith("<local-command-stdout>") || t.startsWith("<command-name>")) return true;
+  // Skill bodies are injected as user messages. Counted as user turns they add thousands of
+  // words of machine instructions to the "user's own words" channel.
+  if (t.startsWith("Base directory for this skill:")) return true;
+  // Compaction hand-off text is harness output, not the user speaking.
+  if (t.startsWith("This session is being continued from a previous conversation")) return true;
+  // A slash-command invocation arrives as a caveat banner plus command tags and no prose.
+  // Counted as a user turn it inflates intervention and pollutes the first-turn preview.
+  if (t.includes("<local-command-caveat>")) {
+    const rest = t
+      .replace(/<local-command-caveat>[\s\S]*?<\/local-command-caveat>/gi, "")
+      .replace(/<(command-name|command-message|command-args|local-command-stdout)>[\s\S]*?<\/\1>/gi, "")
+      .trim();
+    if (rest.length < 12) return true;
+  }
   return false;
 }
 
@@ -139,6 +153,7 @@ export function extractUserText(text: string): string {
   const m = text.match(/<user_query>\s*([\s\S]*?)\s*<\/user_query>/i);
   if (m) return m[1].trim();
   const t = text
+    .replace(/<local-command-caveat>[\s\S]*?<\/local-command-caveat>/gi, "")
     .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/gi, "")
     .replace(/<user_info>[\s\S]*?<\/user_info>/gi, "")
     .replace(/<skill_information>[\s\S]*?<\/skill_information>/gi, "")
@@ -147,16 +162,51 @@ export function extractUserText(text: string): string {
   return t || text.trim();
 }
 
-// Heuristic: short corrective/confirming turns count as feedback pressure.
+// Pasted material — code blocks, logs, spec documents — carries no feedback intent even
+// though it arrives in a user turn. Length alone cannot separate the two: a long turn is
+// just as likely to be a carefully argued correction as a paste, and capping feedback
+// detection by length systematically discards the most substantive corrections.
+// So strip the pasted parts and judge the prose that remains.
+export function stripPasted(text: string): { prose: string; pastedRatio: number } {
+  const orig = text.length || 1;
+  let t = text.replace(/```[\s\S]*?```/g, "\n");           // fenced code / log blocks
+  t = t.replace(/^(?: {4,}|\t)\S[^\n]*(?:\n(?: {4,}|\t)\S[^\n]*){2,}/gm, "\n"); // indented blocks
+
+  // Log-shaped runs: >=3 consecutive lines carrying timestamps, levels, or stack frames.
+  const LOG = /^\s*(?:\[?\d{4}-\d{2}-\d{2}[T ]|\d{2}:\d{2}:\d{2}|\[?(?:ERROR|WARN|INFO|DEBUG|TRACE|FATAL)\b|at\s+\S+\(|\s*File "|Traceback|npm ERR!|\S+Error:|\+{3}|-{3}\s)/i;
+  const lines = t.split("\n");
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; ) {
+    let j = i;
+    while (j < lines.length && LOG.test(lines[j])) j++;
+    if (j - i >= 3) { out.push(""); i = j; } else { out.push(lines[i]); i++; }
+  }
+  const prose = out.join("\n").trim();
+  return { prose, pastedRatio: Math.max(0, (orig - prose.length) / orig) };
+}
+
+// A user turn counts as feedback pressure when its prose carries corrective or directive
+// intent. There is no length cap: long corrections count, and pasted bulk does not.
 export function isFeedbackLike(text: string): boolean {
   if (!text) return false;
-  const t = text.trim();
+  if (text.trim().length < 2) return false;
+  const { prose, pastedRatio } = stripPasted(text);
+  // Dominated by pasted material: the few prose words around it are framing, not feedback.
+  if (pastedRatio >= 0.7) return false;
+  const t = prose.trim();
   if (t.length < 2) return false;
-  const patterns =
+
+  // Requirement/spec documents pasted verbatim: heading- or list-dominated, and long.
+  const ls = t.split("\n").filter((l) => l.trim());
+  if (ls.length >= 8) {
+    const structural = ls.filter((l) => /^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|\|)/.test(l)).length;
+    if (structural / ls.length >= 0.6) return false;
+  }
+
+  const opener =
     /^(yes|no|ok|不对|不是|继续|改|不要|停|好|确认|重做|再|cancel|stop|continue|fix|wrong|don't|do not)/i;
-  if (t.length < 80 && patterns.test(t)) return true;
-  if (/你(错|不对|应该|不要|必须)|不是这样|重新|改成|我要的是|别|不要再|少|多|只/.test(t)) return true;
-  return false;
+  if (opener.test(t)) return true;
+  return /你(错|不对|应该|不要|必须)|不是这样|重新|改成|我要的是|别|不要再|少|多|只/.test(t);
 }
 
 // Heuristic, not gold-standard. Documented so downstream stages treat it as such.
@@ -170,12 +220,25 @@ export function interventionLevel(s: {
   return "低";
 }
 
+export interface ToolDetail {
+  turn: number;
+  kind: "call" | "result";
+  tool: string;
+  id: string;
+  body: string;
+}
+
+// The main trajectory keeps tool *names* and turn numbers; arguments and results go to a
+// sidecar. Measured on a 329-session corpus: tool arguments and results were 83.5% of all
+// cleaned bytes and the source of 0 of 1397 signal quotes, while tool names carry a real
+// pattern ("dispatch an independent subagent to re-check"). Detail stays queryable via
+// `pipeline.ts tool-detail` for the cases that need it.
 export function recordsToMarkdown(
   meta: SessionEntry,
   records: TrajRecord[],
   stats: TrajStats,
   limits: Limits
-): string {
+): { markdown: string; toolDetails: ToolDetail[] } {
   const lines: string[] = [];
   lines.push(`# Trajectory: ${meta.id}`, "");
   lines.push(`- **source**: ${meta.source}`);
@@ -191,6 +254,7 @@ export function recordsToMarkdown(
   lines.push(`- **intervention**: ${stats.intervention}`);
   lines.push("", "---", "");
 
+  const toolDetails: ToolDetail[] = [];
   let n = 0;
   for (const r of records) {
     n++;
@@ -200,21 +264,25 @@ export function recordsToMarkdown(
     } else if (r.role === "assistant") {
       lines.push(`## [${n}] assistant`, "", truncate(r.content || "", limits.assistantTextMax), "");
     } else if (r.role === "assistant-tool-call") {
-      lines.push(`## [${n}] assistant-tool-call`, "");
-      lines.push(`- **tool**: \`${r.tool_name || ""}\``);
-      lines.push(`- **id**: \`${r.tool_call_id || ""}\``);
-      lines.push(`- **args**: \`${r.args || ""}\``, "");
+      lines.push(`## [${n}] tool-call · \`${r.tool_name || "?"}\``, "");
+      toolDetails.push({
+        turn: n, kind: "call", tool: r.tool_name || "", id: r.tool_call_id || "",
+        body: truncate(r.args || "", limits.toolArgsMax),
+      });
     } else if (r.role === "tool") {
-      lines.push(`## [${n}] tool-result`, "");
-      lines.push(`- **tool_call_id**: \`${r.tool_call_id || ""}\``);
-      if (r.tool_name) lines.push(`- **tool**: \`${r.tool_name}\``);
-      lines.push("", "```", truncate(r.content || "", limits.toolResultMax), "```", "");
+      toolDetails.push({
+        turn: n, kind: "result", tool: r.tool_name || "", id: r.tool_call_id || "",
+        body: truncate(r.content || "", limits.toolResultMax),
+      });
     } else if (r.role === "feedback") {
       lines.push(`## [${n}] user-feedback`, "", r.content || "", "");
     }
   }
   if (stats.fallbackNote) lines.push("", `> **Note**: ${stats.fallbackNote}`, "");
-  return lines.join("\n");
+  if (toolDetails.length)
+    lines.push("", `> ${toolDetails.length} tool arguments/results omitted here; query them with`,
+      `> \`bun pipeline.ts tool-detail --run <run> --file ${meta.source}_${meta.id}.md [--turn N]\``, "");
+  return { markdown: lines.join("\n"), toolDetails };
 }
 
 // Deterministic PRNG (mulberry32) so sampling is reproducible from a seed.

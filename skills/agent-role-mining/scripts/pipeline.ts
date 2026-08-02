@@ -5,6 +5,8 @@
 //   bun pipeline.ts discover   --run <runDir>
 //   bun pipeline.ts normalize  --run <runDir> [--only claude|grok] [--limit N] [--skip-existing]
 //   bun pipeline.ts filter     --run <runDir>
+//   bun pipeline.ts preview    --run <runDir> [--n 4] [--seed 42]
+//   bun pipeline.ts tool-detail --run <runDir> --file <cleaned.md> [--turn N] [--grep S]
 //   bun pipeline.ts user-turns --run <runDir> [--all]
 //   bun pipeline.ts sample     --run <runDir> --n 15 [--seed 42] [--pool kept|census|all]
 //   bun pipeline.ts stats      --run <runDir>
@@ -31,9 +33,10 @@ interface Config {
   excludeProjectPatterns: string[];
   limits: Limits;
   filter: {
-    minCleanedBytes: number;
+    // Thin-session cut measured on user text, not total cleaned bytes: tool volume varies
+    // by two orders of magnitude between sessions and says nothing about signal density.
+    minUserTextBytes: number;
     dropLowIntervention: boolean;
-    midThemeWhitelist: string[];
     // Corpus self-reference filtering: keep sessions where the user was designing or
     // evaluating this pipeline itself out of the analysis set. Without it the pipeline
     // rediscovers its own framework inside its own output — part of the clustered roles
@@ -57,9 +60,9 @@ interface ManifestRow {
   feedbackTurns: number;
   toolCalls: number;
   cleanedBytes: number;
-  status: "kept" | "dropped" | "pending-theme";
+  userTextBytes: number;
+  status: "kept" | "dropped";
   reason?: string;
-  theme?: string;
   selfRefHits?: string[]; // markers hit (recorded at >=1; dropping depends on the threshold)
 }
 
@@ -69,12 +72,16 @@ const DEFAULT_CONFIG = (): Config => ({
     claude: { enabled: true, root: path.join(os.homedir(), ".claude", "projects") },
     grok: { enabled: true, root: path.join(os.homedir(), ".grok", "sessions") },
   },
-  excludeProjectPatterns: ["english-coach", "agent-role-mining", "role-mining-workspace"],
+  // Empty by default and filled in with the user at Stage 0.5 — what counts as an
+  // irrelevant project is a property of the person's machine, not of this pipeline.
+  excludeProjectPatterns: [],
   limits: { ...DEFAULT_LIMITS },
   filter: {
-    minCleanedBytes: 20 * 1024,
+    // Off by default. With tool arguments and results moved out of cleaned/, the analysis
+    // set is small enough that a size cut buys nothing and only risks dropping a short
+    // session that ruled on something important. Raise it only if context becomes a problem.
+    minUserTextBytes: 0,
     dropLowIntervention: true,
-    midThemeWhitelist: ["review", "bugfix", "migration", "i18n-docs"],
     selfReference: {
       enabled: true,
       markers: [
@@ -158,7 +165,7 @@ function cmdNormalize() {
   if (!sessions.length) die("no inventory/sessions.json — run discover first");
 
   const statsPath = path.join(run, "inventory", "session_stats.json");
-  const statsMap = readJson<Record<string, TrajStats & { cleanedBytes: number; title: string | null }>>(statsPath, {});
+  const statsMap = readJson<Record<string, TrajStats & { cleanedBytes: number; userTextBytes?: number; title: string | null }>>(statsPath, {});
   let done = 0, failed = 0, skipped = 0;
 
   for (const entry of sessions) {
@@ -171,9 +178,16 @@ function cmdNormalize() {
         ? normalizeClaude(entry, cfg.limits)
         : normalizeGrok(entry, cfg.limits);
       fs.writeFileSync(outFile, result.markdown, "utf8");
+      const td = path.join(run, "tool-details", fileNameFor(entry).replace(/\.md$/, ".jsonl"));
+      ensureDir(path.dirname(td));
+      fs.writeFileSync(td, result.toolDetails.map((d) => JSON.stringify(d)).join("\n") + "\n", "utf8");
+      const userTextBytes = [...result.markdown.matchAll(
+        /\n## \[\d+\] (?:user|user-feedback)\n\n([\s\S]*?)(?=\n## \[|\n> |$)/g)]
+        .reduce((a, m) => a + m[1].length, 0);
       statsMap[fileNameFor(entry)] = {
         ...result.stats,
         cleanedBytes: fs.statSync(outFile).size,
+        userTextBytes,
         title: result.title,
       };
       done++;
@@ -191,13 +205,8 @@ function cmdFilter() {
   const run = requireRun();
   const cfg = loadConfig(run);
   const sessions = readJson<SessionEntry[]>(path.join(run, "inventory", "sessions.json"), []);
-  const statsMap = readJson<Record<string, TrajStats & { cleanedBytes: number; title: string | null }>>(
+  const statsMap = readJson<Record<string, TrajStats & { cleanedBytes: number; userTextBytes?: number; title: string | null }>>(
     path.join(run, "inventory", "session_stats.json"), {});
-  // themes.json: { "<cleaned file name>": "<theme>" } — written by the agent
-  // after reading pending sessions (theme bucketing needs judgment, not code).
-  const themes = readJson<Record<string, string>>(path.join(run, "inventory", "themes.json"), {});
-  const whitelist = new Set(cfg.filter.midThemeWhitelist);
-
   // Self-reference detection lives in filter, not normalize, for two reasons:
   //   1. an existing run gains the filter without re-running the cleaning pass;
   //   2. markers are part of config, so changing them should only require re-running filter.
@@ -224,7 +233,7 @@ function cmdFilter() {
       title: st.title ?? entry.title ?? null,
       intervention: st.intervention, userTurns: st.userTurns,
       feedbackTurns: st.feedbackTurns, toolCalls: st.toolCalls,
-      cleanedBytes: st.cleanedBytes, status: "kept",
+      cleanedBytes: st.cleanedBytes, userTextBytes: st.userTextBytes ?? 0, status: "kept",
     };
     const hits = sr.enabled ? srHits(file) : [];
     row.selfRefHits = hits.length ? hits : undefined;
@@ -237,17 +246,10 @@ function cmdFilter() {
       row.status = "dropped"; row.reason = `self-referential:${hits.length}`;
     } else if (cfg.filter.dropLowIntervention && st.intervention === "低") {
       row.status = "dropped"; row.reason = "low-intervention";
-    } else if (st.intervention === "中") {
-      const theme = themes[file];
-      if (!theme) { row.status = "pending-theme"; }
-      else {
-        row.theme = theme;
-        if (!whitelist.has(theme)) { row.status = "dropped"; row.reason = `mid-theme:${theme}`; }
-      }
     }
-    if (row.status === "kept" && st.cleanedBytes < cfg.filter.minCleanedBytes) {
+    if (row.status === "kept" && cfg.filter.minUserTextBytes > 0 && (st.userTextBytes ?? 0) < cfg.filter.minUserTextBytes) {
       row.status = "dropped";
-      row.reason = `thin<${Math.round(cfg.filter.minCleanedBytes / 1024)}KB`;
+      row.reason = `thin-user-text<${Math.round(cfg.filter.minUserTextBytes / 1024 * 10) / 10}KB`;
     }
     rows.push(row);
   }
@@ -281,31 +283,58 @@ function cmdFilter() {
     fs.writeFileSync(path.join(run, "inventory", "self-referential.md"), lines.join("\n") + "\n", "utf8");
   }
 
+  // Hook stdout is indistinguishable from user speech. Per the Claude Code hook contract,
+  // `additionalContext` is wrapped in a <system-reminder> (stripped during normalize), but
+  // UserPromptSubmit / UserPromptExpansion / SessionStart / Setup stdout is injected raw,
+  // with no marker at all. The one signal left is that a machine repeats itself verbatim:
+  // an opening that recurs word-for-word across many sessions is generated, not typed.
+  //
+  // Reported, never auto-dropped. Measured on a real corpus, a threshold of 3 sessions
+  // produced a false positive — a genuine user turn re-sent across retried sessions — so
+  // the call belongs to the person whose sessions these are.
+  const prefixes = new Map<string, { files: Set<string>; sample: string }>();
+  for (const r of rows) {
+    const cp = path.join(run, "cleaned", r.file);
+    if (!fs.existsSync(cp)) continue;
+    for (const m of fs.readFileSync(cp, "utf8")
+      .matchAll(/\n## \[\d+\] (?:user|user-feedback)\n\n([\s\S]*?)(?=\n## \[|\n> |$)/g)) {
+      const body = m[1].trim();
+      if (body.length < 60) continue;
+      const key = body.slice(0, 120).replace(/\s+/g, " ");
+      if (!prefixes.has(key)) prefixes.set(key, { files: new Set(), sample: body.slice(0, 200) });
+      prefixes.get(key)!.files.add(r.file);
+    }
+  }
+  const repeated = [...prefixes.values()].filter((v) => v.files.size >= 3)
+    .sort((a, b) => b.files.size - a.files.size);
+  const injLines = [
+    "# Repeated user-turn openings — possible injected content", "",
+    "A user turn whose opening repeats verbatim across many sessions is usually machine-generated:",
+    "hook stdout (`UserPromptSubmit` / `UserPromptExpansion` / `SessionStart` / `Setup` inject raw",
+    "stdout with no marker), a slash-command body, or an injected skill document.", "",
+    "**Nothing here is dropped automatically.** People do re-send the same prompt, and a real user",
+    "turn has been observed in this table. Review it and, for anything that is genuinely not the",
+    "user speaking, add a matcher or exclude the sessions before Stage 2.", "",
+    `| Sessions | Opening |`, `|---------:|---------|`,
+  ];
+  for (const v of repeated)
+    injLines.push(`| ${v.files.size} | ${v.sample.replace(/\s+/g, " ").replace(/\|/g, "\\|").slice(0, 150)} |`);
+  if (!repeated.length) injLines.push("| — | none |");
+  fs.writeFileSync(path.join(run, "inventory", "injected-turns.md"), injLines.join("\n") + "\n", "utf8");
+
   const kept = rows.filter((r) => r.status === "kept");
-  const pending = rows.filter((r) => r.status === "pending-theme");
   const census = rows.filter((r) => r.reason === "low-intervention");
 
   // manifest.md — human-readable funnel result
   const md: string[] = ["# Stage 1 Manifest", ""];
   const drops = new Map<string, number>();
   for (const r of rows) if (r.status === "dropped") drops.set(r.reason!, (drops.get(r.reason!) || 0) + 1);
-  md.push(`| Item | Count |`, `|------|------:|`, `| Discovered (main sessions, normalized) | ${rows.length} |`, `| Kept (analysis set) | ${kept.length} |`, `| Pending theme (needs themes.json) | ${pending.length} |`);
+  md.push(`| Item | Count |`, `|------|------:|`, `| Discovered (main sessions, normalized) | ${rows.length} |`, `| Kept (analysis set) | ${kept.length} |`);
   for (const [reason, n] of [...drops.entries()].sort()) md.push(`| Dropped: ${reason} | ${n} |`);
   md.push("", "## Kept sessions", "", `| File | Interv | U | KB | Title |`, `|------|--------|--:|---:|-------|`);
   for (const r of kept)
     md.push(`| \`${r.file}\` | ${r.intervention} | ${r.userTurns} | ${Math.round(r.cleanedBytes / 1024)} | ${(r.title || "").slice(0, 60)} |`);
   fs.writeFileSync(path.join(run, "manifest.md"), md.join("\n") + "\n");
-
-  // pending-themes.md — worklist for the agent's theme bucketing pass
-  if (pending.length) {
-    const p: string[] = [
-      "# Mid-intervention sessions awaiting theme bucketing", "",
-      "Read each cleaned file for user intent, then write `{\"<file>\": \"<theme>\"}` into `inventory/themes.json`.",
-      `Whitelisted themes (kept): ${cfg.filter.midThemeWhitelist.join(", ")}. Other themes are dropped — give dropped sessions their real theme name too, so the audit stays readable.`, "",
-    ];
-    for (const r of pending) p.push(`- [ ] \`${r.file}\` U=${r.userTurns} ${(r.title || "").slice(0, 80)}`);
-    fs.writeFileSync(path.join(run, "inventory", "pending-themes.md"), p.join("\n") + "\n");
-  }
 
   // census list — excluded low-intervention sessions are the positive evidence
   // for what is already safely delegable; stage 1.5 annotates them.
@@ -314,8 +343,8 @@ function cmdFilter() {
     title: r.title, userTurns: r.userTurns, toolCalls: r.toolCalls,
   })));
 
-  console.log(`kept ${kept.length}, pending-theme ${pending.length}, dropped ${rows.length - kept.length - pending.length} → manifest.md`);
-  if (pending.length) console.log(`ACTION: bucket ${pending.length} mid-intervention sessions (inventory/pending-themes.md), then re-run filter`);
+  console.log(`kept ${kept.length}, dropped ${rows.length - kept.length} → manifest.md`);
+  console.log(`ACTION: run \`preview\` and have the user confirm the funnel before Stage 2.`);
 }
 
 function extractUserTurns(cleanedFile: string): { n: number; text: string }[] {
@@ -372,7 +401,6 @@ function cmdStats() {
   const stats = {
     total: rows.length,
     kept: count((r) => r.status === "kept"),
-    pendingTheme: count((r) => r.status === "pending-theme"),
     dropped: count((r) => r.status === "dropped"),
     bySource: {
       claude: { total: count((r) => r.source === "claude"), kept: count((r) => r.source === "claude" && r.status === "kept") },
@@ -530,6 +558,100 @@ function cmdLintRoles() {
   if (total) process.exit(1);
 }
 
+// ---------- preview ----------
+// The funnel is only trustworthy if the person whose sessions these are has looked at what
+// it kept and what it threw away. Thresholds are heuristics; a sample of real summaries is
+// the only cheap way to catch a filter that is silently wrong for this particular corpus.
+function firstUserTurn(run: string, file: string, max = 300): string {
+  const p = path.join(run, "cleaned", file);
+  if (!fs.existsSync(p)) return "(cleaned file missing)";
+  const t = fs.readFileSync(p, "utf8");
+  const m = /\n## \[\d+\] user\n\n([\s\S]*?)(?=\n## \[|\n> |\Z)/.exec(t);
+  const body = (m ? m[1] : "").replace(/\s+/g, " ").trim();
+  return body.length > max ? body.slice(0, max) + "…" : body || "(no user turn)";
+}
+
+function cmdPreview() {
+  const run = requireRun();
+  const cfg = loadConfig(run);
+  const n = parseInt(flag("n") || "4", 10);
+  const seed = parseInt(flag("seed") || "42", 10);
+  const rows = readJson<ManifestRow[]>(path.join(run, "inventory", "manifest.json"), []);
+  if (!rows.length) die("no manifest.json — run filter first");
+
+  const out: string[] = ["# Funnel Preview — confirm before Stage 2", ""];
+  out.push("Thresholds are heuristics. Read the samples below and confirm that what was kept is",
+    "worth analyzing and that nothing valuable was dropped. Adjust `config.json` and re-run",
+    "`filter` until this looks right; changing thresholds after Stage 2 means a new run.", "");
+
+  out.push("## Active filter settings", "",
+    `- Excluded project patterns: ${cfg.excludeProjectPatterns.length ? cfg.excludeProjectPatterns.map((x) => `\`${x}\``).join(", ") : "_(none — confirm this is intended)_"}`,
+    `- Minimum user text: ${cfg.filter.minUserTextBytes ? Math.round(cfg.filter.minUserTextBytes / 1024 * 10) / 10 + " KB" : "off — no size cut"}`,
+    `- Drop low-intervention sessions: ${cfg.filter.dropLowIntervention} (they become the delegation census, not a discard)`,
+    `- Self-reference filtering: ${cfg.filter.selfReference?.enabled} at >= ${cfg.filter.selfReference?.minDistinctHits} distinct markers`, "");
+
+  const kept = rows.filter((r) => r.status === "kept");
+  const groups = new Map<string, ManifestRow[]>();
+  for (const r of rows) if (r.status === "dropped") {
+    const key = (r.reason || "?").split(":")[0];
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(r);
+  }
+
+  out.push(`## Kept — ${kept.length} sessions, ${n} samples`, "");
+  for (const f of seededSample(kept.map((r) => r.file).sort(), n, seed)) {
+    const r = kept.find((x) => x.file === f)!;
+    out.push(`**\`${f}\`** · ${r.project || "-"} · intervention=${r.intervention} · user turns=${r.userTurns} · ${Math.round(r.cleanedBytes / 1024)} KB`,
+      "", `> ${firstUserTurn(run, f)}`, "");
+  }
+
+  out.push(`## Dropped — ${rows.length - kept.length} sessions across ${groups.size} reasons`, "");
+  for (const [reason, list] of [...groups.entries()].sort()) {
+    out.push(`### \`${reason}\` — ${list.length} sessions, ${Math.min(n, list.length)} samples`, "");
+    for (const f of seededSample(list.map((r) => r.file).sort(), n, seed)) {
+      const r = list.find((x) => x.file === f)!;
+      out.push(`**\`${f}\`** · ${r.project || "-"} · intervention=${r.intervention} · user turns=${r.userTurns} · ${Math.round(r.cleanedBytes / 1024)} KB`,
+        "", `> ${firstUserTurn(run, f)}`, "");
+    }
+  }
+  const inj = path.join(run, "inventory", "injected-turns.md");
+  if (fs.existsSync(inj)) {
+    const n = fs.readFileSync(inj, "utf8").split("\n").filter((l) => /^\| \d+ \|/.test(l)).length;
+    out.push("## Possibly injected user turns", "",
+      n ? `${n} opening(s) repeat verbatim across >=3 sessions — likely hook stdout, slash commands, or injected skill bodies. Review \`inventory/injected-turns.md\`; nothing there was dropped automatically.`
+        : "No repeated user-turn openings detected.", "");
+  }
+  const dest = path.join(run, "inventory", "funnel-preview.md");
+  fs.writeFileSync(dest, out.join("\n") + "\n", "utf8");
+  console.log(out.join("\n"));
+  console.log(`\n→ ${dest}`);
+  console.log("ACTION: show this to the user and get explicit confirmation before Stage 2.");
+}
+
+// ---------- tool-detail ----------
+// Tool arguments and results live outside cleaned/ (see recordsToMarkdown). This is the
+// way back in for the cases that genuinely need them.
+function cmdToolDetail() {
+  const run = requireRun();
+  const file = flag("file");
+  if (!file) die("missing --file <cleaned file name>");
+  const turn = flag("turn") ? parseInt(flag("turn")!, 10) : null;
+  const grep = flag("grep");
+  const p = path.join(run, "tool-details", file.replace(/\.md$/, "") + ".jsonl");
+  if (!fs.existsSync(p)) die(`no tool details for ${file} (looked in ${p})`);
+  let n = 0;
+  for (const line of fs.readFileSync(p, "utf8").split("\n")) {
+    if (!line.trim()) continue;
+    const d = JSON.parse(line) as { turn: number; kind: string; tool: string; id: string; body: string };
+    if (turn !== null && d.turn !== turn) continue;
+    if (grep && !d.body.includes(grep) && !d.tool.includes(grep)) continue;
+    console.log(`\n## [${d.turn}] ${d.kind} · ${d.tool}`);
+    console.log(d.body);
+    n++;
+  }
+  if (!n) console.log("(no matching tool records)");
+}
+
 switch (cmd) {
   case "init": cmdInit(); break;
   case "discover": cmdDiscover(); break;
@@ -538,7 +660,9 @@ switch (cmd) {
   case "user-turns": cmdUserTurns(); break;
   case "sample": cmdSample(); break;
   case "stats": cmdStats(); break;
+  case "preview": cmdPreview(); break;
+  case "tool-detail": cmdToolDetail(); break;
   case "lint-roles": cmdLintRoles(); break;
   default:
-    die(`unknown command "${cmd || ""}" — expected init|discover|normalize|filter|user-turns|sample|stats|lint-roles`);
+    die(`unknown command "${cmd || ""}" — expected init|discover|normalize|filter|preview|user-turns|sample|stats|tool-detail|lint-roles`);
 }

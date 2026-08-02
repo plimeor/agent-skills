@@ -142,6 +142,6 @@ export function normalizeClaude(
   };
   if (userTurns === 0 && assistantTurns === 0)
     stats.fallbackNote = "Empty or non-conversational session (no normalizable turns).";
-  const markdown = recordsToMarkdown({ ...entry, title }, records, stats, limits);
-  return { markdown, stats, title };
+  const { markdown, toolDetails } = recordsToMarkdown({ ...entry, title }, records, stats, limits);
+  return { markdown, stats, title, toolDetails };
 }

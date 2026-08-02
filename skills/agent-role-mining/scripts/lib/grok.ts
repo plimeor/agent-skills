@@ -160,6 +160,6 @@ export function normalizeGrok(
     intervention: interventionLevel({ userTurns, feedbackTurns, toolCalls, assistantTurns }),
     recordCount: records.length,
   };
-  const markdown = recordsToMarkdown(entry, records, stats, limits);
-  return { markdown, stats, title: entry.title ?? null };
+  const { markdown, toolDetails } = recordsToMarkdown(entry, records, stats, limits);
+  return { markdown, stats, title: entry.title ?? null, toolDetails };
 }
