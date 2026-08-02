@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// role-mining deterministic pipeline CLI (Bun, zero third-party deps).
+// create-crew deterministic pipeline CLI (Bun, zero third-party deps).
 //
 //   bun pipeline.ts init --workdir <dir> [--label <name>]
 //   bun pipeline.ts discover   --run <runDir>
@@ -10,7 +10,7 @@
 //   bun pipeline.ts user-turns --run <runDir> [--all]
 //   bun pipeline.ts sample     --run <runDir> --n 15 [--seed 42] [--pool kept|census|all]
 //   bun pipeline.ts stats      --run <runDir>
-//   bun pipeline.ts lint-roles --run <runDir>
+//   bun pipeline.ts lint-crew  --run <runDir>
 //
 // Every command is idempotent and writes only inside the run directory.
 // Source session stores are read-only. Every exclusion is logged with a reason.
@@ -38,9 +38,8 @@ interface Config {
     minUserTextBytes: number;
     dropLowIntervention: boolean;
     // Corpus self-reference filtering: keep sessions where the user was designing or
-    // evaluating this pipeline itself out of the analysis set. Without it the pipeline
-    // rediscovers its own framework inside its own output — part of the clustered roles
-    // then comes from the user's existing thinking about roles, not from observed behavior.
+    // evaluating create-crew / crew packaging itself out of the analysis set. Without it
+    // the pipeline rediscovers its own framework inside its own output.
     selfReference: {
       enabled: boolean;
       markers: string[];       // case-insensitive; scored by distinct marker types hit
@@ -85,8 +84,8 @@ const DEFAULT_CONFIG = (): Config => ({
     selfReference: {
       enabled: true,
       markers: [
-        "agent-role-mining", "role-mining", "roles.md", "signals-manifest.md",
-        "决策人格", "角色挖掘",
+        "create-crew", "crew skill", "Evaluation combos", "Boundary sources",
+        "signals-manifest", "决策人格", "角色挖掘",
       ],
       minDistinctHits: 2,
     },
@@ -121,12 +120,12 @@ const fileNameFor = (e: { source: string; id: string }) => `${e.source}_${e.id}.
 function cmdInit() {
   // Default keeps run artifacts inside the project the user is working in,
   // under a namespaced folder that is easy to gitignore or clean up.
-  const workdir = flag("workdir") || path.join(process.cwd(), ".artifacts", "agent-role-mining");
+  const workdir = flag("workdir") || path.join(process.cwd(), ".artifacts", "create-crew");
   const label = flag("label") || "run";
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 13).replace("T", "-");
   const run = path.join(path.resolve(workdir), "runs", `${stamp}-${label}`);
   ensureDir(run);
-  for (const d of ["inventory", "cleaned", "user-turns", "census", "signals", "validation"])
+  for (const d of ["inventory", "cleaned", "user-turns", "census", "signals", "validation", "skill", "skill/roles", "skill/references"])
     ensureDir(path.join(run, d));
   writeJson(path.join(run, "config.json"), DEFAULT_CONFIG());
   console.log(run);
@@ -421,10 +420,9 @@ function cmdStats() {
   console.log(JSON.stringify(stats, null, 2));
 }
 
-// ---------- lint-roles ----------
-// Mechanical hygiene check for the Stage 3/4 deliverables. The rules themselves live in
-// references/stage3-roles.md; this only turns a violation into a non-zero exit code instead
-// of relying on the executor to remember. Patterns match Chinese artifact prose by design.
+// ---------- lint-crew ----------
+// Mechanical hygiene for Stage 3 crew package + audit artifacts. Rules live in
+// references/stage3-roles.md; this turns violations into a non-zero exit.
 interface Violation { file: string; line: number; rule: string; text: string }
 
 const PATCH_STYLE: Array<[string, RegExp]> = [
@@ -437,7 +435,6 @@ const PATCH_STYLE: Array<[string, RegExp]> = [
   ["this-revision", /(本次|上一版|上一轮|旧版)(修订|改动|版本)/],
   ["added-note", /（[^）\n]{0,10}(新增|补充|后加|回放新增)[^）\n]{0,10}）/],
   ["changelog", /(变更记录|修订记录|变更日志|changelog|revision history)/i],
-  // Same forms in English, for artifacts written in an English-language corpus
   ["was-now-en", /\b(formerly|previously|originally)\b[^\n.]{0,30}\b(now|renamed to|changed to)\b/i],
   ["removed-en", /\b(has been|now)\s+(removed|deleted|deprecated)\b/i],
   ["revised-en", /\b(revised|updated|amended)\s+accordingly\b/i],
@@ -448,35 +445,29 @@ function lintFile(file: string, body: string, checks: string[]): Violation[] {
   const out: Violation[] = [];
   const lines = body.split("\n");
   const add = (i: number, rule: string, text: string) =>
-    out.push({ file: path.basename(file), line: i + 1, rule, text: text.trim().slice(0, 110) });
+    out.push({ file, line: i + 1, rule, text: text.trim().slice(0, 110) });
 
-  // Section numbers actually defined by headings (`## §3`, `### 3.2`)
   const defined = new Set<string>();
   lines.forEach((l) => {
     const m = /^#{2,6}\s*§?(\d+(?:\.\d+)*)/.exec(l);
-    if (m) { defined.add(m[1]); const top = m[1].split(".")[0]; defined.add(top); }
+    if (m) { defined.add(m[1]); defined.add(m[1].split(".")[0]); }
   });
 
   lines.forEach((l, i) => {
     if (l.startsWith("<!--lint-ignore")) return;
 
     if (checks.includes("id")) {
-      // Session IDs in all three shapes: prefixed, bare 8-hex, full UUID.
-      // Bare 8-hex must contain both a digit and an a-f letter, or run stamps (20260801) false-positive.
       const idRe = /\b(?:claude|grok)_[0-9a-f]{6,}\b|\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b|(?<![0-9a-fA-F_-])(?=[0-9a-f]{8}(?![0-9a-fA-F]))(?=[a-f0-9]*\d)(?=[a-f0-9]*[a-f])[0-9a-f]{8}(?![0-9a-fA-F])/g;
       for (const m of l.matchAll(idRe)) add(i, "session-id", m[0]);
     }
     if (checks.includes("turn")) {
       for (const m of l.matchAll(/\[\d+\]/g)) add(i, "turn-ref", m[0]);
-      // Inline evidence anchors: [E12], [AD-07], 见证据 3
       for (const m of l.matchAll(/\[[A-Z]{1,3}-?\d+\]|见证据\s*\d+/g)) add(i, "inline-anchor", m[0]);
     }
     if (checks.includes("patch")) {
       for (const [name, re] of PATCH_STYLE) if (re.test(l)) add(i, `patch-style:${name}`, l);
     }
     if (checks.includes("section")) {
-      // In-file §N references need a matching heading. References prefixed with `roles-*.md`
-      // or `Stage N` point at another document, so they are skipped.
       const stripped = l
         .replace(/`?roles-(method|evidence)\.md`?[^§\n]{0,24}§\d+(\.\d+)*/g, "")
         .replace(/Stage\s*\d[^§\n]{0,8}§\d+(\.\d+)*/g, "");
@@ -487,7 +478,6 @@ function lintFile(file: string, body: string, checks: string[]): Violation[] {
   });
 
   if (checks.includes("section")) {
-    // A subsection number must match its parent: no `### 11.1` under `## §7`
     let parent = "";
     lines.forEach((l, i) => {
       const h2 = /^##\s+§?(\d+)\s/.exec(l);
@@ -499,54 +489,111 @@ function lintFile(file: string, body: string, checks: string[]): Violation[] {
   return out;
 }
 
-function cmdLintRoles() {
-  const run = requireRun();
-  const p = (f: string) => path.join(run, f);
-  const read = (f: string) => (fs.existsSync(p(f)) ? fs.readFileSync(p(f), "utf8") : null);
+function walkMdFiles(dir: string, base = dir): string[] {
+  if (!fs.existsSync(dir)) return [];
+  const out: string[] = [];
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, ent.name);
+    if (ent.isDirectory()) out.push(...walkMdFiles(abs, base));
+    else if (ent.name.endsWith(".md")) out.push(abs);
+  }
+  return out;
+}
 
-  const roles = read("roles.md");
+function cmdLintCrew() {
+  const run = requireRun();
+  const p = (...parts: string[]) => path.join(run, ...parts);
+  const read = (rel: string) => (fs.existsSync(p(rel)) ? fs.readFileSync(p(rel), "utf8") : null);
+
+  const skillMd = read("skill/SKILL.md");
   const method = read("roles-method.md");
   const evidence = read("roles-evidence.md");
-  if (!roles) die(`no roles.md in ${run} — run Stage 3 first`);
-
   const v: Violation[] = [];
-  // roles.md is the deliverable: check IDs, turn refs, anchors, patch-style prose and
-  // dangling references (stage3 §3.0, §3.1)
-  v.push(...lintFile("roles.md", roles, ["id", "turn", "patch", "section"]));
-  // roles-method.md may carry provenance, but the writing contract applies equally
+
+  if (!skillMd) die(`no skill/SKILL.md in ${run} — Stage 3 must write the crew package`);
+
+  // Crew package hygiene (no session ids / turn refs in mount surface)
+  v.push(...lintFile("skill/SKILL.md", skillMd, ["id", "turn", "patch", "section"]));
+  for (const abs of walkMdFiles(p("skill"))) {
+    const rel = path.relative(run, abs).split(path.sep).join("/");
+    if (rel === "skill/SKILL.md") continue;
+    v.push(...lintFile(rel, fs.readFileSync(abs, "utf8"), ["id", "turn", "patch"]));
+  }
   if (method) v.push(...lintFile("roles-method.md", method, ["patch", "section"]));
 
-  // Three-artifact split (stage3 §3D)
   if (!method) v.push({ file: "roles-method.md", line: 0, rule: "missing-artifact", text: "roles-method.md is missing" });
   if (!evidence) v.push({ file: "roles-evidence.md", line: 0, rule: "missing-artifact", text: "roles-evidence.md is missing" });
 
-  // Known-limits block (stage3 §3E): must exist and stay within 6 lines
-  const bIdx = roles.split("\n").findIndex((l) => /已知边界|Known limits/i.test(l));
-  if (bIdx < 0) {
-    v.push({ file: "roles.md", line: 0, rule: "missing-boundary-block", text: "no known-limits block at the top" });
-  } else {
-    const bullets = roles.split("\n").slice(bIdx + 1).findIndex((l) => !l.trimStart().startsWith("-") && l.trim() !== "");
-    const n = roles.split("\n").slice(bIdx + 1, bIdx + 1 + (bullets < 0 ? 0 : bullets)).filter((l) => l.trim().startsWith("-")).length;
-    if (n === 0) v.push({ file: "roles.md", line: bIdx + 1, rule: "empty-boundary-block", text: "known-limits block has no entries" });
-    if (n > 6) v.push({ file: "roles.md", line: bIdx + 1, rule: "boundary-block-too-long", text: `${n} lines, limit is 6` });
+  // name: crew
+  if (!/^name:\s*crew\s*$/m.test(skillMd)) {
+    v.push({ file: "skill/SKILL.md", line: 0, rule: "crew-name", text: "frontmatter name: must be crew" });
   }
 
-  // Spec section (stage3 §3D): mountable short surface; progressive disclosure
-  if (!/^##\s+(Spec|规格)\b/m.test(roles)) {
-    v.push({ file: "roles.md", line: 0, rule: "missing-spec-section", text: "no ## Spec (or ## 规格) section — mount surface required" });
+  // Required sections in crew SKILL.md
+  for (const [re, rule, label] of [
+    [/Known limits|已知边界/i, "missing-boundary-block", "Known limits"],
+    [/^##\s+Routing\b/m, "missing-routing", "## Routing"],
+    [/^##\s+Role index\b/m, "missing-role-index", "## Role index"],
+    [/^##\s+Evaluation combos\b/m, "missing-evaluation-combos", "## Evaluation combos"],
+  ] as const) {
+    if (!re.test(skillMd)) v.push({ file: "skill/SKILL.md", line: 0, rule, text: `missing ${label}` });
   }
 
-  // Boundary sources table (stage3 §3C′): dual-source census/friction audit
+  // Known-limits bullets ≤6
+  const bIdx = skillMd.split("\n").findIndex((l) => /已知边界|Known limits/i.test(l));
+  if (bIdx >= 0) {
+    const lines = skillMd.split("\n");
+    let n = 0;
+    for (let i = bIdx + 1; i < lines.length; i++) {
+      const t = lines[i].trim();
+      if (t.startsWith("#")) break;
+      if (t.startsWith("-")) n++;
+      else if (t !== "" && n > 0) break;
+    }
+    if (n === 0) v.push({ file: "skill/SKILL.md", line: bIdx + 1, rule: "empty-boundary-block", text: "known-limits has no bullets" });
+    if (n > 6) v.push({ file: "skill/SKILL.md", line: bIdx + 1, rule: "boundary-block-too-long", text: `${n} lines, limit is 6` });
+  }
+
+  // Role index paths + Spec fields on role files
+  const roleFiles = walkMdFiles(p("skill", "roles")).filter((f) => path.basename(f) !== "_shared.md");
+  if (roleFiles.length === 0) {
+    v.push({ file: "skill/roles", line: 0, rule: "no-roles", text: "skill/roles/ has no role files" });
+  }
+
+  const fieldRe = (label: string) => new RegExp(`\\*\\*${label}\\*\\*|${label}\\s*:`, "i");
+  for (const abs of roleFiles) {
+    const rel = path.relative(run, abs).split(path.sep).join("/");
+    const body = fs.readFileSync(abs, "utf8");
+    for (const f of ["Trigger", "Absorbs", "Escalates", "Phase", "Success", "Responsibility"]) {
+      // Chinese corpora may use 触发/吸收/上报 etc. — accept EN labels as contract default
+      if (!fieldRe(f).test(body) && !new RegExp(f === "Trigger" ? "触发" : f === "Absorbs" ? "吸收|自主" : f === "Escalates" ? "上报|升级|交还" : f === "Phase" ? "阶段|batch|dialogic" : f === "Success" ? "成功" : "职责|责任", "i").test(body)) {
+        v.push({ file: rel, line: 0, rule: "missing-spec-field", text: `role file missing field-like ${f}` });
+      }
+    }
+  }
+
+  // Paths in Role index table rows: look for roles/....md
+  for (const m of skillMd.matchAll(/roles\/[A-Za-z0-9_./-]+\.md/g)) {
+    const rel = "skill/" + m[0].replace(/^\.\//, "");
+    if (!fs.existsSync(p(rel)) && !fs.existsSync(p(m[0]))) {
+      // table paths are relative to skill/
+      if (!fs.existsSync(p("skill", m[0]))) {
+        v.push({ file: "skill/SKILL.md", line: 0, rule: "dangling-role-path", text: m[0] });
+      }
+    }
+  }
+
   if (method && !/^##\s+(Boundary sources|边界来源)\b/m.test(method)) {
-    v.push({ file: "roles-method.md", line: 0, rule: "missing-boundary-sources", text: "no ## Boundary sources (or ## 边界来源) table" });
+    v.push({ file: "roles-method.md", line: 0, rule: "missing-boundary-sources", text: "no ## Boundary sources table" });
   }
 
-  // Quote join (stage3 §3.0): every quote in roles.md must resolve to a row in the evidence table
+  // Quote join: 「」 in skill package → evidence table
   const norm = (s: string) => s.replace(/[\s`｜|\\『』「」…\.·]/g, "");
   const unjoined: string[] = [];
   if (evidence) {
     const cells = evidence.split("\n").filter((l) => l.startsWith("|")).flatMap((l) => l.split("|")).map(norm).filter((s) => s.length >= 4);
-    for (const m of roles.matchAll(/「([^「」\n]{6,})」/g)) {
+    const pack = walkMdFiles(p("skill")).map((f) => fs.readFileSync(f, "utf8")).join("\n");
+    for (const m of pack.matchAll(/「([^「」\n]{6,})」/g)) {
       const q = norm(m[1]);
       if (!cells.some((c) => c.includes(q) || q.includes(c))) unjoined.push(m[1].slice(0, 60));
     }
@@ -561,10 +608,12 @@ function cmdLintRoles() {
   }
 
   const report = { checkedAt: new Date().toISOString(), violations: v, unjoinedQuotes: unjoined, byRule };
+  writeJson(path.join(run, "inventory", "lint-crew.json"), report);
+  // keep old filename for tooling that still looks for it
   writeJson(path.join(run, "inventory", "lint-roles.json"), report);
 
   const total = v.length + unjoined.length;
-  console.log(`\n${total === 0 ? "PASS" : "FAIL"}: ${v.length} violations + ${unjoined.length} unsourced quotes → inventory/lint-roles.json`);
+  console.log(`\n${total === 0 ? "PASS" : "FAIL"}: ${v.length} violations + ${unjoined.length} unsourced quotes → inventory/lint-crew.json`);
   if (total) process.exit(1);
 }
 
@@ -673,7 +722,8 @@ switch (cmd) {
   case "stats": cmdStats(); break;
   case "preview": cmdPreview(); break;
   case "tool-detail": cmdToolDetail(); break;
-  case "lint-roles": cmdLintRoles(); break;
+  case "lint-crew":
+  case "lint-roles": cmdLintCrew(); break;
   default:
-    die(`unknown command "${cmd || ""}" — expected init|discover|normalize|filter|preview|user-turns|sample|stats|tool-detail|lint-roles`);
+    die(`unknown command "${cmd || ""}" — expected init|discover|normalize|filter|preview|user-turns|sample|stats|tool-detail|lint-crew`);
 }

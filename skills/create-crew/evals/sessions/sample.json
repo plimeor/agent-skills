@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "description": "Pinned main-session sample for live crew package evals.",
+  "maxNormalize": 12,
+  "refreshedAt": "2026-08-02T16:13:56.013Z",
+  "sessions": [
+    {
+      "source": "claude",
+      "id": "00d96aa9-6d2c-454a-9bf0-2dc779e4a119",
+      "projectHint": "-Users-plimeor-Documents-labs"
+    },
+    {
+      "source": "claude",
+      "id": "011f99ba-e2ab-486b-b217-d5620c0d37be",
+      "projectHint": "-Users-plimeor-Documents-labs"
+    },
+    {
+      "source": "claude",
+      "id": "01b70c41-e23a-4c7d-b782-341d7b943b86",
+      "projectHint": "-private-var-folders-2j-g5h0cnv524bc242fxd003bxm0000gn-T-english-coach-workdir"
+    },
+    {
+      "source": "claude",
+      "id": "02444820-5839-46fe-9053-c1b1ddc3c3e2",
+      "projectHint": "-Users-plimeor-Documents-agent-skills--grok-workflows"
+    },
+    {
+      "source": "claude",
+      "id": "03942ee4-ebef-4f1f-9f5c-43050fa039ec",
+      "projectHint": "-"
+    },
+    {
+      "source": "claude",
+      "id": "05890b36-f7d3-4957-8c83-4cb46d0cae25",
+      "projectHint": "-Users-plimeor-Documents-labs"
+    },
+    {
+      "source": "claude",
+      "id": "05b7c3f0-0b50-4ef8-9b75-b43617f2c523",
+      "projectHint": "-Users-plimeor-Documents-labs"
+    },
+    {
+      "source": "claude",
+      "id": "0a001a4b-b6f2-4b6a-a3e7-59d31ed284c9",
+      "projectHint": "-Users-plimeor-Documents-labs"
+    },
+    {
+      "source": "claude",
+      "id": "0a26049c-9616-4169-ae0a-fae71f0e6157",
+      "projectHint": "-private-var-folders-2j-g5h0cnv524bc242fxd003bxm0000gn-T-english-coach-workdir"
+    },
+    {
+      "source": "claude",
+      "id": "0a9f632e-8b11-4a25-a88b-f3f576f1bf0b",
+      "projectHint": "-private-var-folders-2j-g5h0cnv524bc242fxd003bxm0000gn-T-english-coach-workdir"
+    },
+    {
+      "source": "claude",
+      "id": "0c4b7b03-4a29-4982-9d59-2145850bcb8b",
+      "projectHint": "-private-var-folders-2j-g5h0cnv524bc242fxd003bxm0000gn-T-english-coach-workdir"
+    },
+    {
+      "source": "claude",
+      "id": "0e8f7c3d-1b26-4d31-95c0-4c4a7acb022d",
+      "projectHint": "-private-var-folders-2j-g5h0cnv524bc242fxd003bxm0000gn-T-english-coach-workdir"
+    }
+  ]
+}

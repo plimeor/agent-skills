@@ -1,4 +1,4 @@
-// Shared normalization primitives for role-mining pipeline.
+// Shared normalization primitives for create-crew pipeline.
 // Zero third-party dependencies; runs under Bun.
 import fs from "node:fs";
 import path from "node:path";
