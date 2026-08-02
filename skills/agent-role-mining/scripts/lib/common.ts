@@ -131,6 +131,10 @@ export function isNoiseUserText(text: string): boolean {
   if (t.includes("workflow completion reminder") && !t.includes("<user_query>")) return true;
   if (t.includes("<skill_information>") && !t.includes("<user_query>")) return true;
   if (t.startsWith("<local-command-stdout>") || t.startsWith("<command-name>")) return true;
+  if (t.startsWith("<command-message>") || t.startsWith("<command-args>")) return true;
+  if (/^\/[a-z][a-z0-9:-]*(\s|$)/i.test(t) && t.length < 80) return true;
+  // Background-task completion notices are harness output delivered through the user channel.
+  if (t.startsWith("<task-notification>") || (t.includes("<task-notification>") && t.length < 2000)) return true;
   // Skill bodies are injected as user messages. Counted as user turns they add thousands of
   // words of machine instructions to the "user's own words" channel.
   if (t.startsWith("Base directory for this skill:")) return true;
@@ -189,12 +193,12 @@ export function stripPasted(text: string): { prose: string; pastedRatio: number 
 // intent. There is no length cap: long corrections count, and pasted bulk does not.
 export function isFeedbackLike(text: string): boolean {
   if (!text) return false;
-  if (text.trim().length < 2) return false;
+  if (!text.trim()) return false;
   const { prose, pastedRatio } = stripPasted(text);
   // Dominated by pasted material: the few prose words around it are framing, not feedback.
   if (pastedRatio >= 0.7) return false;
   const t = prose.trim();
-  if (t.length < 2) return false;
+  if (!t) return false;
 
   // Requirement/spec documents pasted verbatim: heading- or list-dominated, and long.
   const ls = t.split("\n").filter((l) => l.trim());
@@ -203,10 +207,23 @@ export function isFeedbackLike(text: string): boolean {
     if (structural / ls.length >= 0.6) return false;
   }
 
-  const opener =
-    /^(yes|no|ok|不对|不是|继续|改|不要|停|好|确认|重做|再|cancel|stop|continue|fix|wrong|don't|do not)/i;
-  if (opener.test(t)) return true;
-  return /你(错|不对|应该|不要|必须)|不是这样|重新|改成|我要的是|别|不要再|少|多|只/.test(t);
+  // Four observable shapes of intervention. Recall matters more than precision here: the
+  // count feeds the intervention level, and a missed correction pushes a high-friction
+  // session down the funnel. Measured on a session that was almost entirely corrections,
+  // an earlier narrow pattern set recognised 21% of them.
+  const first = t.slice(0, 60);
+  // 1. Rulings and option selection — the shortest and strongest form of Owner input.
+  if (/^(yes|no|ok|好|对|行|可以|同意|批准|approved?|go|do it|[a-z]|\d+)$/i.test(t)) return true;
+  if (/^(走|选|用|按)\s*[\da-z]/i.test(first)) return true;
+  // 2. Corrections and negations.
+  if (/不对|不是这样|你(错|不对|应该|不要|必须)|不[用要需应能]|别(再)?|无需|没必要|重新|重做|改成|我要的是|不要再|wrong|don't|do not|shouldn't|instead/i.test(t)) return true;
+  // 3. Directives — imperative openers, with or without sequencing words.
+  if (/^(先|再|然后|接着|现在|继续|顺便|另外|请|帮我|麻烦)?\s*(做|跑|删|加|改|换|用|移除|去掉|补|写|出|给|看|查|试|停|修|建|拆|合|推|提交|重跑|继续|优化|调研|验证|实现|更新|检查)/.test(first)) return true;
+  if (/^(fix|run|add|remove|delete|change|rewrite|update|check|revert|retry|redo|split|merge|push|commit)\b/i.test(first)) return true;
+  // 4. Challenges — a question aimed at the agent's work.
+  if (/[？?]/.test(t) && t.length < 400) return true;
+  if (t.length < 200 && /啥|什么|怎么|为什么|为何|是否|有没有|多少|哪(个|些|一)|进度/.test(t)) return true;
+  return false;
 }
 
 // Heuristic, not gold-standard. Documented so downstream stages treat it as such.
