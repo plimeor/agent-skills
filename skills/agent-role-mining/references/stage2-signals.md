@@ -1,67 +1,69 @@
-# Stage 2 — 信号提取规程
+# Stage 2 — Signal Extraction
 
-输入：`cleaned/`（仅 manifest 中 `status: kept` 的会话）＋ `census/census-list.json`。
-输出：`signals/<file>.md`（与 cleaned 同名）、`signals-manifest.md`、`census/census.md`、`signals/_open-schema/`（对照组）。
+Input: `cleaned/` (only sessions with `status: kept` in the manifest) plus `census/census-list.json`.
+Output: `signals/<file>.md` (same name as the cleaned file), `signals-manifest.md`, `census/census.md`, `signals/_open-schema/` (control group).
 
-## 2A. 主提取（每个 kept 会话一份）
+Field labels are fixed so downstream stages can rely on them. Everything filled in around them is written in the corpus's own language, and **quoted user speech is never translated** — a translated quote is no longer evidence.
 
-目标：提取反映用户**思维模式、判断偏好、决策习惯**的信号。工具 stdout、文件全文几乎不含人格信息——只看用户原话与用户对 agent 输出的反应。
+## 2A. Main extraction (one file per kept session)
 
-铁律：**所有关键互动必须引用用户原话并标注轮次号**（`User [n]：「…」`）。禁止转述代替引用，禁止编造轮次。信号文件的可信度完全建立在可回溯上——下游 Stage 3 会拿轮次号回查 cleaned 原文。
+Goal: extract signals that reveal the user's **thinking patterns, judgment preferences, and decision habits**. Tool stdout and full file contents carry almost no persona information — look only at the user's own words and at the user's reactions to agent output.
 
-每份信号文件用这个模板：
+Hard rule: **every key interaction must quote the user verbatim with a turn number** (`User [n]: "…"`). Paraphrase may not stand in for quotation, and turn numbers may never be invented. The credibility of a signal file rests entirely on being traceable — downstream Stage 3 uses those turn numbers to check the original text in `cleaned/`.
 
-```markdown
-# Session 信号: <file>
-
-**Session 标识**：<source> / <session_id> / <intervention> / <title> / <project>
-**用户初始意图**：<一两句>
-**关键互动与反馈轨迹**：（User [n] + 原话；精选）
-- User [n]：「原话」— 一句语境
-**用户反复出现的反馈模式**：
-- 特别敏感、容易追问的方向：
-- 比较宽容、容易放过的方向：
-- 常见的纠正偏好：
-**被用户明确否定或纠正的方向**：
-**用户认为可以结束的信号** / **必须自己拍板的信号**：
-**价值评估**：高|中|低
-**价值理由**：<一句话>
-```
-
-价值评估标准（启发式，非金标）：信号密度、纠正清晰度、决策拍板完整度。干预高 ≠ 价值高（例：与编码无关的调研会话可以干预高但价值低）。
-
-批处理建议：按 10–15 个会话一批派 subagent 并行提取；每个 subagent 只拿 cleaned 文件路径清单，不拿其它会话的结论（避免互相污染）。失败的必须补发，不许静默缺失。
-
-## 2B. 开放模式对照组（反循环性控制）
-
-上面的模板预设了「裁决型 Owner」框架（反馈/否定/拍板）。**用预设框架提取，再从提取物聚类，聚出来的形状部分是模板的回声。** 对照组用来测量这个偏置：
-
-1. `bun pipeline.ts sample --run <run> --n 15 --seed 42 --pool kept` 取确定性样本。
-2. 对样本中每个会话，派**未读过主模板**的 subagent，只回答三个开放问题（不给任何维度清单）：
-   - 用户在这个会话里向 agent 要的是什么类型的帮助？
-   - 用户在会话中扮演了什么角色？做了哪些类型的动作？
-   - 出现了哪些关键时刻（转折、冲突、决定）？各引用一句原话。
-3. 结果写入 `signals/_open-schema/<file>.md`。
-4. 在 `signals-manifest.md` 末尾加「开放模式对照」一节：对照组聚出的形状与主模板形状**收敛于哪里、分歧于哪里**。分歧轴必须原样带入 Stage 3（很可能就是残差角色的来源）。
-
-## 2C. 放权普查（被排除的低干预会话）
-
-被漏斗丢弃的低干预会话是「什么已经可以安全放权」的正面证据——只看摩擦语料会把角色定义偏向管控。对 `census/census-list.json` 中每个会话做**轻量**标注（不做完整信号提取，每条三行）：
+Template for each signal file:
 
 ```markdown
-- `<file>`：任务类型=<一句>；结果=顺利完成|中途放弃|不适用；收尾方式=<用户最后一句或无>
+# Session signals: <file>
+
+**Session**: <source> / <session_id> / <intervention> / <title> / <project>
+**Initial user intent**: <one or two sentences>
+**Key interactions and feedback trace**: (User [n] + verbatim quote; selected)
+- User [n]: "<verbatim>" — one line of context
+**Recurring feedback patterns**:
+- Highly sensitive / likely to be pressed on:
+- Relatively tolerant / likely to be let go:
+- Common correction preferences:
+**Directions the user explicitly rejected or corrected**:
+**Signals that the user considers it finished** / **signals they must rule on personally**:
+**Value**: High|Medium|Low
+**Value rationale**: <one sentence>
 ```
 
-汇总到 `census/census.md`，末尾归纳：**哪些任务类型被反复成功放权**。该清单是 Stage 3 中各角色「主动吸收」边界与 Act 放权白名单的主要证据源。
+Value-rating criteria (heuristic, not ground truth): signal density, clarity of corrections, completeness of decision rulings. High intervention ≠ high value (example: a research session unrelated to coding can be high-intervention and low-value).
+
+Batching: dispatch subagents in batches of 10–15 sessions in parallel; each subagent receives only a list of cleaned file paths, never another session's conclusions (avoids cross-contamination). Failures must be re-dispatched, never silently missing. Dispatch mechanics — timeouts, success criteria, failure typing — are in `references/dispatch.md`.
+
+## 2B. Open-schema control group (anti-circularity control)
+
+The template above presupposes an "adjudicating Owner" frame (feedback / rejection / ruling). **Extract with a preset frame, then cluster the extractions, and part of the resulting shape is an echo of the template.** The control group measures that bias:
+
+1. `bun pipeline.ts sample --run <run> --n 15 --seed 42 --pool kept` for a deterministic sample.
+2. For each session in the sample, dispatch a subagent that **has not read the main template** and answers only three open questions (with no dimension list given):
+   - What kind of help was the user asking the agent for in this session?
+   - What role did the user play, and what kinds of actions did they take?
+   - What key moments occurred (turns, conflicts, decisions)? Quote one line for each.
+3. Write results to `signals/_open-schema/<file>.md`.
+4. Add an "open-schema control" section at the end of `signals-manifest.md`: where the control-group shapes **converge with and diverge from** the main-template shapes. Divergence axes must be carried into Stage 3 unchanged (they are a likely source of residual roles).
+
+## 2C. Delegation census (the excluded low-intervention sessions)
+
+Low-intervention sessions dropped by the funnel are positive evidence of **what can already be safely delegated** — looking only at friction material biases the role definitions toward control. Annotate each session in `census/census-list.json` **lightly** (no full signal extraction; three lines each):
+
+```markdown
+- `<file>`: task type=<one line>; outcome=completed|abandoned|n/a; closing=<user's last line, or none>
+```
+
+Aggregate into `census/census.md`, ending with a summary of **which task types were repeatedly delegated successfully**. That list is the main evidence source for each role's "absorbs autonomously" boundary and for the Act delegation whitelist in Stage 3.
 
 ## 2D. signals-manifest.md
 
-结构：
+Structure:
 
-1. Counts：价值高/中/低数量、按来源分布（与 `inventory/stats.json` 对得上）。
-2. 跨 session 高频反馈模式：特别敏感 / 相对宽容 / 纠正偏好 / 可结束 vs 必须拍板（每条注明支撑 session 数）。
-3. 全表：价值、干预、来源、session、用户轮次、意图摘要、信号文件链接。
-4. 高价值会话逐条「价值理由」。
-5. 开放模式对照结论（见 2B）。
+1. Counts: number of high/medium/low value, distribution by source (must reconcile with `inventory/stats.json`).
+2. Cross-session high-frequency feedback patterns: highly sensitive / relatively tolerant / correction preferences / can-end vs. must-rule (each annotated with the number of supporting sessions).
+3. Full table: value, intervention, source, session, user turns, intent summary, signal file link.
+4. Per-session "value rationale" for each high-value session.
+5. Open-schema control conclusions (see 2B).
 
-完成检查：`bun pipeline.ts stats --run <run>` 的 `signalsWritten` 必须等于 kept 数；缺一个都要补，不允许「基本都覆盖了」。
+Completion check: `bun pipeline.ts stats --run <run>` must report `signalsWritten` equal to the kept count. Every missing one gets re-dispatched; "basically all covered" is not acceptable.

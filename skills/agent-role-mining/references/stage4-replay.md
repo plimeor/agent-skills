@@ -1,43 +1,83 @@
-# Stage 4 — 前向回放验证规程
+# Stage 4 — Forward Replay Validation
 
-目的：`roles.md` 到此为止只被历史**解释**过，没被历史**检验**过。回放用真实会话测三个量，把角色定义从分类学变成被检验的设计。结果写入 `validation/`。
+Purpose: up to this point `roles.md` has only been **explained** by history, never **tested** against it. Replay measures three quantities against real sessions, turning the role definitions from taxonomy into tested design. Results go in `validation/`.
 
-## 4A. 选样
+## 4A. Sampling: two kinds of replay, an order of magnitude apart in resolution
 
-从高价值信号中选 ≥5 个会话，覆盖不同形态（至少含：一个批量裁决类、一个设计/塑形类、一个执行修复类）。`user-turns/<file>.md` 已把用户轮次单独抽出，第一条标 `(INITIAL)`。
+**Decide first which question this round answers.** The two questions have completely different sample-size requirements, and mixing them produces a number that supports no conclusion at all.
 
-## 4B. 回放方法
+| | **Descriptive replay** | **Comparative replay (A/B)** |
+|---|---|---|
+| Question | Roughly how well do these roles perform? | Did changing §N make it better? |
+| Sample | **≥5 sessions**, covering different shapes (at minimum: one batch-adjudication, one design/shaping, one execution/repair) | **Sized by total escalation points, not session count: no comparative conclusion below 100 escalation points** |
+| Output | Magnitude of the three metrics + per-session records | The delta between versions, and only after clearing the noise floor |
 
-对每个选中会话：
+**The denominator trap in comparative replay**: 14 sessions yield roughly 30 escalation points, and at that scale the measured noise floor of a same-input rerun reaches **7–10 percentage points** — any difference smaller than 10 points is unreadable, and that includes both "the change worked" and "the change did nothing". In a real run, a §N change showed no effect at n=14; raising the sample to 72 sessions (~250 escalation points) was what made it resolvable.
 
-1. 从 `roles.md` 的 prompt 骨架实例化各角色。
-2. 只给角色管道该会话的 **INITIAL 用户轮次**（外加必要的项目背景），**不给后续任何用户轮次**。
-3. 让管道跑到它认为需要 Owner 介入为止，记录：它会在哪些点升级给 Owner、升级的问题是什么、它会自行吸收哪些工作。
-4. 与真实会话对照（`user-turns/` 里的全部后续轮次就是真实 Owner 介入记录）。
+**So: compute the denominator before launching a comparison.** If it is too small, add sessions or run each configuration 3× and take the median. Do not take noise as a conclusion and edit `roles.md` on it.
 
-回放可用 subagent 执行；执行回放的 subagent 不得读取该会话的真实后续轮次（防泄漏）。对照阶段才允许读全量。
+`user-turns/<file>.md` already isolates the user turns; the first one is marked `(INITIAL)`.
 
-## 4C. 三个指标
+### Stage ordering (getting it backwards contaminates the control)
 
-每个会话产出 `validation/replay-<file>.md`：
+If one round includes both an **independent-chain rerun** (re-deriving roles from scratch with a different extractor or model) and an **open-schema control analysis**: **the independent rerun must come first.** Reversed, the independent chain has already seen the control's conclusions, its independence no longer holds, and both experiments are void.
 
-1. **升级准确率**：角色管道升级给 Owner 的点 vs 真实用户介入的点。
-   - precision：管道升级的点中，真实会话里用户确实介入/在意的比例（低 = 角色太啰嗦，会烦人）。
-   - recall：真实用户介入点中，被管道预先识别为需升级的比例（低 = 角色会越权或漏报）。
-2. **摩擦预防量**：真实会话中的怒点（越权、假完成、骑墙、参照搞错…），逐条判断：按角色约束执行是否根本不会发生？记「可预防 / 不可预防 / 不确定」。
-3. **参与密度削减估计**：把真实用户轮次逐条分类：
-   - `可吸收`：角色系统会替 Owner 做掉（或根本不产生这个问题）
-   - `真 Owner 决策`：无论如何都该人拍板
-   - `摩擦纠正`：因 agent 行为缺陷产生、角色约束应当预防
-   - `对话性`：设计对弈轮次——**不算节省目标**（对话型相位的价值在每轮质量，不在轮次数）
+## 4B. Replay method
 
-## 4D. 汇总与回流
+For each selected session:
 
-`validation/summary.md`：三指标汇总表 + 结论。判读基准：
+1. Instantiate the roles from the prompt skeletons in `roles.md`.
+2. Give the role pipeline only the session's **INITIAL user turn** (plus necessary project background), and **none of the later user turns**.
+3. Let the pipeline run until it decides Owner input is required, recording: which points it escalates to the Owner, what it asks, and what work it absorbs on its own.
+4. Compare against the real session (all subsequent turns in `user-turns/` are the record of real Owner intervention).
 
-- recall 低 → 角色「升级给人」定义漏轴，回 Stage 3 修。
-- precision 低 → 角色把可吸收的事上交，收紧「主动吸收」。
-- 摩擦预防量低 → 角色约束是空话，prompt 骨架要加得住手的硬边界。
-- `对话性` 占比高的会话形态 → 验证「对话型相位不承诺减负」的标注是否如实写进了 roles.md 与总体预期。
+Replay may be executed by subagents; the replaying subagent must not read the session's real subsequent turns (leak prevention). Only the comparison stage may read the full transcript. For dispatch mechanics — timeouts, re-dispatch, success criteria — see `references/dispatch.md`.
 
-把结论回写 `roles.md`（修订角色定义或在局限声明中量化预期收益），然后才算一轮完整迭代。下一轮重跑 Stage 4 时换一批会话，防止对着同一批样本过拟合。
+### Three leak paths; any one of them voids the round
+
+"Don't read the later turns" is **not sufficient**. All three below have actually happened:
+
+1. **If `roles.md` carries provenance, it is itself the leak source** — the replay agent **must** read it, and `session_id [turn]` directly exposes the identity and key moments of the session being replayed. Stage 3 §3.0 moves provenance out of `roles.md`; **run `lint-roles` before starting** (stage3 §3F) and confirm `session-id` and `turn-ref` are both zero.
+   **Give the replay agent only `roles.md`, never `roles-evidence.md` or `roles-method.md`** — the first is the provenance table, the second holds the residual list and per-session replay records.
+   > "I told it in the prompt not to look" is not a countermeasure — reachable material will be read. **Make isolation structural**: put only what should be read into the replay agent's working directory and leave the rest physically unreachable. Note that symlinks escape via `../`; use real copies.
+
+2. **The repository may already contain this session's own output.** The nature of the corpus guarantees it: one session's output is the next session's input — landed code, written documents, updated guidelines are all sitting there. **The replay agent should be barred from reading project source**; where background is genuinely needed, give only what the INITIAL turn already contains.
+
+3. **Re-testing on the same sample.** Clauses revised on the strength of last round's replay, checked again against the same sessions, is testing on the training set. **Use a different batch of sessions**; if the goal is to test whether last round's revision took effect, run and report the old batch and the new batch **separately**, never merged into one number.
+
+### Isolation must be verified afterwards, and only one verification method is correct
+
+Once structural isolation is in place, **prove it held** — from each replay agent's session log, extract **only the path arguments of tool calls** (the values of `file_path` / `path` / `pattern` / `cmd` / `command` / `glob`) and check for any access outside the working directory.
+
+**Do not grep the log body for path-like strings**: `roles.md`'s own text contains project names and directory names, so a replay agent merely restating a clause matches. Measured, that method produced a 14/14 all-alarm false result and burned a full round of triage. **The criterion is what it accessed, not what it mentioned.**
+
+### Same-input rerun group
+
+**Required every round**: run the same `roles.md` over the same sessions twice; the difference between the two results is this evaluation's noise floor (magnitude and how to raise resolution: §4A). **A difference smaller than the noise floor may not be reported as a conclusion** — including as a conclusion that the change did nothing.
+
+**Contamination audit is mandatory at scoring time**, not optional: check each prediction for content that could only come from later turns or from repository state; anything that hits **must be excluded from precision/recall**, and both figures — with and without that item — must be reported. **A labeled contaminated replay is useful; an unlabeled one is poison.**
+
+## 4C. The three metrics
+
+Each session produces `validation/replay-<file>.md`:
+
+1. **Escalation accuracy**: the points where the role pipeline escalates to the Owner vs. the points where the user really intervened.
+   - precision: of the points the pipeline escalated, the fraction where the user really did intervene or care (low = the roles are chatty and will annoy).
+   - recall: of the real user intervention points, the fraction the pipeline flagged in advance as needing escalation (low = the roles will overreach or miss).
+2. **Friction prevented**: for each anger point in the real session (overreach, false completion, fence-sitting, wrong reference…), judge whether executing under the role constraints would have prevented it entirely. Record as preventable / not preventable / uncertain.
+3. **Participation-density reduction estimate**: classify each real user turn:
+   - `absorbable`: the role system would have handled it (or the question never arises)
+   - `real Owner decision`: a human should rule on it regardless
+   - `friction correction`: caused by an agent behavior defect that the role constraints ought to prevent
+   - `dialogic`: design back-and-forth — **not a savings target** (the value of a dialogic phase is per-turn quality, not turn count)
+
+## 4D. Aggregation and write-back
+
+`validation/summary.md`: a three-metric summary table plus conclusions. Reading guide:
+
+- Low recall → the roles' "escalate to human" definition is missing an axis; go back to Stage 3 and fix it.
+- Low precision → the roles are handing up absorbable work; tighten "absorbs autonomously".
+- Low friction prevention → the role constraints are empty words; the prompt skeletons need hard boundaries that actually hold.
+- Session shapes with a high `dialogic` share → verify that the "dialogic phases promise no turn reduction" caveat is honestly stated in `roles.md` and in overall expectations.
+
+Write conclusions back: **metrics and per-session records go to `roles-method.md`**; **`roles.md` changes in exactly two places** — clauses the replay falsified, and the handful of numbers in the top "known limits" block (stage3 §3E). Replay data itself does not enter `roles.md`. Re-run `lint-roles` after write-back. Only then is the iteration complete. Use a different batch of sessions on the next Stage 4 round to avoid overfitting to one sample.

@@ -1,98 +1,109 @@
 ---
 name: agent-role-mining
-description: 从本机 Claude Code / Grok 历史会话逆向工程用户的「隐性角色与决策人格」，跑完整五阶段管道（发现→清洗过滤→信号提取→角色推断→回放验证），最终生成 roles.md 供 multi-agent 落地。当用户提到 role mining、角色挖掘、逆向工程自己的角色/决策人格、从 session 数据生成或更新 roles.md、重跑/重放 agent-analysis 管道、分析自己的会话历史提炼工作模式时使用；即使用户只说「重新跑一遍分析」「用最新 session 更新角色」也应使用本 skill。
+description: Reverse-engineer a user's implicit roles and decision persona from local Claude Code / Grok session history, running the full five-stage pipeline (discover → clean+filter → signal extraction → role inference → replay validation) to produce a roles.md for multi-agent deployment. Use when the user mentions role mining, "角色挖掘", reverse-engineering their own roles or decision persona, generating or updating roles.md from session data, re-running or replaying the agent-analysis pipeline, or analyzing their own session history to distill working patterns; also use for short asks like "rerun the analysis", "重新跑一遍分析", or "update the roles with the latest sessions".
 ---
 
 # Agent Role Mining
 
-从真实会话行为逆向用户的角色分工与决策人格：人很难凭空列出自己身上的角色，但会话史里有他主动发起了什么、怎么纠正 agent、什么必须亲自拍板。工具 stdout / 文件全文几乎不含人格信息，管道会大幅压缩它们，完整保留用户原话。
+Reverse-engineer a user's role division and decision persona from real session behavior: people struggle to enumerate the roles they occupy, but session history records what they initiated, how they corrected agents, and what they insist on ruling personally. Tool stdout and full file contents carry almost no persona information — the pipeline compresses them heavily and preserves the user's own words in full.
 
-最终交付物是一份双层 `roles.md`：Part 1 数据忠实的原始角色 + Part 2 可跨域复用的通用角色。
+The final deliverable is a two-layer `roles.md`: Part 1 data-faithful raw roles + Part 2 reusable cross-domain generic roles.
 
-## 运行前提
+## Prerequisites
 
-- 需要 `bun`（脚本零第三方依赖）。
-- 源数据只读：`~/.claude/projects/`、`~/.grok/sessions/` 永不写入。所有产物落在 run 目录内。
-- 完整跑一轮是重活（Stage 2/3/4 是大量 LLM 工作）。开始前告知用户预期规模（会话数 × 提取成本），大批量提取用 subagent 分批。
+- Requires `bun` (scripts have zero third-party dependencies).
+- Source data is read-only: `~/.claude/projects/` and `~/.grok/sessions/` are never written to. All artifacts land inside the run directory.
+- A full round is heavy work (Stages 2/3/4 are large amounts of LLM work). Tell the user the expected scale up front (session count × extraction cost); batch large extractions across subagents.
+- Artifacts are written in the corpus's own language; quoted user speech is never translated.
 
-## Run 目录与可复现契约
+## Run directory and reproducibility contract
 
 ```
 <workdir>/runs/<stamp>-<label>/
-├── config.json          # 全部参数快照；改参数 = 新 run
-├── inventory/           # 发现清单、排除审计（每条丢弃都有 reason）、themes.json、stats.json
-├── cleaned/             # Stage 1 trajectory（全部主会话，含被过滤的，保证可审计）
-├── manifest.md          # 漏斗结果 + 保留清单
-├── user-turns/          # 每会话用户轮次抽取（Stage 4 回放 + 开放模式对照用）
-├── census/              # 放权普查（被排除的低干预会话）
-├── signals/             # Stage 2 信号（_open-schema/ 为对照组）
+├── config.json          # snapshot of every parameter; changing a parameter = a new run
+├── inventory/           # discovery list, exclusion audit (every drop has a reason), themes.json, stats.json, lint-roles.json
+├── cleaned/             # Stage 1 trajectories (all main sessions, including filtered-out ones, for auditability)
+├── manifest.md          # funnel results + kept list
+├── user-turns/          # per-session user-turn extraction (for Stage 4 replay + open-schema control)
+├── census/              # delegation census (excluded low-intervention sessions)
+├── signals/             # Stage 2 signals (_open-schema/ is the control group)
 ├── signals-manifest.md
-├── roles.md             # Stage 3 交付物
-└── validation/          # Stage 4 回放结果
+├── roles.md             # Stage 3 deliverable (+ roles-method.md, roles-evidence.md)
+└── validation/          # Stage 4 replay results
 ```
 
-复现性来自：config 快照、确定性排序与种子采样、丢弃全量留痕、脚本幂等（重跑覆盖同名产物；`--skip-existing` 支持断点续跑）。对比两轮 run 就是对比两个 run 目录。
+Reproducibility comes from: the config snapshot, deterministic ordering and seeded sampling, a full audit trail of drops, and idempotent scripts (re-running overwrites same-named artifacts; `--skip-existing` supports resumption). Comparing two rounds means comparing two run directories.
 
-## 管道流程
+## Pipeline
 
-脚本一律通过 `bun <skill>/scripts/pipeline.ts <cmd> --run <runDir>` 调用。
+Scripts are always invoked as `bun <skill>/scripts/pipeline.ts <cmd> --run <runDir>`.
 
-### Stage 0 — 初始化
+### Stage 0 — Initialize
 
 ```bash
-bun scripts/pipeline.ts init --label <名字>   # 打印 run 目录
+bun scripts/pipeline.ts init --label <name>   # prints the run directory
 ```
 
-workdir 默认为 `<当前目录>/.artifacts/agent-role-mining/`（不存在会自动创建）；用户点名了位置才传 `--workdir` 覆盖。跑完第一步要把 run 目录路径告诉用户。
+`workdir` defaults to `<cwd>/.artifacts/agent-role-mining/` (created if absent); pass `--workdir` only when the user named a location. After this first step, tell the user the run directory path.
 
-默认 config 排除 `english-coach` 项目、丢低干预、中干预主题白名单 `review/bugfix/migration/i18n-docs`、cleaned ≥20KB。用户域不同就先改 `config.json` 再继续——阈值是启发式，不是真理。
+The default config excludes the `english-coach` project, drops low-intervention sessions, whitelists mid-intervention themes `review/bugfix/migration/i18n-docs`, requires cleaned ≥20KB, and **enables corpus self-reference filtering**. If the user's domain differs, edit `config.json` before continuing — the thresholds are heuristics, not truths.
 
-### Stage 1 — 发现、清洗、过滤
+### Stage 1 — Discover, clean, filter
 
 ```bash
 bun scripts/pipeline.ts discover --run <run>
-bun scripts/pipeline.ts normalize --run <run>          # 全量；可 --only/--limit/--skip-existing
+bun scripts/pipeline.ts normalize --run <run>          # full sweep; supports --only/--limit/--skip-existing
 bun scripts/pipeline.ts filter --run <run>
 ```
 
-- 主会话定义：Claude = `<project>/<uuid>.jsonl`（排除 `agent-*.jsonl`、`subagents/`）；Grok = `session_kind ∉ {subagent, subagent_resume}`。
-- filter 后若有 `pending-theme`：读 `inventory/pending-themes.md`，逐个读 cleaned 判断主题，把结果写进 `inventory/themes.json`（被丢弃的也要写真实主题名，保证审计可读），再重跑 `filter`。主题分桶需要判断力，这一步是 agent 的活，不是脚本的。
-- 完成后跑 `stats` 核对漏斗数字，并抽查 2–3 个 cleaned 文件确认清洗质量（用户原话完整、噪音已剔）。
+- Main-session definition: Claude = `<project>/<uuid>.jsonl` (excluding `agent-*.jsonl` and `subagents/`); Grok = `session_kind ∉ {subagent, subagent_resume}`.
+- If `filter` leaves any `pending-theme`: read `inventory/pending-themes.md`, read each cleaned file to judge its theme, write the results into `inventory/themes.json` (dropped sessions get their real theme name too, so the audit stays readable), then re-run `filter`. Theme bucketing needs judgment — this step is agent work, not script work.
+- **Corpus self-reference filtering**: if sessions where the user designed or evaluated this very pipeline enter the analysis set, the pipeline rediscovers its own framework **inside its own prior output** — part of the clustered roles then comes from the user's existing thinking about roles in the corpus, rather than being discovered from behavior. `filter` detects this automatically (default: ≥2 distinct marker types → dropped, reason=`self-referential`) and writes **every session with ≥1 hit** into `inventory/self-referential.md`. **Sessions hitting below threshold remain in the analysis set** — if Stage 3 conclusions look like a restatement of a framework already present in the corpus, come back to this table first. Detection lives in `filter` rather than `normalize`, so an existing run only needs `filter` re-run after a config change.
+- Afterwards run `stats` to reconcile the funnel numbers, and spot-check 2–3 cleaned files for cleaning quality (user's words intact, noise stripped).
 
-### Stage 1.5 — 放权普查 + 用户轮次抽取
+### Stage 1.5 — Delegation census + user-turn extraction
 
 ```bash
 bun scripts/pipeline.ts user-turns --run <run>
 ```
 
-被丢弃的低干预会话是「什么已经可以安全放权」的正面证据，只看摩擦语料会把角色定义偏向管控。按 `references/stage2-signals.md` §2C 对 `census/census-list.json` 做轻量标注 → `census/census.md`。
+The low-intervention sessions the funnel discarded are positive evidence of what can already be safely delegated; looking only at friction material biases the role definitions toward control. Annotate `census/census-list.json` per `references/stage2-signals.md` §2C → `census/census.md`.
 
-### Stage 2 — 信号提取
+### Stage 2 — Signal extraction
 
-读 `references/stage2-signals.md`，按其模板对每个 kept 会话产出信号文件。三条硬要求：
+Read `references/stage2-signals.md` and produce a signal file per kept session using its template. Three hard requirements:
 
-1. 关键互动必须引用用户原话 + 轮次号（可回溯到 cleaned）。
-2. 跑开放模式对照组（§2B，`sample --n 15 --seed 42`）——预设框架提取会循环论证，对照组测量这个偏置。
-3. 覆盖必须齐：`stats` 的 `signalsWritten` = kept 数。
+1. Key interactions must quote the user verbatim with turn numbers (traceable back to `cleaned/`).
+2. Run the open-schema control group (§2B, `sample --n 15 --seed 42`) — preset-frame extraction is circular, and the control measures that bias.
+3. Coverage must be complete: `signalsWritten` from `stats` equals the kept count.
 
-### Stage 3 — 角色推断
+Batch dispatch mechanics — timeouts, success criteria, failure typing, re-dispatch — are in `references/dispatch.md`. Reading it before dispatching is cheaper than rediscovering it: every trap there was hit in a real run and cost 15–40 minutes each.
 
-读 `references/stage3-roles.md`，产出双层 `roles.md`。不可省略的三件事：
+### Stage 3 — Role inference
 
-- **残差记账**：每个高价值信号要么入角色，要么进残差清单；描述性结论静默丢弃不合形样本 = 保真缺陷。
-- **相位类型**：每个角色标「批处理型 / 对话型」——设计类职能是对话型，目标是每轮质量而非减少轮次。
-- **Owner 在系统外**，命名与层级选择属 Owner 拍板（L5），不得说成「数据证明」。
+Read `references/stage3-roles.md` and produce the two-layer `roles.md`. Four things that cannot be skipped:
 
-### Stage 4 — 回放验证
+- **Residual accounting**: every high-value signal either enters a role or enters the residual list; silently discarding non-conforming samples from a descriptive conclusion is a fidelity defect.
+- **Phase type**: label each role batch or dialogic — design functions are dialogic, where the goal is per-turn quality rather than fewer turns.
+- **The Owner sits outside the system**; naming and layering are Owner rulings (L5) and must not be described as "proven by the data".
+- **Run `lint-roles` before delivery** (§3F). The deliverable-hygiene rules are exactly the class an LLM drops; a non-zero exit means the work isn't finished.
 
-读 `references/stage4-replay.md`。用 ≥5 个真实会话的 INITIAL 轮次回放角色管道（回放者不得看真实后续轮次），测升级准确率、摩擦预防量、参与密度削减估计，结论回写 `roles.md`。没跑回放的 roles.md 要在局限声明里写明「未经回放检验」。
+```bash
+bun scripts/pipeline.ts lint-roles --run <run>
+```
 
-## 迭代
+### Stage 4 — Replay validation
 
-- 新会话积累后重跑：同 config 新 run → 全管道 → 对比两轮 `roles.md` 与 `validation/summary.md`，角色应趋稳；反复漂移说明聚类过拟合于批次。
-- 只想改 Stage 3 结论：复用旧 run 的 signals，直接重做 Stage 3/4。
-- 修改过滤阈值：必须新 run（config 是快照），并在结论中注明漏斗差异。
+Read `references/stage4-replay.md`. Replay the role pipeline from the INITIAL turns of real sessions (the replay agent must not see the real subsequent turns), measuring escalation accuracy, friction prevented, and participation-density reduction; write conclusions back to `roles.md`. A `roles.md` with no replay must say "not replay-tested" in its limitations.
 
-## 诚实条款
+**Sizing depends on the question**: ≥5 sessions is enough for a descriptive replay, but a **comparative (A/B) replay needs ≥100 escalation points** — at ~30 points the measured noise floor is 7–10 percentage points and no difference smaller than that is readable in either direction.
 
-各阶段的价值/干预标签是启发式，非金标；写进 manifest 与 roles.md 时保持这个措辞。覆盖了什么、没覆盖什么，如实写在产物里——这份 skill 的产出会被用来配置替用户做事的 agent，虚高的完成度会直接变成越权的 agent。
+## Iteration
+
+- After new sessions accumulate: same config, new run → full pipeline → compare the two rounds' `roles.md` and `validation/summary.md`. Roles should stabilize; repeated drift means the clustering is overfitting to the batch.
+- To revise only Stage 3 conclusions: reuse the old run's signals and redo Stages 3/4.
+- To change filter thresholds: a new run is mandatory (config is a snapshot), and the funnel difference must be noted in the conclusions.
+
+## Honesty clause
+
+Value and intervention labels at every stage are heuristics, not ground truth; keep that wording in the manifest and in `roles.md`. What was covered and what was not gets written honestly into the artifacts — this skill's output is used to configure agents that act on the user's behalf, and inflated completeness turns directly into an overreaching agent.
