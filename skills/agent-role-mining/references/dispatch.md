@@ -44,9 +44,25 @@ Long reports hit the model's max_tokens, and the result is a **truncated tail** 
 
 Give a hard cap in the prompt ("no more than N lines"). It is far cheaper than retrying after the fact, and it matters most with structured output, where a truncated JSON is simply unparseable.
 
-## D5. Concurrency and isolation
+## D5. Use a work queue, never a barrier
 
-- Size concurrency to the machine; 8-way is a safe starting point. Batching with a `wait` per group is easier to debug than unbounded fan-out.
+**Keep N tasks in flight and start a replacement the moment any one exits.** Do not dispatch in fixed groups of N and wait for the whole group — a group's wall-clock equals its slowest member, and batch LLM runtimes are long-tailed (D3), so the slowest member is routinely 10× the median.
+
+Measured on a real 95-task batch dispatched in barrier groups of 8:
+
+| | |
+|---|---|
+| Total work | 656 min |
+| Ideal wall-clock at 8-way saturation | 82 min |
+| Actual wall-clock with barriers | **167 min** |
+| **Slot-time idle** | **51%** |
+
+One 3902-second task held seven slots idle for 65 minutes. The concurrency number was not the problem — the barrier was.
+
+Concurrency sizing: these are **network-bound API calls, not CPU-bound local work**, so core count is the wrong input. Size against the provider's rate limit, and confirm before raising — a real batch at 8-way showed zero rate-limit errors and ~59 MB resident per process, so local resources are not the constraint either. Do not infer a limit from failures without reading them: in the same batch, grepping raw output for `429|rate limit|quota` produced 8 apparent hits, **all of them report body text** (a turn number `[423]`, a session ID containing `4296`, the phrase "quota fact") and **not one real rate-limit error**.
+
+Implementation note: `wait -n` gives a work queue in bash ≥4.3, but macOS ships bash 3.2. `xargs -P N -n 1 <worker-script>` is a genuine work queue everywhere and avoids `export -f` (which also breaks on multibyte arguments — see the appendix).
+
 - **Each worker gets only its own input**, never another worker's conclusions — cross-contamination within a batch is the main distortion source for analysis tasks (same requirement as Stage 2 §2A).
 - Where leakage matters, make isolation **structural**: put only the readable material in the worker's working directory and make everything else physically unreachable. Symlinks escape via `../`, so use real copies. For how to verify isolation afterwards, see stage4 §4B.
 
