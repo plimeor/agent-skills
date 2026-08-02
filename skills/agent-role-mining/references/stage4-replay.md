@@ -9,10 +9,18 @@ Purpose: up to this point `roles.md` has only been **explained** by history, nev
 | | **Descriptive replay** | **Comparative replay (A/B)** |
 |---|---|---|
 | Question | Roughly how well do these roles perform? | Did changing §N make it better? |
-| Sample | **≥5 sessions**, covering different shapes (at minimum: one batch-adjudication, one design/shaping, one execution/repair) | **Sized by total escalation points, not session count: no comparative conclusion below 100 escalation points** |
+| Sample | **≥5 sessions**, covering different shapes (at minimum: one batch-adjudication, one design/shaping, one execution/repair) | Every session scored **once, with both versions in the same pass** — see below |
 | Output | Magnitude of the three metrics + per-session records | The delta between versions, and only after clearing the noise floor |
 
-**Compute the denominator before launching a comparison, and measure the noise floor on this corpus rather than assuming one.** A few dozen escalation points typically sit below it, and below the noise floor no difference is readable in either direction — including "the change did nothing". If the denominator is too small, add sessions or run each configuration 3× and take the median. Do not take noise as a conclusion and edit `roles.md` on it.
+### A comparison scores both versions in one pass, or it is confounded
+
+**Never score the two versions independently.** Escalation accuracy and friction prevention are ratios over ground truth — how many points the user really intervened at, how many real friction points a session contained. Ground truth belongs to the session, not to the version, so a scorer counting it twice gives two different answers, and that disagreement lands directly in the denominators being compared.
+
+So: give one scorer the session, both versions' predictions, and have it **count the ground truth once** and score both predictions against it. Version-independent quantities are then identical by construction, and the difference that remains is the effect.
+
+**Sample size does not fix this.** Scorer disagreement about what counts as an intervention point is systematic, not random: it does not average out, so a bigger denominator buys nothing. The tell is comparing the same version-independent quantity across two batches — if the signed difference is a meaningful fraction of the total rather than near zero, the comparison is confounded and the numbers cannot be read, whatever the sample size.
+
+**Measure the noise floor on this corpus, never assume one.** Below it no difference is readable in either direction — including "the change did nothing". Do not take noise as a conclusion and edit `roles.md` on it.
 
 `user-turns/<file>.md` already isolates the user turns; the first one is marked `(INITIAL)`.
 
@@ -51,7 +59,7 @@ Once structural isolation is in place, **prove it held** — from each replay ag
 
 ### Same-input rerun group
 
-**Required every round**: run the same `roles.md` over the same sessions twice; the difference between the two results is this evaluation's noise floor (magnitude and how to raise resolution: §4A). **A difference smaller than the noise floor may not be reported as a conclusion** — including as a conclusion that the change did nothing.
+**Required every round**: run the same `roles.md` over the same sessions twice; the difference between the two results is this evaluation's noise floor. A cheaper check that needs no extra run: compare a version-independent quantity (real intervention points, real friction points) across the batches you already have — it must come out identical, and whatever it differs by is your floor. **A difference smaller than the noise floor may not be reported as a conclusion** — including as a conclusion that the change did nothing.
 
 **Contamination audit is mandatory at scoring time**, not optional: check each prediction for content that could only come from later turns or from repository state; anything that hits **must be excluded from precision/recall**, and both figures — with and without that item — must be reported. **A labeled contaminated replay is useful; an unlabeled one is poison.**
 
