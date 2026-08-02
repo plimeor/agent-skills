@@ -12,7 +12,7 @@ Purpose: up to this point `roles.md` has only been **explained** by history, nev
 | Sample | **≥5 sessions**, covering different shapes (at minimum: one batch-adjudication, one design/shaping, one execution/repair) | **Sized by total escalation points, not session count: no comparative conclusion below 100 escalation points** |
 | Output | Magnitude of the three metrics + per-session records | The delta between versions, and only after clearing the noise floor |
 
-**Compute the denominator before launching a comparison.** A few dozen escalation points sit below the measured noise floor of a same-input rerun, where no difference is readable in either direction — including "the change did nothing" (`findings.md`). If it is too small, add sessions or run each configuration 3× and take the median. Do not take noise as a conclusion and edit `roles.md` on it.
+**Compute the denominator before launching a comparison, and measure the noise floor on this corpus rather than assuming one.** A few dozen escalation points typically sit below it, and below the noise floor no difference is readable in either direction — including "the change did nothing". If the denominator is too small, add sessions or run each configuration 3× and take the median. Do not take noise as a conclusion and edit `roles.md` on it.
 
 `user-turns/<file>.md` already isolates the user turns; the first one is marked `(INITIAL)`.
 
@@ -47,7 +47,7 @@ Replay may be executed by subagents; the replaying subagent must not read the se
 
 Once structural isolation is in place, **prove it held** — from each replay agent's session log, extract **only the path arguments of tool calls** (the values of `file_path` / `path` / `pattern` / `cmd` / `command` / `glob`) and check for any access outside the working directory.
 
-**Do not grep the log body for path-like strings.** `roles.md`'s own text contains project and directory names, so a replay agent merely restating a clause matches, and every run reads as an escape (`findings.md`). **The criterion is what it accessed, not what it mentioned.**
+**Do not grep the log body for path-like strings.** `roles.md`'s own text contains project and directory names, so a replay agent merely restating a clause matches and every run reads as an escape (dispatch.md D5 covers the general form of this mistake). **The criterion is what it accessed, not what it mentioned.**
 
 ### Same-input rerun group
 

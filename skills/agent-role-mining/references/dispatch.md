@@ -2,7 +2,7 @@
 
 Stage 2 signal extraction, Stage 4 replay, and Stage 4 scoring are all "one instruction × N sessions" batch LLM work. The executor can be a Task subagent or an external CLI (Grok, Codex, …). **The rules below are executor-agnostic**; Grok-CLI-specific traps are in the appendix.
 
-Every trap below disguises itself as either "the model isn't capable" or "the network flaked". Frequencies and runtimes are in `findings.md`.
+Every trap below disguises itself as either "the model isn't capable" or "the network flaked".
 
 ## D1. The success check must sit on the actual payload
 
@@ -46,11 +46,15 @@ Give a hard cap in the prompt ("no more than N lines"). It is far cheaper than r
 
 ## D5. Use a work queue, never a barrier
 
-**Keep N tasks in flight and start a replacement the moment any one exits.** Never dispatch in fixed groups and wait for each group: a group's wall-clock equals its slowest member, and with long-tailed runtimes (D3) one straggler idles every other slot in its group. Barrier dispatch measured 51% slot-time idle where the concurrency number itself was fine (`findings.md`).
+**Keep N tasks in flight and start a replacement the moment any one exits.** Never dispatch in fixed groups and wait for each group to finish.
+
+The cost is arithmetic, not opinion. A queue of N finishes in `total_work / N`; barrier groups of N finish in `Σ max(group)`. With long-tailed runtimes (D3) the max of a group is far above its mean, so one straggler idles the other N−1 slots for its whole runtime. Measure the gap on any batch by comparing summed task durations against elapsed wall-clock — a healthy queue lands near `work / N`. **The concurrency number is rarely the problem; the barrier is.**
 
 Concurrency sizing: these are **network-bound API calls, not CPU-bound local work**, so core count is the wrong input. Size against the provider's rate limit.
 
-**Never infer a rate limit by grepping raw output.** Searching for `429|rate limit|quota` matches report *content* — turn numbers, session IDs, the word quota in prose — and yields confident false alarms. Read the actual error records instead. The same mistake recurs whenever a search runs over material that discusses the thing being searched for (`findings.md`).
+**Never infer a rate limit by grepping raw output.** Searching for `429|rate limit|quota` matches report *content* — a turn number, a session ID containing those digits, the word quota in prose — and yields confident false alarms. Read the actual error records instead.
+
+This generalises: **any search over material that discusses the thing being searched for returns false positives**, and the failure looks like a finding rather than a bug. It applies equally to auditing isolation and to detecting network faults.
 
 Implementation note: `wait -n` gives a work queue in bash ≥4.3, but macOS ships bash 3.2. `xargs -P N -n 1 <worker-script>` is a genuine work queue everywhere and avoids `export -f` (which also breaks on multibyte arguments — see the appendix).
 

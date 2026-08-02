@@ -52,8 +52,8 @@ Batch dispatch mechanics for Stages 2 and 4 — concurrency, timeouts, failure t
 ### Stage 1 — Discover, clean, filter
 
 - Main sessions only: Claude `<project>/<uuid>.jsonl` excluding `agent-*.jsonl` and `subagents/`; Grok `session_kind ∉ {subagent, subagent_resume}`.
-- **Tool arguments and results do not enter `cleaned/`.** The trajectory keeps the tool name and turn number; detail goes to `tool-details/` and is queried on demand with `tool-detail --file <cleaned.md> [--turn N] [--grep S]`. Tool detail carries no persona signal and would otherwise dominate the corpus (`findings.md`).
-- **The user channel carries harness content.** Injected skill bodies, task notifications, slash commands and compaction hand-offs are dropped by signature. Hook stdout cannot be identified this way at all — `UserPromptSubmit`, `UserPromptExpansion`, `SessionStart` and `Setup` inject raw text with no marker — so `filter` also flags openings that repeat verbatim across sessions into `inventory/injected-turns.md`.
+- **Tool arguments and results do not enter `cleaned/`.** The trajectory keeps the tool name and turn number; detail goes to `tool-details/` and is queried on demand with `tool-detail --file <cleaned.md> [--turn N] [--grep S]`. Tool detail carries no persona signal and otherwise dominates the corpus by an order of magnitude.
+- **The user channel carries harness content.** Injected skill bodies, task notifications, slash commands and compaction hand-offs are dropped by signature. Hook stdout cannot be identified this way at all: per the [hook contract](https://code.claude.com/docs/en/hooks), `additionalContext` arrives wrapped in a `<system-reminder>` and is stripped with the rest, but `UserPromptSubmit`, `UserPromptExpansion`, `SessionStart` and `Setup` add raw stdout as context with no marker. So `filter` also flags openings that repeat verbatim across sessions into `inventory/injected-turns.md` — machine output repeats itself exactly, which is the only signal left.
 - **Feedback turns are judged by intent, not length.** Pasted code, logs and specification documents are stripped first; what remains is tested for rulings, corrections, directives and challenges. There is no character cap in either direction — the longest corrections are the most substantive, and the shortest are often the most decisive.
 - **Corpus self-reference**: sessions where the user was designing or evaluating this pipeline let it rediscover its own framework inside its own output. `filter` drops them above a threshold and lists every session with any marker hit in `inventory/self-referential.md`. Sessions below the threshold stay in the analysis set — if Stage 3 starts restating a framework already present in the corpus, read that table first.
 
@@ -61,7 +61,7 @@ Batch dispatch mechanics for Stages 2 and 4 — concurrency, timeouts, failure t
 
 - **No topic or theme filter.** A person's work outside coding is part of the answer — it is where you see whether their judgment generalizes.
 - **No size floor by default.** A short session can carry a decisive ruling.
-- **No name-based project exclusion by default.** It is a property of one machine, not of the pipeline, and behavioural filters usually already drop what it was written for (`findings.md`).
+- **No name-based project exclusion by default.** It is a property of one machine, not of the pipeline, and behavioural filters usually already drop what it was written for — check before adding one.
 
 ### Verify the funnel before Stage 2
 
@@ -74,7 +74,7 @@ bun scripts/pipeline.ts preview --run <run>
 
 Escalate to the user only when the check surfaces something you cannot resolve:
 
-- `inventory/injected-turns.md` is non-empty and a repeated opening is ambiguous — machine injection and a genuinely re-sent prompt look identical, and only the user knows which (`findings.md`).
+- `inventory/injected-turns.md` is non-empty and a repeated opening is ambiguous — machine injection and a genuinely re-sent prompt are textually identical, and only the user knows which.
 - A drop reason appears that is not behavioural, or a kept sample is obviously not this person working.
 - The user wants a project excluded that the behavioural filters keep.
 
@@ -88,7 +88,7 @@ Skipping any of these voids the run:
 2. **Every quote is traceable.** Signal files quote the user verbatim with a turn number; `roles.md` carries the quote and `roles-evidence.md` carries the provenance.
 3. **Residual accounting.** Every high-value signal either enters a role or enters the residual list. Silently dropping non-conforming samples from a descriptive conclusion is a fidelity defect.
 4. **The Owner is outside the system.** Irreversible preferences, authority conflicts, scope, public-facing form and sign-off belong to the human. Naming and layering are Owner rulings, never "proven by the data".
-5. **`lint-roles` passes before delivery.** Deliverable hygiene is not maintainable by memory (`findings.md`).
+5. **`lint-roles` passes before delivery.** Deliverable hygiene is not maintainable by memory — the model that writes a hygiene rule breaks it the same day.
 6. **Replay before claiming validity.** Until it is replay-tested, a role definition is taxonomy. An unreplayed `roles.md` says so in its known-limits block.
 
 ## Iteration
@@ -109,13 +109,13 @@ Documents here are separated by **how they change**, not by topic. Mixing the th
 |---|---|---|
 | `SKILL.md` | orientation, stage order, non-negotiables | rewritten in place |
 | `references/<stage>.md`, `dispatch.md` | procedure for one stage or one mechanic | rewritten in place |
-| `references/findings.md` | measurements | **append-only** |
 | `config.json` and script defaults | parameter values | edited in one place |
+| the run directory | everything measured about a corpus | produced per run |
 
 Rules that follow:
 
 - **Instructions are rewritten, never annotated.** No "formerly X, now Y", no strikethrough, no "(added after replay)". Fix upstream rather than appending a downstream note about upstream.
-- **A rule carries at most one clause of reasoning** — enough that a later reader does not optimize it away. The measurement behind it goes to `findings.md`, joined on the topic heading.
+- **A rule carries at most one clause of reasoning** — enough that a later reader does not optimize it away. A reason transfers to another machine; a measurement does not.
+- **No measurements from one machine.** A number observed on one person's corpus does not belong in a portable skill: a later reader takes it for a constant and skips measuring their own. Where a number matters, the procedure says to measure it. Where the history matters, that is what git log is for.
 - **Numbers live in one place.** Procedure documents name the config key; they do not restate its value. A number appears in prose only when the number *is* the rule and has no key.
-- **`findings.md` is append-only.** An entry states what was measured, on what sample, and the number. An entry without a sample size is not a finding, and a past measurement is never edited to match a changed rule.
 - **Ask the user only what the user alone can decide.** A check the agent can read and act on is not an approval gate. This is the same escalation-precision rule the pipeline's own output prescribes, applied to the pipeline.
