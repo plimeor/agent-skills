@@ -63,6 +63,10 @@ if (r.status !== 0) process.exit(r.status ?? 1);
 console.log(`
 Prep finished. This is not a quality pass.
 
-Run live LLM predict + score per evals/EVALS.md and evals/evals.json,
-then: bun scripts/aggregate-crew-eval.ts --workdir <prep-workdir>
+Live LLM (Grok CLI; no Orca on primary path):
+  bun scripts/run-crew-eval-llm.ts --workdir <prep-workdir> --phase predict --jobs 6
+  bun scripts/run-crew-eval-llm.ts --workdir <prep-workdir> --phase score --jobs 6
+  bun scripts/aggregate-crew-eval.ts --workdir <prep-workdir>
+
+See evals/EVALS.md.
 `);

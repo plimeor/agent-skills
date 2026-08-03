@@ -110,18 +110,28 @@ Batch LLM rules for pipeline workers: `references/dispatch.md` (Stage 2/4 batchi
 
 ## Evals
 
-Quality evals match skill-creator: **live agents run realistic prompts** from `evals/evals.json`, then grade `expectations` against real outputs. Prep scripts only set up inputs; they never pass quality.
+Quality evals match skill-creator: **live agents** grade real outputs. Prep never passes quality. Protocol: `evals/EVALS.md`.
 
-Protocol: `evals/EVALS.md`.
+**Primary package eval is Spec blind predict/score.** It does **not** run Orca or execute `runtimes.md` Select. Optional harness stress is separate (see EVALS.md).
 
 When the user asks to eval create-crew or an **installed crew** (“用当前安装的 crew 跑 evals”):
 
 1. Open `evals/evals.json` and run the relevant cases with a live agent that has this skill.
 2. For installed-crew cases, resolve a directory whose `SKILL.md` has `name: crew` (`~/.agents/skills/crew`, `--crew-path`, etc.). If missing, stop — do not invent a green report.
-3. For package behaviour on real sessions:  
-   `bun scripts/prep-crew-eval.ts --crew-path <crew> --n 5`  
-   then live blind predict + live score per unit, then  
-   `bun scripts/aggregate-crew-eval.ts --workdir <dir>`.
+3. For package behaviour on real sessions:
+
+```bash
+# Prep: discover path, or reuse a create-crew run with seeded sampling
+bun scripts/prep-crew-eval.ts --crew-path <crew> --n 5 --workdir <out>
+bun scripts/prep-crew-eval.ts --crew-path <crew> --from-run <runDir> --fraction 0.5 --seed 42 --workdir <out>
+
+# Live LLM (Grok CLI batch; idempotent; no Orca)
+bun scripts/run-crew-eval-llm.ts --workdir <out> --phase predict --jobs 6
+bun scripts/run-crew-eval-llm.ts --workdir <out> --phase score --jobs 6
+
+bun scripts/aggregate-crew-eval.ts --workdir <out>
+```
+
 4. Report expectation grades and/or aggregate metrics. Never treat package hygiene or prep success as the eval.
 
 ### Stage 1 rules

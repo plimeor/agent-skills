@@ -52,9 +52,15 @@ Provenance inside the crew package voids the round. Re-testing clauses on the sa
 
 ## Optional stress path
 
-Skip by default. Run only when multi-role fielding under a harness is under test.  
-May read `runtimes.md` only to execute fielding; still score Owner fit from Specs.  
-Bar project source that may already contain the session's outputs. INITIAL-only background.
+Skip by default. Run only when multi-role **fielding** under a harness is under test (not a substitute for primary metrics).
+
+1. Small sample (2–3 sessions) with Evaluation combo partners.  
+2. INITIAL-only background; bar project sources that already contain session outputs.  
+3. Load `runtimes.md` **Select** — if Orca is ready, use the Orca branch; else Portable.  
+4. Field partner roles per Specs; still judge Owner fit from Specs.  
+5. Harness-only failures → fix `runtimes.md`; Spec misses → roles / index.  
+
+Primary package eval scripts (`prep-crew-eval` + `run-crew-eval-llm`) do **not** run this path.
 
 ## Write-back
 
