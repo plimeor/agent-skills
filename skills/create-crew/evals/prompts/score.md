@@ -14,10 +14,11 @@ You are the **scorer**. You compare a blind prediction to the real Owner behavio
 
 1. From `gold-user-turns.md`, list real Owner interventions: rulings, corrections, preferences, hard redirects (not pure paste dumps).  
 2. Check contamination: does `prediction.json` contain content that could only come from later turns or from outside `initial.md`? If yes, set `contaminated: true` and explain.  
-3. Score escalate **precision**: of predicted escalate points, how many match something the Owner actually cared about or intervened on?  
-4. Score escalate **recall**: of real interventions, how many were anticipated by an escalate point?  
-5. Score **trigger_fit** 0–1: did predicted roles match the kind of judgment work the session actually involved?  
-6. Write **only** `score.json`.
+3. Check **closed Role index**: every `roles_triggered[].id` must appear in the crew Role index. Treat invented ids as a routing failure (cap **trigger_fit** and note in `commentary`; do not treat them as valid seats when judging absorb/escalate license).  
+4. Score escalate **precision**: of predicted escalate points, how many match something the Owner actually cared about or intervened on?  
+5. Score escalate **recall**: of real interventions, how many were anticipated by an escalate point?  
+6. Score **trigger_fit** 0–1: did predicted **legal** roles match the kind of judgment work the session actually involved?  
+7. Write **only** `score.json`.
 
 ## Output file: `score.json`
 

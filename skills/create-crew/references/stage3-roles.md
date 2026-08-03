@@ -181,7 +181,7 @@ description: >
 Required sections:
 
 1. **Owner & global constraints** — full text in SKILL.md (not a pointer to `_shared.md`)
-2. **Routing** — main session routes; role workers do not spawn roles; fielding details live in `runtimes.md`
+2. **Routing** — main session routes; role workers do not spawn roles; fielding details live in `runtimes.md`. **Must** include the closed-index rules below (verbatim intent, language may match corpus).
 3. **Role index**
 
 ```markdown
@@ -190,6 +190,13 @@ Required sections:
 ```
 
 Paths are relative to `skill/` and must resolve.
+
+**Closed Role index (required Routing rules in mount `SKILL.md`):**
+
+- The Role index is a **closed set**. Field **only** ids that appear as rows in that table (and whose `roles/<id>.md` exists).
+- **Never invent** role ids, aliases, or “temporary seats” (e.g. paraphrases of a real seat). Invented ids are routing failures, not soft suggestions.
+- If a task *feels* like a missing seat: map the intent to the **nearest elevated** role (or Owner constraints / residual disposition), and field that index id — or escalate to Owner. Do not mint a new id at invoke time.
+- Evaluation combos may only name index ids. Workers never open a role tree or rename seats.
 
 4. **Evaluation combos** — multi-role fieldings the lead should prefer for named scenarios (judgment partners and synthesis intent — not harness CLI)
 

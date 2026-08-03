@@ -25,7 +25,7 @@ Harness choice at invoke time (Orca vs portable dispatch, handoff vs supervised 
 
 1. **Judgment travels; runtimes do not.** Portable content is who judges what, when a role engages, and what stays with the Owner. How workers are spawned is a harness property encoded in `runtimes.md`, not a success metric for mining quality.
 2. **Summon a crew, not paste a treatise.** The mount object is a complete skill directory. Index and routing load first; each role Spec loads on demand; fielding loads from `runtimes.md`.
-3. **One routing authority.** After the user invokes crew, the **main session** chooses roles and fields workers. Role workers execute one Spec. They do not open a role tree.
+3. **One routing authority; closed Role index.** After the user invokes crew, the **main session** chooses roles and fields workers. Only Role index ids may be fielded — never invented seats. Role workers execute one Spec. They do not open a role tree.
 4. **Two evidence poles for boundaries.** Friction sessions show what the Owner seizes (escalate). Census sessions show what the Owner already releases (absorb). Both poles bind Stage 3.
 5. **Roster seats are earned.** A role is a battle-tested judgment pattern with a deep lead-facing interface (see `references/stage3-roles.md`). Corpus coverage is residual-complete; the Role index stays small. High-value signals do not mint roles by themselves.
 6. **Write only inside the run.** The pipeline does not install into the user's live skills path. The user mounts `skill/` themselves.
@@ -75,8 +75,8 @@ Judgment lives in `SKILL.md` and `roles/`. Fielding lives in `runtimes.md`.
 
 | Actor | Does | Does not |
 |---|---|---|
-| Main session (user invoked crew) | Run Select; route; field 1..N roles under the active branch; run evaluation combos; synthesize | Hand routing to a child |
-| Role worker | Execute one Spec; request lead help only under the active runtime rules | Spawn roles; re-route; invent new Owner boundaries |
+| Main session (user invoked crew) | Run Select; route **only** Role index ids; field 1..N roles under the active branch; run evaluation combos; synthesize | Hand routing to a child; invent role ids |
+| Role worker | Execute one Spec; request lead help only under the active runtime rules | Spawn roles; re-route; invent seats or Owner boundaries |
 | Owner (human) | Irreversible preference, scope, public form, sign-off | — |
 
 **Select** (in `runtimes.md`): run `orca status --json`; if Orca is installed and ready → **Orca** branch; otherwise → **Portable** branch.

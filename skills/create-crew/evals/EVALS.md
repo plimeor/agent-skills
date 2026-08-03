@@ -27,6 +27,16 @@ skill-creator’s description-trigger loop (should_trigger query sets) is a **se
 
 `runtimes.md` is not escalate/absorb gold on the primary path.
 
+### Metric meanings (primary)
+
+| Metric | Meaning |
+|---|---|
+| **trigger_fit** (0–1) | Did the predicted **Role index** seats match the *kind* of judgment the session needed? Routing quality, not escalate count. Invented ids are a fit failure. |
+| **escalate_precision** (0–1) | Of predicted escalate points, what fraction match real Owner interventions / cares? High precision → few false Owner stops. |
+| **escalate_recall** (0–1) | Of real Owner interventions, what fraction were anticipated by a predicted escalate? High recall → fewer missed Owner stops (harder from INITIAL-only). |
+
+**Absorbs** (in each role Spec / Owner global lines): work the agent may **finish without Owner** under that seat. Not “everything agents do” — only clauses licensed by Absorbs (or thin Owner absorb lines). Eval `absorb_claims` should map to those clauses.
+
 ## Layout
 
 ```text
