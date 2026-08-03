@@ -27,8 +27,8 @@ If both an independent re-derivation and an open-schema control run in one round
 No multi-agent runtime required.
 
 1. Validator may read only:  
-   - `skill/SKILL.md` (Routing + Role index as needed)  
-   - `skill/roles/*.md` and `_shared.md`  
+   - `skill/SKILL.md` (Owner constraints, Routing, Role index as needed)  
+   - `skill/roles/*.md`  
    Not method, evidence, or full Depth.
 2. From **INITIAL** only, predict triggers and which later interventions Specs treat as escalate vs absorb.
 3. Score against full `user-turns/`.
@@ -66,7 +66,7 @@ Bar project source that may already contain the session's outputs. INITIAL-only 
 
 - Metrics narrative → `roles-method.md`  
 - Falsified clauses → `skill/roles/<id>.md` and index/combos in `skill/SKILL.md`  
-- Known limits numbers → `skill/SKILL.md` from primary path only  
+- Primary metrics / “boundary check not run” → `roles-method.md` only (never mount `skill/SKILL.md`)  
 - Re-run `lint-crew`  
 
-If primary has not completed, Known limits state that boundary check has not run.
+If primary has not completed, `roles-method.md` states that boundary check has not run.

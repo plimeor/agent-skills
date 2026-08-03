@@ -25,21 +25,22 @@ create-crew never *is* the crew. It only *builds* the crew package (`name: crew`
 2. **Summon a crew, not paste a treatise.** The mount object is a complete skill directory. Index and routing load first; each role Spec loads on demand.
 3. **One routing authority.** After the user invokes crew, the **main session** chooses roles and spawns workers. Role workers execute one Spec. They do not open a role tree. Extra non-role help is requested back to the lead through a temp prompt file.
 4. **Two evidence poles for boundaries.** Friction sessions show what the Owner seizes (escalate). Census sessions show what the Owner already releases (absorb). Both poles bind Stage 3.
-5. **Write only inside the run.** The pipeline does not install into the user's live skills path. The user mounts `skill/` themselves.
-6. **Fail closed on hygiene.** Incomplete packages and unvalidated claims are incomplete, not "good enough prose."
+5. **Roster seats are earned.** A role is a battle-tested judgment pattern with a deep lead-facing interface (see `references/stage3-roles.md`). Corpus coverage is residual-complete; the Role index stays small. High-value signals do not mint roles by themselves.
+6. **Write only inside the run.** The pipeline does not install into the user's live skills path. The user mounts `skill/` themselves.
+7. **Fail closed on hygiene.** Incomplete packages and unvalidated claims are incomplete, not "good enough prose."
 
 ## Success
 
 A run is complete when all hold:
 
-1. **`skill/SKILL.md`** exists with `name: crew`, Known limits, Owner constraints, **Routing**, **Role index**, **Evaluation combos**, Worker→Lead dispatch rules, and load instructions.
+1. **`skill/SKILL.md`** exists with `name: crew`, **Owner & global constraints** (inline, not `_shared.md`), **Routing**, **Role index**, **Evaluation combos**, isolated **Worker→Lead dispatch** protocol, and load instructions. No Known limits block in the mount package.
 2. **`skill/roles/<id>.md`** exists for every index row, each with Responsibility, Trigger, Absorbs, Escalates, Phase, Success, Worker contract.
-3. **Dual-source boundaries** are recorded in `roles-method.md` (Boundary sources). Census is not optional color when it has repeated task types.
+3. **Dual-source boundaries** and pipeline limits (sample size, Stage 4 status) are recorded in `roles-method.md`. Census is not optional color when it has repeated task types.
 4. **Evaluation combos** name multi-role fieldings when the corpus supports multi-angle work.
-5. **Every high-value signal** maps to a role or to the residual list.
-6. **Quotes** in the crew package join to `roles-evidence.md`.
+5. **Every high-value signal** is accounted for as an elevated-role example, a fold into an elevated role, Owner constraints in SKILL.md, or the residual table — and every Role index entry has passed Stage 3 elevation (battle ≥5 with sprint merges, pattern, deep module) recorded in `roles-method.md`.
+6. **Critical quotes** live in run-level `roles-evidence.md` (not in mount `skill/**`).
 7. **`lint-crew` exits 0.**
-8. **Boundary validation** (Stage 4 primary path) has run, or Known limits state that it has not.
+8. **Boundary validation** (Stage 4 primary path) has run, or `roles-method.md` states that it has not.
 
 Not required for success: multi-agent dialogue in one session; nested orchestrator sub-agents; auto-mount; a deployment CLI.
 
@@ -59,9 +60,8 @@ Not required for success: multi-agent dialogue in one session; nested orchestrat
 ├── roles-method.md       # audit
 ├── roles-evidence.md     # provenance
 └── skill/                # deployable crew (source of truth for mount)
-    ├── SKILL.md          # name: crew
+    ├── SKILL.md          # name: crew; Owner constraints inline; no Known limits
     ├── roles/
-    │   ├── _shared.md    # optional global constraints
     │   └── <role-id>.md
     └── references/       # optional depth; no new boundary axes
 ```
@@ -70,13 +70,18 @@ Not required for success: multi-agent dialogue in one session; nested orchestrat
 
 | Actor | Does | Does not |
 |---|---|---|
-| Main session (user invoked crew) | Route; field 1..N roles; run evaluation combos; spawn non-role sub-agents; synthesize | Hand routing to a child |
-| Role worker | Execute one Spec; may request lead help via temp file | Spawn roles; re-route |
+| Main session (user invoked crew) | Route; field 1..N roles; run evaluation combos; create private dispatch root; spawn non-role help; synthesize | Hand routing to a child |
+| Role worker | Execute one Spec; request lead help only under `DISPATCH_ROOT` | Spawn roles; re-route; write outside dispatch root |
 | Owner (human) | Irreversible preference, scope, public form, sign-off | — |
 
-Dispatch request path (relative to session cwd):
+Dispatch isolation (session-private):
 
-`role-dispatch-requests/<role-id>-<slug>.md`
+```text
+<session-cwd>/.crew-dispatch/<invocation-id>/
+  <role-id>-<slug>.md
+```
+
+Lead creates `invocation-id` per fielding, passes absolute `DISPATCH_ROOT` in worker briefs, refuses or fulfills requests, then deletes that root. Never a fixed path shared across sessions.
 
 The lead may refuse. Results return to the lead.
 
@@ -141,12 +146,13 @@ Escalate only for ambiguous injections, non-behavioural drops, or user-requested
 ## Non-negotiables
 
 1. Signal coverage equals kept count (reconciled, not estimated).
-2. Every critical quote is traceable.
-3. Residual accounting is complete.
-4. Owner stays outside the agent system.
-5. `lint-crew` passes.
-6. Validity claims require Stage 4 primary path (or explicit "not run" in Known limits).
-7. Deliverable is a complete `skill/` package; no auto-mount.
+2. Every critical quote is traceable in run-level `roles-evidence.md` (not on the mount surface).
+3. Residual accounting is complete; residual is successful coverage when elevation fails, not a Stage 3 defect.
+4. No Role index entry without Stage 3 elevation (battle-tested with sprint-merged counts, pattern, deep module). No open execution-registry roles.
+5. Owner stays outside the agent system.
+6. `lint-crew` passes.
+7. Validity claims require Stage 4 primary path (or explicit "not run" in `roles-method.md`).
+8. Deliverable is a complete `skill/` package; no auto-mount. No Known limits in mount `SKILL.md`.
 
 ## Iteration
 

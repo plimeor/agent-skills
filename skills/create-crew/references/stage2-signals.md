@@ -37,7 +37,7 @@ Hard rule: every key interaction quotes the user verbatim with a turn number (`U
 **Value rationale**: <one sentence>
 ```
 
-Value is a heuristic (density, clarity of corrections, completeness of rulings). High intervention is not high value by itself.
+Value is a heuristic (density, clarity of corrections, completeness of rulings). High intervention is not high value by itself. High value is not a role candidacy signal; Stage 3 elevation decides what enters the Role index.
 
 Dispatch in parallel batches of 20–30 sessions. Each worker receives only its own cleaned paths. Failures re-dispatch. Need tool detail → `pipeline.ts tool-detail`. See `dispatch.md`.
 

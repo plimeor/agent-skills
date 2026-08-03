@@ -531,29 +531,32 @@ function cmdLintCrew() {
     v.push({ file: "skill/SKILL.md", line: 0, rule: "crew-name", text: "frontmatter name: must be crew" });
   }
 
-  // Required sections in crew SKILL.md
+  // Required sections in crew SKILL.md (Known limits must NOT live on the mount surface)
   for (const [re, rule, label] of [
-    [/Known limits|已知边界/i, "missing-boundary-block", "Known limits"],
+    [/^##\s+Owner & global constraints\b/m, "missing-owner-constraints", "## Owner & global constraints"],
     [/^##\s+Routing\b/m, "missing-routing", "## Routing"],
     [/^##\s+Role index\b/m, "missing-role-index", "## Role index"],
     [/^##\s+Evaluation combos\b/m, "missing-evaluation-combos", "## Evaluation combos"],
+    [/^##\s+Worker → Lead dispatch protocol\b/m, "missing-dispatch-protocol", "## Worker → Lead dispatch protocol"],
   ] as const) {
     if (!re.test(skillMd)) v.push({ file: "skill/SKILL.md", line: 0, rule, text: `missing ${label}` });
   }
-
-  // Known-limits bullets ≤6
-  const bIdx = skillMd.split("\n").findIndex((l) => /已知边界|Known limits/i.test(l));
-  if (bIdx >= 0) {
-    const lines = skillMd.split("\n");
-    let n = 0;
-    for (let i = bIdx + 1; i < lines.length; i++) {
-      const t = lines[i].trim();
-      if (t.startsWith("#")) break;
-      if (t.startsWith("-")) n++;
-      else if (t !== "" && n > 0) break;
-    }
-    if (n === 0) v.push({ file: "skill/SKILL.md", line: bIdx + 1, rule: "empty-boundary-block", text: "known-limits has no bullets" });
-    if (n > 6) v.push({ file: "skill/SKILL.md", line: bIdx + 1, rule: "boundary-block-too-long", text: `${n} lines, limit is 6` });
+  if (/^##\s+(Known limits|已知边界)\b/m.test(skillMd)) {
+    v.push({
+      file: "skill/SKILL.md",
+      line: 0,
+      rule: "known-limits-in-package",
+      text: "Known limits belong in roles-method.md, not skill/SKILL.md",
+    });
+  }
+  // Dispatch path must be session-private (not a fixed global role-dispatch-requests/)
+  if (!/\.crew-dispatch\//.test(skillMd) || !/DISPATCH_ROOT|invocation-id/.test(skillMd)) {
+    v.push({
+      file: "skill/SKILL.md",
+      line: 0,
+      rule: "dispatch-not-isolated",
+      text: "dispatch protocol must use session-private .crew-dispatch/<invocation-id>/ and DISPATCH_ROOT",
+    });
   }
 
   // Role index paths + Spec fields on role files
@@ -589,34 +592,34 @@ function cmdLintCrew() {
     v.push({ file: "roles-method.md", line: 0, rule: "missing-boundary-sources", text: "no ## Boundary sources table" });
   }
 
-  // Quote join: 「」 in skill package → evidence table
-  const norm = (s: string) => s.replace(/[\s`｜|\\『』「」…\.·]/g, "");
-  const unjoined: string[] = [];
-  if (evidence) {
-    const cells = evidence.split("\n").filter((l) => l.startsWith("|")).flatMap((l) => l.split("|")).map(norm).filter((s) => s.length >= 4);
-    const pack = walkMdFiles(p("skill")).map((f) => fs.readFileSync(f, "utf8")).join("\n");
-    for (const m of pack.matchAll(/「([^「」\n]{6,})」/g)) {
-      const q = norm(m[1]);
-      if (!cells.some((c) => c.includes(q) || q.includes(c))) unjoined.push(m[1].slice(0, 60));
-    }
+  // Mount surface is Spec-only: no corpus quotes in skill/**
+  for (const abs of walkMdFiles(p("skill"))) {
+    const rel = path.relative(run, abs).split(path.sep).join("/");
+    const body = fs.readFileSync(abs, "utf8");
+    const lines = body.split("\n");
+    lines.forEach((l, i) => {
+      if (/[「」『』]/.test(l)) {
+        v.push({
+          file: rel,
+          line: i + 1,
+          rule: "corpus-quote-in-package",
+          text: "mount skill/** must not contain corpus quotes; put them in roles-evidence.md only",
+        });
+      }
+    });
   }
 
   const byRule: Record<string, number> = {};
   for (const x of v) byRule[x.rule.split(":")[0]] = (byRule[x.rule.split(":")[0]] || 0) + 1;
   for (const x of v) console.log(`${x.file}:${x.line}  [${x.rule}]  ${x.text}`);
-  if (unjoined.length) {
-    console.log(`\nquotes with no provenance in roles-evidence.md (${unjoined.length}):`);
-    for (const q of unjoined) console.log(`  「${q}」`);
-  }
 
-  const report = { checkedAt: new Date().toISOString(), violations: v, unjoinedQuotes: unjoined, byRule };
+  const report = { checkedAt: new Date().toISOString(), violations: v, unjoinedQuotes: [] as string[], byRule };
   writeJson(path.join(run, "inventory", "lint-crew.json"), report);
   // keep old filename for tooling that still looks for it
   writeJson(path.join(run, "inventory", "lint-roles.json"), report);
 
-  const total = v.length + unjoined.length;
-  console.log(`\n${total === 0 ? "PASS" : "FAIL"}: ${v.length} violations + ${unjoined.length} unsourced quotes → inventory/lint-crew.json`);
-  if (total) process.exit(1);
+  console.log(`\n${v.length === 0 ? "PASS" : "FAIL"}: ${v.length} violations → inventory/lint-crew.json`);
+  if (v.length) process.exit(1);
 }
 
 // ---------- preview ----------
