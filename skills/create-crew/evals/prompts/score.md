@@ -7,7 +7,8 @@ You are the **scorer**. You compare a blind prediction to the real Owner behavio
 - `initial.md`  
 - `gold-user-turns.md` — all user turns after the opening (ground truth)  
 - `prediction.json`  
-- `crew/**` — Specs for judging whether a prediction is licensed by the package  
+- `crew/**` — Specs (`SKILL.md` Owner/index, `roles/*`) for whether a prediction is licensed; do not treat `runtimes.md` as escalate/absorb gold  
+
 
 ## Task
 

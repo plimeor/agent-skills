@@ -19,30 +19,32 @@ People cannot reliably list the judgment roles they occupy. Their agent session 
 
 create-crew never *is* the crew. It only *builds* the crew package (`name: crew` inside `skill/`).
 
+Harness choice at invoke time (Orca vs portable dispatch, handoff vs supervised fielding) belongs in the **crew package** (`runtimes.md`), not in this product table.
+
 ## Principles
 
-1. **Judgment travels; runtimes do not.** Portable content is who judges what, when a role engages, and what stays with the Owner. Peer multi-agent chat is a harness property, not a success metric for the package.
-2. **Summon a crew, not paste a treatise.** The mount object is a complete skill directory. Index and routing load first; each role Spec loads on demand.
-3. **One routing authority.** After the user invokes crew, the **main session** chooses roles and spawns workers. Role workers execute one Spec. They do not open a role tree. Extra non-role help is requested back to the lead through a temp prompt file.
+1. **Judgment travels; runtimes do not.** Portable content is who judges what, when a role engages, and what stays with the Owner. How workers are spawned is a harness property encoded in `runtimes.md`, not a success metric for mining quality.
+2. **Summon a crew, not paste a treatise.** The mount object is a complete skill directory. Index and routing load first; each role Spec loads on demand; fielding loads from `runtimes.md`.
+3. **One routing authority.** After the user invokes crew, the **main session** chooses roles and fields workers. Role workers execute one Spec. They do not open a role tree.
 4. **Two evidence poles for boundaries.** Friction sessions show what the Owner seizes (escalate). Census sessions show what the Owner already releases (absorb). Both poles bind Stage 3.
 5. **Roster seats are earned.** A role is a battle-tested judgment pattern with a deep lead-facing interface (see `references/stage3-roles.md`). Corpus coverage is residual-complete; the Role index stays small. High-value signals do not mint roles by themselves.
 6. **Write only inside the run.** The pipeline does not install into the user's live skills path. The user mounts `skill/` themselves.
-7. **Fail closed on hygiene.** Incomplete packages and unvalidated claims are incomplete, not "good enough prose."
+7. **Incomplete is incomplete.** Package and validation claims that do not meet the contracts stay unfinished. There is no mechanical lint gate.
 
 ## Success
 
 A run is complete when all hold:
 
-1. **`skill/SKILL.md`** exists with `name: crew`, **Owner & global constraints** (inline, not `_shared.md`), **Routing**, **Role index**, **Evaluation combos**, isolated **Worker→Lead dispatch** protocol, and load instructions. No Known limits block in the mount package.
-2. **`skill/roles/<id>.md`** exists for every index row, each with Responsibility, Trigger, Absorbs, Escalates, Phase, Success, Worker contract.
-3. **Dual-source boundaries** and pipeline limits (sample size, Stage 4 status) are recorded in `roles-method.md`. Census is not optional color when it has repeated task types.
-4. **Evaluation combos** name multi-role fieldings when the corpus supports multi-angle work.
-5. **Every high-value signal** is accounted for as an elevated-role example, a fold into an elevated role, Owner constraints in SKILL.md, or the residual table — and every Role index entry has passed Stage 3 elevation (battle ≥5 with sprint merges, pattern, deep module) recorded in `roles-method.md`.
-6. **Critical quotes** live in run-level `roles-evidence.md` (not in mount `skill/**`).
-7. **`lint-crew` exits 0.**
+1. **`skill/SKILL.md`** exists with `name: crew`, **Owner & global constraints** (inline, not `_shared.md`), **Routing**, **Role index**, **Evaluation combos**, a **Runtime** pointer to `runtimes.md`, and load instructions. No Known limits block in the mount package.
+2. **`skill/runtimes.md`** exists with **Select** (including the Orca probe), **Orca**, and **Portable** branches — both branches always present. Base content from `references/runtimes-template.md`.
+3. **`skill/roles/<id>.md`** exists for every index row, each with Responsibility, Trigger, Absorbs, Escalates, Phase, Success, Worker contract. Role files stay free of harness commands.
+4. **Dual-source boundaries** and pipeline limits (sample size, Stage 4 status) are recorded in `roles-method.md`. Census is not optional color when it has repeated task types.
+5. **Evaluation combos** name multi-role fieldings when the corpus supports multi-angle work.
+6. **Every high-value signal** is accounted for as an elevated-role example, a fold into an elevated role, Owner constraints in SKILL.md, or the residual table — and every Role index entry has passed Stage 3 elevation (battle ≥5 with sprint merges, pattern, deep module) recorded in `roles-method.md`.
+7. **Critical quotes** live in run-level `roles-evidence.md` (not in mount `skill/**`).
 8. **Boundary validation** (Stage 4 primary path) has run, or `roles-method.md` states that it has not.
 
-Not required for success: multi-agent dialogue in one session; nested orchestrator sub-agents; auto-mount; a deployment CLI.
+Not required for success: Orca installed or online; multi-agent dialogue in one session; nested orchestrator sub-agents; auto-mount; a deployment CLI; a lint script exit code.
 
 ## Run layout
 
@@ -60,30 +62,26 @@ Not required for success: multi-agent dialogue in one session; nested orchestrat
 ├── roles-method.md       # audit
 ├── roles-evidence.md     # provenance
 └── skill/                # deployable crew (source of truth for mount)
-    ├── SKILL.md          # name: crew; Owner constraints inline; no Known limits
+    ├── SKILL.md          # judgment: Owner, Routing, index, combos
+    ├── runtimes.md       # fielding: Select + Orca + Portable
     ├── roles/
     │   └── <role-id>.md
     └── references/       # optional depth; no new boundary axes
 ```
 
-## Crew runtime (encoded in the package)
+## Crew fielding (encoded in the package)
+
+Judgment lives in `SKILL.md` and `roles/`. Fielding lives in `runtimes.md`.
 
 | Actor | Does | Does not |
 |---|---|---|
-| Main session (user invoked crew) | Route; field 1..N roles; run evaluation combos; create private dispatch root; spawn non-role help; synthesize | Hand routing to a child |
-| Role worker | Execute one Spec; request lead help only under `DISPATCH_ROOT` | Spawn roles; re-route; write outside dispatch root |
+| Main session (user invoked crew) | Run Select; route; field 1..N roles under the active branch; run evaluation combos; synthesize | Hand routing to a child |
+| Role worker | Execute one Spec; request lead help only under the active runtime rules | Spawn roles; re-route; invent new Owner boundaries |
 | Owner (human) | Irreversible preference, scope, public form, sign-off | — |
 
-Dispatch isolation (session-private):
+**Select** (in `runtimes.md`): run `orca status --json`; if Orca is installed and ready → **Orca** branch; otherwise → **Portable** branch.
 
-```text
-<session-cwd>/.crew-dispatch/<invocation-id>/
-  <role-id>-<slug>.md
-```
-
-Lead creates `invocation-id` per fielding, passes absolute `DISPATCH_ROOT` in worker briefs, refuses or fulfills requests, then deletes that root. Never a fixed path shared across sessions.
-
-The lead may refuse. Results return to the lead.
+create-crew does not run that probe when building the package. Both branches are always written.
 
 ## Prerequisites
 
@@ -91,6 +89,7 @@ The lead may refuse. Results return to the lead.
 - Read-only sources: `~/.claude/projects/`, `~/.grok/sessions/`.
 - Stages 2–4 are large LLM work; state scale before starting.
 - Write in the corpus language. Never translate quoted user speech.
+- Pipeline execution does not require Orca.
 
 ## Pipeline
 
@@ -104,10 +103,10 @@ bun <create-crew>/scripts/pipeline.ts <cmd> --run <runDir>
 | 1 | `discover` `normalize` `filter` `preview` | Below |
 | 1.5 | `user-turns` | Census list + user turns |
 | 2 | signal extraction batches | `references/stage2-signals.md` |
-| 3 | write `skill/` + method/evidence → `lint-crew` | `references/stage3-roles.md` |
+| 3 | write `skill/` (including `runtimes.md`) + method/evidence | `references/stage3-roles.md`, `references/runtimes-template.md` |
 | 4 | boundary validation | `references/stage4-replay.md` |
 
-Batch LLM rules: `references/dispatch.md`.
+Batch LLM rules for pipeline workers: `references/dispatch.md` (Stage 2/4 batching — not the crew Portable fielding protocol).
 
 ## Evals
 
@@ -123,7 +122,7 @@ When the user asks to eval create-crew or an **installed crew** (“用当前安
    `bun scripts/prep-crew-eval.ts --crew-path <crew> --n 5`  
    then live blind predict + live score per unit, then  
    `bun scripts/aggregate-crew-eval.ts --workdir <dir>`.
-4. Report expectation grades and/or aggregate metrics. Never treat `lint-crew` as the eval.
+4. Report expectation grades and/or aggregate metrics. Never treat package hygiene or prep success as the eval.
 
 ### Stage 1 rules
 
@@ -150,14 +149,14 @@ Escalate only for ambiguous injections, non-behavioural drops, or user-requested
 3. Residual accounting is complete; residual is successful coverage when elevation fails, not a Stage 3 defect.
 4. No Role index entry without Stage 3 elevation (battle-tested with sprint-merged counts, pattern, deep module). No open execution-registry roles.
 5. Owner stays outside the agent system.
-6. `lint-crew` passes.
-7. Validity claims require Stage 4 primary path (or explicit "not run" in `roles-method.md`).
-8. Deliverable is a complete `skill/` package; no auto-mount. No Known limits in mount `SKILL.md`.
+6. Validity claims require Stage 4 primary path (or explicit "not run" in `roles-method.md`).
+7. Deliverable is a complete `skill/` package including `runtimes.md`; no auto-mount. No Known limits in mount `SKILL.md`.
+8. Fielding protocol lives only in `runtimes.md`; role Specs stay harness-agnostic.
 
 ## Iteration
 
 - New sessions → new run → full pipeline → compare `skill/` packages and validation summaries.
-- Revise conclusions only → reuse signals → redo Stages 3–4.
+- Revise conclusions only → reuse signals → redo Stages 3–4 (refresh `runtimes.md` from template if the fielding contract changed).
 - Change filter thresholds → new run; state funnel delta in method.
 
 ## Honesty

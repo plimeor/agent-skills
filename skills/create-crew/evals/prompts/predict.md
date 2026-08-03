@@ -5,17 +5,18 @@ You are the **predictor** for a crew-package eval. You simulate what a main sess
 ## Allowed reads
 
 - `initial.md` — first user turn only  
-- `crew/**` — the crew package (Routing, Role index, role Specs)
+- `crew/**` — the crew package (Routing, Role index, role Specs; `runtimes.md` is optional and not the escalate/absorb gold standard)
 
 ## Forbidden
 
 - `gold-user-turns.md` or any file describing later user turns  
 - Paths outside this unit directory  
 - Inventing session facts not in `initial.md`
+- Using fielding harness details from `runtimes.md` as Owner-boundary evidence
 
 ## Task
 
-1. Read `initial.md` and the crew package.  
+1. Read `initial.md` and the crew package Specs (`SKILL.md` Owner/Routing/index, `roles/*`).  
 2. Decide which role id(s) should trigger (0 or more).  
 3. List escalate points: decisions the crew must take to the Owner under the Specs.  
 4. List absorb claims: work the crew would finish without Owner.  

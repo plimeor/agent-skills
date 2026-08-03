@@ -18,13 +18,20 @@
 
 ```text
 skill/
-├── SKILL.md              # frontmatter name: crew (no Known limits here)
+├── SKILL.md              # judgment: Owner, Routing, Role index, Combos
 ├── roles/
-│   └── <role-id>.md
+│   └── <role-id>.md      # role Spec only (no harness commands)
+├── runtimes.md           # fielding: Select + Orca + Portable
 └── references/           # optional depth; no new boundary axes
 ```
 
-Run-level audit (not part of the mount surface): `roles-method.md` holds elevation, residuals, dual-source boundaries, and pipeline limits (sample size, Stage 4 status).
+| Surface | Owns | Must not own |
+|---|---|---|
+| `roles/*` | What the role judges, absorbs, escalates | `orca` commands, dispatch paths |
+| `SKILL.md` | Owner constraints, routing authority, index, combos, how to load a role | Long fielding protocols; Known limits |
+| `runtimes.md` | How to field under Orca or Portable | New absorb/escalate axes; role roster |
+
+Run-level audit (not mount): `roles-method.md` holds elevation, residuals, dual-source boundaries, and pipeline limits (sample size, Stage 4 status).
 
 ## Dual-source boundaries
 
@@ -58,11 +65,13 @@ Each `skill/roles/<id>.md`:
 | Escalates | Work that stops for Owner |
 | Phase | `batch` or `dialogic` |
 | Success | Done look |
-| Worker contract | Execute Spec only; dispatch requests go to lead |
+| Worker contract | Execute Spec only; request lead help only under the active runtime branch |
 
 Role ids: short kebab-case. Not repo names. Not pipeline station names.
 
 Mount role files are **executable Spec only** (fields above). Do **not** put corpus quotes (`「」`) or evidence in `skill/**`. Verbatim Owner speech for audit lives only in run-level `roles-evidence.md` (and signal files), not on the mount surface.
+
+Do **not** put harness commands (`orca …`, `.crew-dispatch` paths) in role files. Fielding lives in `runtimes.md`.
 
 ## What a role is
 
@@ -138,6 +147,23 @@ Disposition: `fold-into:<id>` | `shared` (Owner constraints in SKILL.md) | `resi
 
 Every high-value signal maps to: an elevated role (example/trigger), a fold, Owner constraints in SKILL.md, or this table. Mapping to a **new** role is allowed only after elevation gates pass.
 
+## `skill/runtimes.md` contract
+
+Fielding is harness knowledge, not corpus mining. **Copy** `references/runtimes-template.md` into `skill/runtimes.md` as the base. Adjust language to match the corpus language if needed; keep structure and both branches.
+
+Required shape:
+
+1. **`## Select`** — includes the Orca probe: run `orca status --json`; if installed and ready → **Orca**, else **Portable**.
+2. **`## Orca`** — lead routing authority, how to field a role, absorb → `worker_done`, escalate → gate/escalation, combos as parallel then barrier, worker ask to lead, full handoff only on explicit ownership transfer.
+3. **`## Portable`** — session-private `.crew-dispatch/<invocation-id>/`, `DISPATCH_ROOT`, worker write path, lead may refuse, lead deletes root.
+
+Rules:
+
+- Always write **both** branches. Do not drop a branch because the builder machine lacks Orca (or has it).
+- Do not invent absorb/escalate axes here.
+- Do not require Orca online for Stage 3 success.
+- create-crew pipeline execution never depends on Orca.
+
 ## `skill/SKILL.md` contract
 
 ```yaml
@@ -154,8 +180,8 @@ description: >
 
 Required sections:
 
-1. **Owner & global constraints** — full text in SKILL.md (not a pointer to `_shared.md`)  
-2. **Routing** — main session routes; role workers do not spawn roles  
+1. **Owner & global constraints** — full text in SKILL.md (not a pointer to `_shared.md`)
+2. **Routing** — main session routes; role workers do not spawn roles; fielding details live in `runtimes.md`
 3. **Role index**
 
 ```markdown
@@ -165,7 +191,7 @@ Required sections:
 
 Paths are relative to `skill/` and must resolve.
 
-4. **Evaluation combos** — multi-role fieldings the lead should prefer for named scenarios
+4. **Evaluation combos** — multi-role fieldings the lead should prefer for named scenarios (judgment partners and synthesis intent — not harness CLI)
 
 ```markdown
 | scenario | roles (parallel) | purpose | lead synthesis |
@@ -174,31 +200,14 @@ Paths are relative to `skill/` and must resolve.
 
 When two or more roles exist and the corpus supports multi-angle work, at least one multi-role combo is required.
 
-5. **Worker → Lead dispatch protocol** (isolation required)
-
-Role workers do not spawn agents. For extra non-role help:
-
-1. **Lead** creates a private root for **this invocation only**, under the **current session cwd**:
-
-   `<session-cwd>/.crew-dispatch/<invocation-id>/`
-
-   `invocation-id` is opaque and unique. Lead passes the absolute path as `DISPATCH_ROOT` in each worker brief. Never use a fixed global folder shared across sessions (e.g. bare repo-root `role-dispatch-requests/`).
-
-2. **Worker** writes only:
-
-   `<DISPATCH_ROOT>/<role-id>-<slug>.md`
-
-   Must not read or list other invocations under `.crew-dispatch/`.
-
-3. Worker reports a `Dispatch requests (for lead only)` table (path under `DISPATCH_ROOT`, purpose, suggested type). Lead may refuse; results return via lead. Lead deletes this invocation’s root when the crew turn ends.
-
-6. **How to load a role** — lead injects SKILL.md constraints + `roles/<id>.md` + `DISPATCH_ROOT`  
-7. **Deployment note** — this directory is the full skill; the user mounts it  
+5. **Runtime** — load `runtimes.md`; run **Select** before fielding; apply the chosen branch for the rest of the invocation
+6. **How to load a role** — lead injects Owner constraints from SKILL.md + `roles/<id>.md` + active branch rules from `runtimes.md`
+7. **Deployment note** — this directory is the full skill; the user mounts it
 
 ### Progressive disclosure
 
-- Always on invoke: Owner constraints, Routing, Role index, Evaluation combos, dispatch protocol.  
-- On fielding a role: that role file.  
+- Always on invoke: Owner constraints, Routing, Role index, Evaluation combos, `runtimes.md` (Select + active branch).
+- On fielding a role: that role file.
 - Optional: `references/` depth. Depth never invents escalate/absorb axes absent from Specs.
 
 ### Package hygiene
@@ -223,10 +232,13 @@ For every elevated role and every rejected candidate that was seriously consider
 
 Record pipeline limits here (sample fraction, Stage 4 not run, domain skew) — not in `skill/SKILL.md`.
 
-## Gate
+## Done when
 
-```bash
-bun scripts/pipeline.ts lint-crew --run <run>
-```
+The package and audit artifacts match this document’s contracts:
 
-Non-zero exit means Stage 3 is incomplete. Then Stage 4 (`stage4-replay.md`).
+- `skill/SKILL.md` + `skill/roles/*` judgment surface complete
+- `skill/runtimes.md` present with Select + Orca + Portable
+- elevation, dual-source boundaries, residuals, and hygiene hold
+- `roles-method.md` and `roles-evidence.md` written
+
+There is no mechanical lint command. Incomplete Stage 3 work stays incomplete. Then Stage 4 (`stage4-replay.md`).

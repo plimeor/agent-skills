@@ -4,13 +4,14 @@
     {
       "id": 1,
       "name": "build-crew-from-local-history",
-      "prompt": "Use create-crew on my local Claude Code / Grok session history. Run the pipeline far enough to produce a complete crew package under a new run directory (skill/ with name: crew, roles/, Routing, Role index, Evaluation combos). Then report the path to skill/ and list each role id with its trigger in one line each.",
+      "prompt": "Use create-crew on my local Claude Code / Grok session history. Run the pipeline far enough to produce a complete crew package under a new run directory (skill/ with name: crew, roles/, runtimes.md, Routing, Role index, Evaluation combos). Then report the path to skill/ and list each role id with its trigger in one line each.",
       "expected_output": "A run directory containing a well-formed crew skill package the user could mount, plus a short role roster summary.",
       "files": [],
       "expectations": [
         "A skill/ directory exists under the run with SKILL.md frontmatter name: crew",
         "skill/roles/ contains at least one role file other than _shared.md",
         "skill/SKILL.md includes Routing, Role index, and Evaluation combos sections",
+        "skill/runtimes.md exists and includes Select, Orca, and Portable fielding branches",
         "Each role file states Trigger, Absorbs, and Escalates",
         "roles-method.md includes a Boundary sources section",
         "The agent did not claim auto-mount into ~/.agents/skills"

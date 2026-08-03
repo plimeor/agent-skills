@@ -58,7 +58,7 @@ Skills are grouped by primary mode.
 ### Meta
 
 - [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md): Rebuild existing GPT prompt artifacts from current requirements, starting with the smallest prompt and tool set, removing or refreshing stale context, clarifying authorization, and adding guidance only for demonstrated gaps.
-- [create-crew](skills/create-crew/SKILL.md): From local Claude Code / Grok session history, build a complete deployable **crew** skill; evals follow skill-creator (live LLM on `evals/evals.json`, optional installed-crew blind predict/score on real sessions).
+- [create-crew](skills/create-crew/SKILL.md): From local Claude Code / Grok session history, build a complete deployable **crew** skill (judgment Specs plus dual-branch `runtimes.md` for Orca vs portable fielding); evals follow skill-creator (live LLM on `evals/evals.json`, optional installed-crew blind predict/score on real sessions).
 - [agent-team](skills/agent-team/SKILL.md): Delegate to sub-agents on one of two paths. A single bounded handoff gets the delegation contract — cost test, task packet, stop condition, report-as-evidence. A team is first compiled through Scout, Mode, Bake, Structure, and Launch: select a preset Mode or construct a task-specific one from scout evidence, classify closed-surface vs open-discovery coverage, bake atomic evidence-root work units with probe plus skeptic/completeness topology, and synthesize one verified result. Unit Atomicity decides which path a task is on.
 
 ### Ops

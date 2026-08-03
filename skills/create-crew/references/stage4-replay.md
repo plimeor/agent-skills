@@ -7,9 +7,11 @@ Stage 3 explains the crew from history. Stage 4 tests whether Spec triggers and 
 | Path | Required | Question |
 |---|---|---|
 | Primary boundary check | Yes | Do Specs fit real interventions? |
-| Pipeline stress test | No | How does multi-role orchestration behave on a given harness? |
+| Pipeline stress test | No | How does multi-role fielding behave on a given harness? |
 
 Stress metrics never substitute for primary. Stress numbers stay in `roles-method.md`.
+
+Primary validates **judgment**. It does not grade whether Orca or Portable fielding is correctly implemented — that is `runtimes.md` contract text, not Owner boundary truth.
 
 ## Sampling
 
@@ -24,12 +26,12 @@ If both an independent re-derivation and an open-schema control run in one round
 
 ## Primary path
 
-No multi-agent runtime required.
+No multi-agent runtime required. Orca is not required.
 
 1. Validator may read only:  
    - `skill/SKILL.md` (Owner constraints, Routing, Role index as needed)  
    - `skill/roles/*.md`  
-   Not method, evidence, or full Depth.
+   Not method, evidence, full Depth, or **`runtimes.md`** as a source of escalate/absorb truth.
 2. From **INITIAL** only, predict triggers and which later interventions Specs treat as escalate vs absorb.
 3. Score against full `user-turns/`.
 4. Log misses: wrong trigger, false escalate, missed escalate, Owner seized an absorb.
@@ -50,7 +52,8 @@ Provenance inside the crew package voids the round. Re-testing clauses on the sa
 
 ## Optional stress path
 
-Skip by default. Run only when multi-role instantiation is under test.  
+Skip by default. Run only when multi-role fielding under a harness is under test.  
+May read `runtimes.md` only to execute fielding; still score Owner fit from Specs.  
 Bar project source that may already contain the session's outputs. INITIAL-only background.
 
 ## Write-back
@@ -67,6 +70,6 @@ Bar project source that may already contain the session's outputs. INITIAL-only 
 - Metrics narrative → `roles-method.md`  
 - Falsified clauses → `skill/roles/<id>.md` and index/combos in `skill/SKILL.md`  
 - Primary metrics / “boundary check not run” → `roles-method.md` only (never mount `skill/SKILL.md`)  
-- Re-run `lint-crew`  
+- Harness-only defects → `skill/runtimes.md` (not role Specs)
 
 If primary has not completed, `roles-method.md` states that boundary check has not run.

@@ -48,6 +48,7 @@ bun scripts/aggregate-crew-eval.ts --workdir <evalRoot>
 Checkable from artifacts and transcripts, for example:
 
 - `skill/SKILL.md` has `name: crew`
+- `skill/runtimes.md` has Select + Orca + Portable
 - Each completed unit has `score.json` with numeric `escalate_recall`
 - The answer does not treat prep success as quality success
 

@@ -139,7 +139,7 @@ const md = [
     return `- **${r.unit}**: P=${r.score.escalate_precision} R=${r.score.escalate_recall} T=${r.score.trigger_fit}${r.score.contaminated ? " CONTAMINATED" : ""}`;
   }),
   ``,
-  `Hygiene-only checks (lint, funnel) are not part of this report.`,
+  `Funnel and package-shape hygiene are not part of this report.`,
   ``,
 ];
 fs.writeFileSync(path.join(root, "report.md"), md.join("\n"), "utf8");
