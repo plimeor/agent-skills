@@ -11,7 +11,7 @@ Rebuild a selected prompt from current requirements instead of editing legacy te
 
 ## Boundaries
 
-Use this skill after the target prompt has been selected. Use `agent-docs` to decide where durable instructions belong and `skill-creator` for a new skill, skill eval design, benchmarking, or trigger optimization.
+Use this skill after the target prompt has been selected. Use `skill-creator` for a new skill, skill eval design, benchmarking, or trigger optimization. Deciding which layer durable instructions belong in is outside this skill's scope.
 
 Treat the existing prompt as evidence of possible requirements and past failure modes, not as a template or preservation baseline. Limit edits to the selected artifact and repository-required metadata. Do not rename, sync an installed copy, or change runtime configuration unless requested.
 

@@ -50,10 +50,6 @@ Skills are grouped by primary mode.
 
 - [create-html-artifact](skills/create-html-artifact/SKILL.md): Produce a single portable local HTML file as the final deliverable: author a body fragment, then a bundled build script injects the document skeleton, CSS reset, and mermaid rendering (pinned CDN tag) — local assets inline, libraries and fonts from CDN, opens straight from disk, no publishing or hosting — with design guidance covering treatment calibration, typography, dual themes, layout, copy, and editorial direction, plus a fluid-motion reference for interactive artifacts.
 
-### Knowledge
-
-- [agent-docs](skills/agent-docs/SKILL.md): Own durable and ephemeral agent context: AGENTS.md/CLAUDE.md is the single persistent collaboration artifact, with rules routed to the lowest layer that holds them (project rules, nested package files, skills, tool config, MCP, global) and admitted only when earned, non-derivable from code, and load-bearing. Working docs live in `.agentdocs/` and are distilled-then-deleted when work completes; owns document placement and lifecycle, not plan or task-graph content quality.
-
 ### Meta
 
 - [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md): Rebuild existing GPT prompt artifacts from current requirements, starting with the smallest prompt and tool set, removing or refreshing stale context, clarifying authorization, and adding guidance only for demonstrated gaps.
@@ -68,7 +64,6 @@ Skills are grouped by primary mode.
 ### Writing
 
 - [writing-blog](skills/writing-blog/SKILL.md): Create, diagnose, outline, rewrite, or polish blog posts and articles; routes to one of four work modes (draft-from-notes, diagnosis, rewrite/polish, outline), each with its own reference for structure (SCQA openings, reader-path ordering), diagnosis checklist, and prose cleanup.
-- [writing-blog-illustration](skills/writing-blog-illustration/SKILL.md): Generate illustration prompts for blog posts, especially workflow, architecture, and abstract-concept visuals.
 - [writing-humanizer](skills/writing-humanizer/SKILL.md): Reduce AI-writing traces so generated docs and drafts read more naturally and human-authored.
 - [writing-reader-feedback](skills/writing-reader-feedback/SKILL.md): Simulate a specified reader reading an article section by section and report raw reading-experience feedback.
 
