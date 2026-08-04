@@ -29,9 +29,11 @@ If both an independent re-derivation and an open-schema control run in one round
 No multi-agent runtime required. Orca is not required.
 
 1. Validator may read only:  
-   - `skill/SKILL.md` (Owner constraints, Routing, Role index as needed)  
+   - `skill/SKILL.md` — **Routing and Role index only**, as a roster of legal ids  
    - `skill/roles/*.md`  
    Not method, evidence, full Depth, or **`runtimes.md`** as a source of escalate/absorb truth.
+
+   Escalate/absorb truth comes from role Specs alone. This is what the primary path measures: whether the Specs, by themselves, predict where the Owner intervenes.
 2. From **INITIAL** only, predict triggers and which later interventions Specs treat as escalate vs absorb.
 3. Score against full `user-turns/`.
 4. Log misses: wrong trigger, false escalate, missed escalate, Owner seized an absorb.

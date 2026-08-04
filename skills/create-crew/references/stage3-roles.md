@@ -28,8 +28,10 @@ skill/
 | Surface | Owns | Must not own |
 |---|---|---|
 | `roles/*` | What the role judges, absorbs, escalates | `orca` commands, dispatch paths |
-| `SKILL.md` | Owner constraints, routing authority, index, combos, how to load a role | Long fielding protocols; Known limits |
+| `SKILL.md` | Routing authority, index, combos, how to load a role | **Any absorb/escalate semantics**; long fielding protocols; Known limits |
 | `runtimes.md` | How to field under Orca or Portable | New absorb/escalate axes; role roster |
+
+**Judgment lives in `roles/*` and nowhere else.** `SKILL.md` is a router: it names which seats exist and when to field them. What a seat rules on, absorbs, and escalates is written once, in that seat's Spec.
 
 Run-level audit (not mount): `roles-method.md` holds elevation, residuals, dual-source boundaries, and pipeline limits (sample size, Stage 4 status).
 
@@ -67,6 +69,8 @@ Each `skill/roles/<id>.md`:
 | Success | Done look |
 | Worker contract | Execute Spec only; request lead help only under the active runtime branch |
 
+**Escalates is where Owner ownership is recorded.** Every decision the Owner rules personally appears in the Escalates of the role(s) that meet it.
+
 Role ids: short kebab-case. Not repo names. Not pipeline station names.
 
 Mount role files are **executable Spec only** (fields above). Do **not** put corpus quotes (`「」`) or evidence in `skill/**`. Verbatim Owner speech for audit lives only in run-level `roles-evidence.md` (and signal files), not on the mount surface.
@@ -77,7 +81,7 @@ Do **not** put harness commands (`orca …`, `.crew-dispatch` paths) in role fil
 
 A role is a **battle-tested judgment pattern** with a **deep** lead-facing interface: short trigger and few hard escalates, relative to the useful absorb/escalate behavior it hides. It is not a task genre, not a one-off story, and not an open registry of “things agents may execute.”
 
-Coverage of the corpus and size of the Role index are different jobs. Every durable judgment axis must be **accounted for**. Only axes that pass elevation sit in `skill/roles/` and the Role index. The rest go to residual, fold into an elevated role, or into **Owner & global constraints** in `skill/SKILL.md`.
+Coverage of the corpus and size of the Role index are different jobs. Every durable judgment axis must be **accounted for**. Only axes that pass elevation sit in `skill/roles/` and the Role index. The rest fold into an elevated role, go to residual, or leave the package as a **global-rules recommendation** recorded in `roles-method.md`.
 
 Owner is never an agent role.
 
@@ -90,7 +94,7 @@ From signals (each list ≥1 session):
 3. Correction preferences (tolerated only with census) → absorb or escalate candidates  
 4. Phase transitions → trigger candidates  
 
-From census in the same pass: recurring completed task types → absorb candidates on **already elevated** roles or thin global lines in `SKILL.md` Owner constraints. Do not invent a role solely to hold a census whitelist.
+From census in the same pass: recurring completed task types → absorb candidates on **already elevated** roles only. Do not invent a role solely to hold a census whitelist. A census task type that fits no elevated role is one no role triggers on; that is expressed by its absence from every Trigger.
 
 `batch`: compress Owner turns. `dialogic`: quality per turn, not fewer turns.
 
@@ -130,9 +134,11 @@ Use the APOSD deep-module test only: **small interface relative to useful hidden
 |---|---|
 | All gates pass | `skill/roles/<id>.md` + Role index row |
 | Axis real, overlaps an elevated role | fold into that role’s Spec |
-| Thin global constraint | `skill/SKILL.md` → Owner & global constraints |
+| Thin constraint, applies to every agent regardless of seat | **out of package** → Global rules recommendation in `roles-method.md` |
 | Axis real, gates fail | residual table (in `roles-method.md`) |
 | Not this crew’s job | residual `out-of-domain` |
+
+A constraint that holds for every agent on every task belongs in the user's global rules file (`AGENTS.md` / `CLAUDE.md`), where it reaches the main session and every subagent with no injection step. Stage 3 recommends it and leaves both the mount package and the user's global rules unmodified.
 
 ## Residuals
 
@@ -143,9 +149,9 @@ Residual is **complete coverage**, not a failed Stage 3. Index seats are optiona
 | Judgment axis | Battles (n; sprint merges noted) | Why not a role | Disposition |
 ```
 
-Disposition: `fold-into:<id>` | `shared` (Owner constraints in SKILL.md) | `residual-as-needed` | `out-of-domain`.
+Disposition: `fold-into:<id>` | `out-of-package` (global-rules recommendation) | `residual-as-needed` | `out-of-domain`.
 
-Every high-value signal maps to: an elevated role (example/trigger), a fold, Owner constraints in SKILL.md, or this table. Mapping to a **new** role is allowed only after elevation gates pass.
+Every high-value signal maps to: an elevated role (example/trigger), a fold, an `out-of-package` recommendation, or this table. Mapping to a **new** role is allowed only after elevation gates pass.
 
 ## `skill/runtimes.md` contract
 
@@ -178,11 +184,12 @@ description: >
 
 **Do not put Known limits / sample size / Stage 4 status in `skill/SKILL.md`.** Those live in run audit (`roles-method.md`).
 
+**`skill/SKILL.md` holds no judgment text.** Owner-owned decisions live in the Escalates of the roles that meet them; cross-agent discipline lives in the user's global rules file, recommended from `roles-method.md`.
+
 Required sections:
 
-1. **Owner & global constraints** — full text in SKILL.md (not a pointer to `_shared.md`)
-2. **Routing** — main session routes; role workers do not spawn roles; fielding details live in `runtimes.md`. **Must** include the closed-index rules below (verbatim intent, language may match corpus).
-3. **Role index**
+1. **Routing** — main session routes; role workers do not spawn roles; fielding details live in `runtimes.md`. **Must** include the closed-index rules below (verbatim intent, language may match corpus).
+2. **Role index**
 
 ```markdown
 | id | name | phase | trigger | evaluation partners | path |
@@ -195,10 +202,10 @@ Paths are relative to `skill/` and must resolve.
 
 - The Role index is a **closed set**. Field **only** ids that appear as rows in that table (and whose `roles/<id>.md` exists).
 - **Never invent** role ids, aliases, or “temporary seats” (e.g. paraphrases of a real seat). Invented ids are routing failures, not soft suggestions.
-- If a task *feels* like a missing seat: map the intent to the **nearest elevated** role (or Owner constraints / residual disposition), and field that index id — or escalate to Owner. Do not mint a new id at invoke time.
+- If a task *feels* like a missing seat: map the intent to the **nearest elevated** role (or its residual disposition), and field that index id — or escalate to Owner. Do not mint a new id at invoke time.
 - Evaluation combos may only name index ids. Workers never open a role tree or rename seats.
 
-4. **Evaluation combos** — multi-role fieldings the lead should prefer for named scenarios (judgment partners and synthesis intent — not harness CLI)
+3. **Evaluation combos** — multi-role fieldings the lead should prefer for named scenarios (judgment partners and synthesis intent — not harness CLI)
 
 ```markdown
 | scenario | roles (parallel) | purpose | lead synthesis |
@@ -207,13 +214,13 @@ Paths are relative to `skill/` and must resolve.
 
 When two or more roles exist and the corpus supports multi-angle work, at least one multi-role combo is required.
 
-5. **Runtime** — load `runtimes.md`; run **Select** before fielding; apply the chosen branch for the rest of the invocation
-6. **How to load a role** — lead injects Owner constraints from SKILL.md + `roles/<id>.md` + active branch rules from `runtimes.md`
-7. **Deployment note** — this directory is the full skill; the user mounts it
+4. **Runtime** — load `runtimes.md`; run **Select** before fielding; apply the chosen branch for the rest of the invocation
+5. **How to load a role** — lead injects `roles/<id>.md` + the task brief + active branch rules from `runtimes.md`. Nothing else from `SKILL.md` travels to a worker.
+6. **Deployment note** — this directory is the full skill; the user mounts it
 
 ### Progressive disclosure
 
-- Always on invoke: Owner constraints, Routing, Role index, Evaluation combos, `runtimes.md` (Select + active branch).
+- Always on invoke: Routing, Role index, Evaluation combos, `runtimes.md` (Select + active branch).
 - On fielding a role: that role file.
 - Optional: `references/` depth. Depth never invents escalate/absorb axes absent from Specs.
 
@@ -235,7 +242,16 @@ For every elevated role and every rejected candidate that was seriously consider
 | id or axis | battles (n) | pattern (one line) | deep (why interface stays small) | decision |
 ```
 
-`decision`: `elevate` | `fold-into:<id>` | `shared` | `residual` | `out-of-domain`.
+`decision`: `elevate` | `fold-into:<id>` | `out-of-package` | `residual` | `out-of-domain`.
+
+Every `out-of-package` disposition lands in one table:
+
+```markdown
+## Global rules recommendation
+| Clause (short) | Why it is not role judgment | Already covered by user global rules? |
+```
+
+This table is a recommendation for the user's `AGENTS.md` / `CLAUDE.md`. The pipeline does not write to those files. A clause already covered there is still listed, marked covered, so the next run does not re-propose it.
 
 Record pipeline limits here (sample fraction, Stage 4 not run, domain skew) — not in `skill/SKILL.md`.
 

@@ -9,8 +9,9 @@
       "files": [],
       "expectations": [
         "A skill/ directory exists under the run with SKILL.md frontmatter name: crew",
-        "skill/roles/ contains at least one role file other than _shared.md",
+        "skill/roles/ contains at least one role file",
         "skill/SKILL.md includes Routing, Role index, and Evaluation combos sections",
+        "skill/SKILL.md carries no Owner-constraints, global-discipline, or delegation-whitelist block — no absorb/escalate semantics outside roles/",
         "skill/runtimes.md exists and includes Select, Orca, and Portable fielding branches",
         "Each role file states Trigger, Absorbs, and Escalates",
         "roles-method.md includes a Boundary sources section",

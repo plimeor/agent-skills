@@ -35,12 +35,12 @@ Harness choice at invoke time (Orca vs portable dispatch, handoff vs supervised 
 
 A run is complete when all hold:
 
-1. **`skill/SKILL.md`** exists with `name: crew`, **Owner & global constraints** (inline, not `_shared.md`), **Routing**, **Role index**, **Evaluation combos**, a **Runtime** pointer to `runtimes.md`, and load instructions. No Known limits block in the mount package.
+1. **`skill/SKILL.md`** exists with `name: crew`, **Routing**, **Role index**, **Evaluation combos**, a **Runtime** pointer to `runtimes.md`, and load instructions — routing surface only, carrying no absorb/escalate semantics and no Known limits block.
 2. **`skill/runtimes.md`** exists with **Select** (including the Orca probe), **Orca**, and **Portable** branches — both branches always present. Base content from `references/runtimes-template.md`.
 3. **`skill/roles/<id>.md`** exists for every index row, each with Responsibility, Trigger, Absorbs, Escalates, Phase, Success, Worker contract. Role files stay free of harness commands.
 4. **Dual-source boundaries** and pipeline limits (sample size, Stage 4 status) are recorded in `roles-method.md`. Census is not optional color when it has repeated task types.
 5. **Evaluation combos** name multi-role fieldings when the corpus supports multi-angle work.
-6. **Every high-value signal** is accounted for as an elevated-role example, a fold into an elevated role, Owner constraints in SKILL.md, or the residual table — and every Role index entry has passed Stage 3 elevation (battle ≥5 with sprint merges, pattern, deep module) recorded in `roles-method.md`.
+6. **Every high-value signal** is accounted for as an elevated-role example, a fold into an elevated role, an `out-of-package` global-rules recommendation, or the residual table — and every Role index entry has passed Stage 3 elevation (battle ≥5 with sprint merges, pattern, deep module) recorded in `roles-method.md`.
 7. **Critical quotes** live in run-level `roles-evidence.md` (not in mount `skill/**`).
 8. **Boundary validation** (Stage 4 primary path) has run, or `roles-method.md` states that it has not.
 
@@ -158,7 +158,7 @@ Escalate only for ambiguous injections, non-behavioural drops, or user-requested
 2. Every critical quote is traceable in run-level `roles-evidence.md` (not on the mount surface).
 3. Residual accounting is complete; residual is successful coverage when elevation fails, not a Stage 3 defect.
 4. No Role index entry without Stage 3 elevation (battle-tested with sprint-merged counts, pattern, deep module). No open execution-registry roles.
-5. Owner stays outside the agent system.
+5. Owner stays outside the agent system; Owner ownership is recorded in role Escalates.
 6. Validity claims require Stage 4 primary path (or explicit "not run" in `roles-method.md`).
 7. Deliverable is a complete `skill/` package including `runtimes.md`; no auto-mount. No Known limits in mount `SKILL.md`.
 8. Fielding protocol lives only in `runtimes.md`; role Specs stay harness-agnostic.

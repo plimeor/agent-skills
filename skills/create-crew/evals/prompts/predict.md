@@ -5,7 +5,7 @@ You are the **predictor** for a crew-package eval. You simulate what a main sess
 ## Allowed reads
 
 - `initial.md` — first user turn only  
-- `crew/**` — the crew package (Routing, Role index, role Specs; `runtimes.md` is optional and not the escalate/absorb gold standard)
+- `crew/**` — the crew package. `SKILL.md` supplies Routing and the Role index (the closed set of legal ids); **all escalate/absorb truth comes from `roles/*`**. `runtimes.md` is optional and never the gold standard.
 
 ## Forbidden
 
@@ -17,11 +17,11 @@ You are the **predictor** for a crew-package eval. You simulate what a main sess
 
 ## Task
 
-1. Read `initial.md` and the crew package Specs (`SKILL.md` Owner/Routing/index, `roles/*`).  
+1. Read `initial.md` and the crew package Specs (`SKILL.md` Routing/index for legal ids, `roles/*` for all judgment).  
 2. Build the closed set of legal role ids from the Role index table only.  
 3. Decide which **legal** role id(s) should trigger (0 or more). If an intent seems like a missing seat, **map** it to the nearest index id (or leave untriggered and put the gap in `notes`) — never invent an id.  
 4. List escalate points: decisions the crew must take to the Owner under the Specs.  
-5. List absorb claims: work a fielded role (or main under Owner constraints) would finish without Owner, **licensed by Absorbs / Owner global absorb lines** — not “anything the agent might do.”  
+5. List absorb claims: work a fielded role would finish without Owner, **licensed by that role's Absorbs** — not “anything the agent might do.” Work no role's Trigger covers is not an absorb claim; leave it out and note the gap.  
 6. Write **only** `prediction.json` in this unit directory.
 
 ## Output file: `prediction.json`
@@ -34,7 +34,7 @@ You are the **predictor** for a crew-package eval. You simulate what a main sess
     { "summary": "<what to ask Owner>", "axis": "scope|preference|signoff|other" }
   ],
   "absorb_claims": [
-    { "summary": "<what to finish alone under Absorbs/Owner constraints>" }
+    { "summary": "<what to finish alone under a role's Absorbs>" }
   ],
   "notes": ""
 }

@@ -11,7 +11,7 @@ Run `orca status --json`. If Orca is installed and the runtime reports ready, us
 ## Orca
 
 - **Lead** is the main session: route, field roles, synthesize. Do not hand routing to a child.
-- **Field a role** as an isolated worktree worker or a supervised worker. Inject Owner constraints from `SKILL.md` plus that role Spec only — not the full Role index tree.
+- **Field a role** as an isolated worktree worker or a supervised worker. Inject that role Spec only — not the full Role index tree, and nothing else from `SKILL.md`.
 - **Absorbs**: the worker finishes through `worker_done` without Owner.
 - **Escalates**: use orchestration escalation or a decision gate. The worker must not self-decide Owner-owned matters.
 - **Evaluation combos**: start partner roles in parallel, then barrier at the lead for synthesis.
@@ -25,7 +25,7 @@ Run `orca status --json`. If Orca is installed and the runtime reports ready, us
 
 **Required sequence (WA #7748)**:
 
-1. `orchestration task-create` with full worker brief as `--spec` (Owner constraints + role Spec + task).
+1. `orchestration task-create` with full worker brief as `--spec` (role Spec + task).
 2. `orchestration dispatch --task <id> --to <terminal> --inject --return-preamble` (add `--run` when bound).
 3. **Immediately** `orca terminal send --terminal <handle> --text "<payload>" --enter` with:
    - the returned preamble if present; else the full brief equivalent to the task spec.
