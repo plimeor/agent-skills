@@ -1,6 +1,6 @@
 ---
 name: code-plan
-description: "Write coding plans for implementation, debugging, refactoring, migrations, design parity, and long-running agent tasks. Use when drafting, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, verification strategy, or stop condition. Near miss: use code-review to judge an existing diff, spec, or already-drafted plan; use code-tasking to turn an approved plan plus the real codebase into ordered atomic execution tasks."
+description: "Write coding plans for implementation, debugging, refactoring, migrations, design parity, and long-running agent tasks. Use when drafting, refining, or validating a development plan, /goal prompt, implementation approach, scope and non-goals, work sequence, acceptance criteria, regression evidence, verification strategy, or stop condition. Near miss: use code-review to judge an existing diff, spec, or already-drafted plan."
 ---
 
 # Code Plan
@@ -11,7 +11,7 @@ Produce one self-contained engineering plan that another agent can execute witho
 
 A plan is not just a Goal contract and not just a task list. It explains why the work matters, what must be true at the end, the approach and order, how to verify it, which risks to watch, and when to pause or stop.
 
-You own the PLAN: which change is correct (the layer that owns the behavior, not the symptom site), whether that change is irreducible, the regression bar, the authorized boundary, and the risk-ordered human reading sequence. `code-tasking` owns the downstream EXECUTION GRAPH: it consumes this plan plus the real codebase, proves the ripple set empirically, re-sorts the work leaf-first by compile dependency, and makes each irreducible change unsplittable at the toolchain level for a memoryless executor. Drift firewall: if a statement could only be checked by running a command against the real codebase, it is execution-altitude and belongs in `code-tasking`; if it is a judgment about the chosen approach's shape, it belongs here.
+You own the PLAN: which change is correct (the layer that owns the behavior, not the symptom site), whether that change is irreducible, the regression bar, the authorized boundary, and the risk-ordered human reading sequence. Keep the plan at planning altitude: judgments about the chosen approach's shape belong here; statements that can only be checked by running a command against the real codebase belong in execution, not in approach claims.
 
 ## What Every Plan Contains
 
@@ -96,7 +96,7 @@ Aim the approach at the layer that OWNS the behavior — the module, symbol, or 
 
 ### Work Sequence
 
-The work sequence is an execution map, not a backlog dump. Each slice names its purpose, likely files/surfaces/commands, dependency on earlier slices, and the forward and regression evidence that completes it. Order risky discovery, characterization, or contract checks before broad edits; put irreversible actions, external side effects, deployments, and destructive operations behind explicit pause conditions. This is the risk/discovery-first human reading order, intentionally not the execution order — `code-tasking` discards it and re-sorts leaf-first by compile dependency.
+The work sequence is an execution map, not a backlog dump. Each slice names its purpose, likely files/surfaces/commands, dependency on earlier slices, and the forward and regression evidence that completes it. Order risky discovery, characterization, or contract checks before broad edits; put irreversible actions, external side effects, deployments, and destructive operations behind explicit pause conditions. This is the risk/discovery-first human reading order.
 
 Before ordering, identify any change with NO independently-green intermediate — a rename without an alias, a signature, required-field, type, or representation change, or a moved invariant owner, where partial application leaves the code broken or wrong. Mark it as ONE indivisible slice that lands in a single cut; do not present it as "add the new path now, migrate callers later," which invites a permanent compatibility shim. A parallel-change sequence (expand → migrate → contract) is justified only when a consumer genuinely cannot change in the same unit because it is published, persisted, or in another repo; name that consumer, and make the contract step that deletes the old path a mandatory terminal slice, never optional cleanup. Unrequested backward-compatibility is a scoped decision to record, never a default to volunteer.
 
@@ -165,4 +165,4 @@ Stop when the user has one executable plan that passed the Lean Review Gate or r
 
 When scope risk is unresolved, stop only after the plan names the conservative no-boundary-change path, the user decision needed, or the pause condition that blocks expansion. When independent or delegated research is used, stop only after the final plan integrates the relevant findings — dropping any finding that changed no section as ceremonial — and names unresolved evidence gaps, waived risks, or user decisions; not with unintegrated notes unless the user asked for raw research output.
 
-The next phase is separate unless already authorized: implementation, file edits, documentation changes, test execution, commits, pushes, deployment, or external side effects require the user's current request or an active execution task. To turn an approved plan plus the real codebase into ordered atomic execution tasks, hand off to `code-tasking`.
+The next phase is separate unless already authorized: implementation, file edits, documentation changes, test execution, commits, pushes, deployment, or external side effects require the user's current request or an active execution task.

@@ -40,7 +40,6 @@ Skills are grouped by primary mode.
 - [code-lean](skills/code-lean/SKILL.md): Force the smallest correct coding change: YAGNI, deletion before addition, standard library/native/existing project capability first, no unrequested abstractions, explicit quality boundaries, simplification comments with upgrade triggers, and one runnable check for non-trivial logic.
 - [code-plan](skills/code-plan/SKILL.md): Write tiered, evidence-backed coding plans with objective, scope, ambiguous intended scope, proposed approach, ordered work, acceptance, regression evidence, verification, risks, pause conditions, and stop conditions, with a bounded code-lean review on non-mechanical plans and an automatic design-twice adversarial pass before every plan is delivered.
 - [code-review](skills/code-review/SKILL.md): Review plan drafts, specs, diffs, and implementation shapes for direction soundness, premise validity, high-potential preservation, boundary clarification, alternatives, APOSD-style complexity, contracts, tests, implementation fit, and synthesis; coverage reads everything in scope breadth-first and drills into flagged units, and the report delivers a coverage manifest plus root-cause-aggregated findings whose locators and evidence can be independently followed.
-- [code-tasking](skills/code-tasking/SKILL.md): Turn an approved plan plus the real codebase into a leaf-first, dependency-ordered graph of atomic execution tasks for an iterative Goal-mode executor; locate the root-cause change, fuse a synchronized ripple into one no-green-partial task that edits the foundation incompatibly in place, order foundation before dependents, and give each task an anti-patch Definition of Done that names the forbidden shim and requires deleting the superseded path.
 - [code-test-strategy](skills/code-test-strategy/SKILL.md): Test-strategy gate for coding tasks; avoid test-driven production complexity, premature tests, and implementation-detail tests.
 
 ### Decision
@@ -53,13 +52,11 @@ Skills are grouped by primary mode.
 
 ### Meta
 
-- [meta-gpt-prompt-maintenance](skills/meta-gpt-prompt-maintenance/SKILL.md): Rebuild existing GPT prompt artifacts from current requirements, starting with the smallest prompt and tool set, removing or refreshing stale context, clarifying authorization, and adding guidance only for demonstrated gaps.
 - [create-crew](skills/create-crew/SKILL.md): From local Claude Code / Grok session history, build a complete deployable **crew** skill (judgment Specs plus dual-branch `runtimes.md` for Orca vs portable fielding); evals follow skill-creator (live LLM on `evals/evals.json`, optional installed-crew blind predict/score on real sessions).
 - [agent-team](skills/agent-team/SKILL.md): Delegate to sub-agents on one of two paths. A single bounded handoff gets the delegation contract — cost test, task packet, stop condition, report-as-evidence. A team is first compiled through Scout, Mode, Bake, Structure, and Launch: select a preset Mode or construct a task-specific one from scout evidence, classify closed-surface vs open-discovery coverage, bake atomic evidence-root work units with probe plus skeptic/completeness topology, and synthesize one verified result. Unit Atomicity decides which path a task is on.
 
 ### Ops
 
-- [codex-session-maintenance](skills/codex-session-maintenance/SKILL.md): Maintain local Codex session state: inspect and back up first, then archive old sessions/worktrees, rotate logs, and generate handoffs.
 - [url-reader](skills/url-reader/SKILL.md): Extract main content from public URLs with centralized URL safety, defuddle.md extraction, and one authorized fallback path.
 
 ### Writing
