@@ -1,9 +1,9 @@
 ---
-name: agents-readme
+name: entry-docs
 description: "Author, refactor, or diagnose a repository's AGENTS.md (and CLAUDE.md) and/or README.md as complementary entrypoints. Use when writing, shrinking, splitting, or reviewing those files, when AGENTS.md is bloated or contradictory, or when a README cannot keep users out of the source. Near miss: not for SKILL.md authoring, ADRs, API reference as the primary artifact, CONTRIBUTING.md alone, blog posts, or implementing product features."
 ---
 
-# Agents Readme
+# Entry Docs
 
 ## Outcome
 
