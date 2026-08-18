@@ -54,7 +54,7 @@ Skills are grouped by primary mode.
 
 - [create-crew](skills/create-crew/SKILL.md): From local Claude Code / Grok session history, build a complete deployable **crew** skill (judgment Specs plus dual-branch `runtimes.md` for Orca vs portable fielding); evals follow skill-creator (live LLM on `evals/evals.json`, optional installed-crew blind predict/score on real sessions).
 - [agent-team](skills/agent-team/SKILL.md): Delegate to sub-agents on one of two paths. A single bounded handoff gets the delegation contract — cost test, task packet, stop condition, report-as-evidence. A team is first compiled through Scout, Mode, Bake, Structure, and Launch: select a preset Mode or construct a task-specific one from scout evidence, classify closed-surface vs open-discovery coverage, bake atomic evidence-root work units with probe plus skeptic/completeness topology, and synthesize one verified result. Unit Atomicity decides which path a task is on.
-- [meta-docs](skills/meta-docs/SKILL.md): Author, refactor, or diagnose `AGENTS.md` / `CLAUDE.md` and `README.md` as complementary entrypoints — agents get a minimal every-request file with progressive disclosure; humans get a short cognitively-funneled README that can keep them out of the source.
+- [agents-readme](skills/agents-readme/SKILL.md): Author, refactor, or diagnose `AGENTS.md` / `CLAUDE.md` and `README.md` as complementary entrypoints — agents get a minimal every-request file with progressive disclosure; humans get a short cognitively-funneled README that can keep them out of the source.
 
 ### Ops
 
