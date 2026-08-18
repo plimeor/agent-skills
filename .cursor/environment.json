@@ -1,0 +1,4 @@
+{
+  "name": "agent-skills",
+  "install": "bash .cursor/install.sh"
+}
