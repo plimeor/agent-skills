@@ -69,20 +69,20 @@ Write the result into `Scope`, `Non-goals`, `Proposed approach`, `Pause conditio
 
 ## Lean Review Gate
 
-Activate after a draft plan frame exists and before the Design Gate when the plan is elevated-risk, broad, speculative, a refactor or migration, cross-module, or likely to add owned surface: new abstractions, files, dependencies, fallback paths, compatibility shims, feature flags, configuration, schemas, APIs, generated artifacts, or test scaffolding. Also activate when the user asks for lean code, Code Lean, YAGNI, minimal implementation, fewer dependencies, or avoiding over-engineering.
+Activate after a draft plan frame exists and before the Design Gate when the plan is elevated-risk, broad, speculative, a refactor or migration, cross-module, or likely to add owned surface: new abstractions, files, dependencies, fallback paths, compatibility shims, feature flags, configuration, schemas, APIs, generated artifacts, or test scaffolding. Also activate when the user asks for lean code, YAGNI, minimal implementation, fewer dependencies, or avoiding over-engineering.
 
 For a small mechanical plan with one viable shape and no meaningful new owned surface, record a one-line skip reason in `Planning iteration` instead of delegating.
 
 Required before the plan is returned:
 
 - a draft frame for review: `Objective`, `Scope`, `Non-goals`, proposed owner and approach, suspected owned surface, work sequence, and verification or regression evidence
-- one bounded sub-agent pass using `code-lean`, when sub-agents are available, that reviews only for removable scope, existing capability reuse, unnecessary abstractions, dependencies, compatibility paths, extra files, and thinner verification that still protects the same public boundary
+- one bounded sub-agent pass, when sub-agents are available, that reviews only for removable scope, existing capability reuse, unnecessary abstractions, dependencies, compatibility paths, extra files, and thinner verification that still protects the same public boundary
 - main-agent integration of each actionable finding into `Scope`, `Non-goals`, `Proposed approach`, `Work sequence`, `Acceptance, regression evidence, and verification`, `Risks and rabbit holes`, `Pause conditions`, or `Stop condition`
 - a compact `Planning iteration` note naming accepted reductions, rejected reductions and the boundary reason, or the skip reason
 
 The sub-agent task is critique-only. It does not own the plan, choose a new objective, weaken explicit requirements, move the behavior to a symptom site, change public contracts, delete quality boundaries, or reduce regression evidence below the risk surface.
 
-If sub-agents are unavailable, run the same `code-lean` review inline and record `sub-agent unavailable` in `Planning iteration`. If the leaner path would drop a plausible requested outcome, weaken validation, error handling, security, accessibility, calibration, or regression evidence, reject that finding and name the protected boundary. If the leaner path requires a boundary change, user decision, or evidence not yet available, add a pause condition or blocker instead of silently narrowing the plan.
+If sub-agents are unavailable, run the same lean review inline and record `sub-agent unavailable` in `Planning iteration`. If the leaner path would drop a plausible requested outcome, weaken validation, error handling, security, accessibility, calibration, or regression evidence, reject that finding and name the protected boundary. If the leaner path requires a boundary change, user decision, or evidence not yet available, add a pause condition or blocker instead of silently narrowing the plan.
 
 Weak substitutes do not satisfy this gate: "keep it simple" self-talk, asking a sub-agent to broadly review or rewrite the plan, delegating planning ownership, pasting an unintegrated lean report, accepting the smallest absolute edit when it is a symptom patch, deleting tests or checks without equivalent public-boundary evidence, or treating a speculative abstraction as required work because it already appeared in the draft.
 
