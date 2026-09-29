@@ -9,13 +9,7 @@ Delegate team-shaped work to sub-agents and integrate what returns as evidence r
 
 The outcome is one synthesized result in which every material claim carries its verification status and every inspected or skipped part of the scope is named. Every run goes through Scout, Mode, Bake, Structure, Launch, and Integrate, and passes the three hard gates.
 
-The value comes from disciplined shape, not agent count. A broad fan-out without a blueprint is a parallel dump; a small team with complete scout evidence, named evidence roots, shared context, and targeted independent verification can be stronger than a larger unstructured fan-out. Team size follows the units the scout produced, the verification the Mode requires, and the escalations the returned evidence triggers — never a preferred headcount.
-
-## Activation
-
-This skill governs a run when the task has team shape: two or more independent tracks, an open-discovery inventory or exhaustive audit, research whose claims need cross-checking, adversarial critique of a decision, or an explicit user request to fan out or cross-check. Once active, the gates apply to the whole run, including a run whose units end up in a single probe packet.
-
-A single bounded delegation outside those shapes — one isolated second opinion, one focused investigation — is the caller's own packet and does not enter this skill. Work the main agent can finish in a handful of tool calls stays local.
+The value comes from disciplined shape, not agent count. A broad fan-out without a blueprint is a parallel dump; a small team with complete scout evidence, named evidence roots, shared context, and targeted independent verification can be stronger than a larger unstructured fan-out.
 
 ## The Delegation Contract
 
@@ -76,13 +70,13 @@ Do not re-do delegated work locally while a sub-agent is still responsible for i
 
 Every claim a sub-agent returns enters as `reported`. Before routing it, check: did the agent stay in scope, account for each named root, give concrete evidence and source pointers, run the requested verification, and surface assumptions or conflicts?
 
-A claim's status moves to `verified`, `refuted`, or `unresolved` only through an independent lane — an agent other than the one that produced it. The parent's own reading of a report never verifies a claim.
+A claim's status moves to `verified`, `refuted`, or `unresolved` only through an independent lane — an agent other than the one that produced it. A claim that no lane checked stays `unverified`.
 
 If a report is weak, ask one focused follow-up or dispatch a bounded replacement packet. Take the work local only when the agent failed outright and it blocks the critical path.
 
 ## Hard Gate: Blueprint Before Launch
 
-Activation: on an active run, before spawning any sub-agent except scout.
+Activation: before spawning any sub-agent except scout.
 
 Required artifact: an internal or user-visible blueprint with these fields:
 
@@ -121,7 +115,7 @@ After the first scout pass, classify coverage shape:
 
 Mixed tasks: if any in-scope substream is `open-discovery`, record overall Coverage Shape as `open-discovery` and apply inventory plus completeness routing to every open substream. Closed substreams bake from their pinned lists.
 
-Coverage follows the named roots; the number of packets carrying them is a separate choice made in Bake. When scout finds no real work-list, keep the task local. If inventory is incomplete, keep scouting, sample with an explicit `LIMITS` cap and completeness routing, or return a plan-only blueprint — do not launch over a fabricated root list.
+When scout finds no real work-list, keep the task local. If inventory is incomplete, keep scouting, sample with an explicit `LIMITS` cap and completeness routing, or return a plan-only blueprint — do not launch over a fabricated root list.
 
 ## Mode
 
@@ -166,7 +160,7 @@ Mandatory split — any hit means the blueprint is incomplete until the unit is 
 - Decision work split into analysis angles, facets, or criteria rather than mutually exclusive whole candidates — one `candidate-position` unit per candidate.
 - Mutators whose ownership overlaps without `isolated` edits.
 
-Multiple roots in one packet are allowed when every root is named from inventory and the report accounts for each one. Homogeneous Migration/Sweep sites share one packet only as a batch with the same invariant, the same transform or inspect action, and the same verification command, recorded under `LIMITS.batching`.
+A packet carries one or more roots named from inventory, and its report accounts for each. Homogeneous Migration/Sweep sites share one packet only as a batch with the same invariant, the same transform or inspect action, and the same verification command, recorded under `LIMITS.batching`.
 
 Return-time split: a root whose report is empty, evidence-free, or a bare "nothing found" without what was inspected is re-dispatched as its own unit (one escalation, counted against `escalation_cap`) or named a coverage gap.
 
@@ -184,9 +178,9 @@ Returned claims are routed by the role they play in the final answer:
 
 - **Must-verify**: the claims the Mode's verification target names, plus every claim the final answer cites as a reason for its conclusion, decision, or ruling. Each needs an independent lane before it enters as confirmed.
 - **Labeled**: every other claim enters the answer carrying its status.
-- **Escalated**: when a Mode trigger's condition is observed, the lane it names is added. Across all Modes, reports that conflict on a claim trigger a targeted verifier, and a claim touching an irreversible action, a public or shared contract, security, or persisted data triggers an additional independent lens.
+- **Escalated**: when a Mode trigger's condition is observed, the lane it names is added. Across all Modes, reports that conflict on a claim trigger a targeted verifier, and a claim touching a stakes marker — an irreversible action, a public or shared contract, security, or persisted data — triggers an additional independent lens.
 
-A conflict decidable by one direct mechanical observation — a file exists, a symbol is defined, a command prints a value — may be resolved by the parent citing that observation verbatim. Every other conflict goes to a targeted verifier.
+The parent settles a conflict decidable by one direct mechanical observation — a file exists, a symbol is defined, a command prints a value — by citing that observation verbatim; every other conflict goes to a targeted verifier.
 
 `skeptic` and `critique-lens` lanes are read-mostly by default. A lane that finds a defect returns `fail` plus a concrete fix list for a bounded fix-pass owner rather than fixing it itself; `VERIFY_MATRIX` may name a verifier as its own fixer, but that fix then needs its own verification row. A fix no lane checked is an unverified change, not a resolved finding.
 
@@ -211,7 +205,7 @@ Agent count follows from units plus floor lanes plus fired triggers — never fr
 Prohibited substitutes:
 
 - A roster whose rows are all `role: probe` on work with must-verify claims.
-- The parent's own check standing in for a floor or trigger lane.
+- The parent's own reading or lookup standing in for a floor or trigger lane.
 - One shared verify packet that does not target each must-verify claim.
 - A must-verify claim delivered under an `unverified` label in a result presented as complete.
 - A claim the answer cites as a reason, routed as label-only.
@@ -226,7 +220,7 @@ Launch only after Blueprint Before Launch, Unit Atomicity, and Topology Floor pa
 
 Before spawning, confirm:
 
-- Agent count is stated as probe lanes plus floor lanes, with trigger lanes added as they fire.
+- Agent count is stated per Topology Floor.
 - Packets are disjoint, or every mutator's `edit` value is `owned-paths` or `isolated` with the boundary named.
 - Every packet receives the relevant baked context.
 - Cross-cutting concerns have an owner.
@@ -234,7 +228,7 @@ Before spawning, confirm:
 - Caps, sampling, batching, and skipped work are named in `LIMITS`.
 - Stop, stall, and escalation limits are set.
 
-Dispatch independent packets in the same turn so they run concurrently. After launch the parent owns relay and control: status updates, the coordination record, claim routing, blocker relay, cap enforcement, conflict routing, and the final synthesis. The parent may make a handful of direct lookups to route claims or settle a mechanically decidable conflict; evidence it gathers enters under the same routing as probe evidence and never verifies a must-verify claim.
+Dispatch independent packets in the same turn so they run concurrently. After launch the parent owns relay and control: status updates, the coordination record, claim routing and conflict settlement as Structure defines them, blocker relay, cap enforcement, and the final synthesis.
 
 A new necessary work item after launch becomes one of: a bounded sub-agent packet, a focused question, or an explicit gap.
 
@@ -254,11 +248,11 @@ The final synthesis must include, in the user's requested format:
 - The conclusion, decision, or confirmed findings.
 - The load-bearing set: each claim the conclusion cites as a reason, with its evidence and status.
 - Coverage: which named roots, candidates, sources, or sites were inspected.
-- Verification: each material claim's status — `verified`, `refuted`, `unresolved`, or `unverified` — plus the watched triggers with their observed values and which fired. Tracing to a probe's returned evidence is not verification.
+- Verification: each material claim's status (see Receive Reports As Evidence), plus the watched triggers with their observed values and which fired. Tracing to a probe's returned evidence is not verification.
 - Gaps and limits: skipped scope, caps, sampling, batching, failed agents, uncertainty, and why the team stopped.
 
 Positive absence claims (no issues, safe to proceed, fully covered) require a closed inspect list. Unexamined surface stays in gaps — never folded into a clean conclusion. A write-up that implies full coverage without roots and gaps is incomplete.
 
-Resolve conflicts explicitly: a narrowed question, one targeted verifier, a cited mechanical observation, a focused question, or an `unresolved` label. Equivalent verifier loops are stall signals, not conflict resolution.
+Resolve every conflict explicitly — through Structure's routing, a narrowed or focused question, or an `unresolved` label. Equivalent verifier loops are stall signals, not conflict resolution.
 
-Before delivering, reconcile the run against the blueprint: every substantive work unit, evidence hunt, edit, and verification lane after launch stayed inside the relay boundary, and every floor lane and fired trigger either ran or is named as a gap. Completion depends on the requested scope being covered and every must-verify claim verified, with gaps named; a failure here means the result is incomplete until the blueprint, verification, or synthesis is tightened.
+Before delivering, reconcile the run against the blueprint: every substantive work unit, evidence hunt, edit, and verification lane after launch stayed inside the relay boundary, and Topology Floor's before-Integrate checks hold. A failure here means the result is incomplete until the blueprint, verification, or synthesis is tightened.

@@ -12,8 +12,8 @@ Use for code reviews, security audits, behavioral parity checks, risk hunts, and
 
 - Scout for changed or suspicious evidence roots, systemic risk, contracts, and not-a-bug items. Treat unbounded audits as `open-discovery`. Coarse labels are inventory seeds, not roots, until split to single evidence roots.
 - Bake units by inspect type over named evidence roots (caller tree, interface or contract surface, state machine, behavior path, or review dimension). A module or feature path is a root only when it has a single evidence root; otherwise name each root it contains.
-- Structure as `review each unit -> independently refute blocker-severity findings and every finding the answer cites as a reason -> completeness check when open-discovery -> report`.
-- Done means every blocker-severity or cited finding survived independent refutation or is reported as refuted, every other finding carries its status, skipped scope is named, and positive absence claims cover only roots that were inventoried and probed.
+- Structure as `review each unit -> independently refute blocker-severity findings -> completeness check when open-discovery -> report`.
+- Done means every blocker-severity finding survived independent refutation or is reported as refuted, every other finding carries its status, skipped scope is named, and positive absence claims cover only roots that were inventoried and probed.
 
 ## Research
 
@@ -30,7 +30,7 @@ Use for architecture choices, trade-offs, irreversible plans, prioritization, an
 
 - Scout for constraints, decision criteria, candidate positions, and disqualifiers.
 - Bake mutually exclusive whole candidates, not analysis facets — enforced by Unit Atomicity's `candidate-position` split rule. A proposer lane builds a candidate's strongest form only when the candidate needs construction or strengthening; candidates the user supplied fully formed go straight to critique.
-- Structure as `candidate proposals where needed -> one independent critic per serious candidate -> per-lens gauntlet when escalated -> judge when critics conflict -> ruling`. Each serious candidate is attacked by its own critic; one shared review spanning candidates does not count. The per-lens gauntlet — each lens under its own owner — runs when more than one candidate survives the first round without a disqualifying finding, when the decision is irreversible or touches a public or shared contract, security, or persisted data, or when the user asks for adversarial critique.
+- Structure as `candidate proposals where needed -> one independent critic per serious candidate -> per-lens gauntlet when escalated -> judge when critics conflict -> ruling`. Each serious candidate is attacked by its own critic; one shared review spanning candidates does not count. The per-lens gauntlet — each lens under its own owner — runs when more than one candidate survives the first round without a disqualifying finding, when the decision touches a stakes marker (SKILL.md Structure), or when the user asks for adversarial critique.
 - Done means each serious candidate was attacked by its own critic, every fired trigger ran, and the ruling records how many candidates survived the first round.
 
 ## Understand / Map
