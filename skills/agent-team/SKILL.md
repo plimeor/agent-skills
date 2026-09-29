@@ -5,7 +5,7 @@ description: "Use when work splits into two or more independent parallel sub-age
 
 # Agent Team
 
-Delegate team-shaped work to sub-agents and integrate what returns as evidence rather than truth. Delegation is assumed authorized. The judgment this skill owns is how the team is split, which returned claims need independent verification before they enter the answer, and when the observed evidence calls for more lanes.
+Delegate team-shaped work to sub-agents and integrate what returns as evidence rather than truth. Delegation is assumed authorized. The judgment this skill owns is how the team is split, and which returned claims need independent verification before they enter the answer.
 
 The outcome is one synthesized result in which every material claim carries its verification status and every inspected or skipped part of the scope is named. Every run goes through Scout, Mode, Bake, Structure, Launch, and Integrate, and passes the three hard gates.
 
@@ -85,8 +85,8 @@ Required artifact: an internal or user-visible blueprint with these fields:
 - `Coverage Shape`: `closed-surface | open-discovery` (see Scout).
 - `Scout Evidence`: the concrete work-list or inventory, shared risks or invariants, not-a-bug list, constraints, and unknowns.
 - `Context Pack`: the baked material every relevant packet receives.
-- `Structure`: stages, pipeline/barrier choices, `VERIFY_MATRIX` floor lanes with owners, the escalation triggers the run watches, and the synthesis owner.
-- `Launch Gate`: work units with named roots, disjoint ownership, edit isolation when needed, parent relay boundary, caps, batching, escalation cap, stall limits, and stop criteria.
+- `Structure`: stages, pipeline/barrier choices, `VERIFY_MATRIX` lanes with owners, and the synthesis owner.
+- `Launch Gate`: work units with named roots, disjoint ownership, edit isolation when needed, parent relay boundary, caps, batching, re-check cap, stall limits, and stop criteria.
 
 Prohibited substitutes: an agent count; a list of vague angles; "have several agents look around"; subsystem labels treated as discovery units; independent packets that each rediscover scope; a run begun without a blueprint because the task felt small.
 
@@ -119,7 +119,7 @@ When scout finds no real work-list, keep the task local. If inventory is incompl
 
 ## Mode
 
-Mode is a task-shape constructor, not a closed enum and not a label. Determine it after scout and before bake. It fixes what evidence is required, what work units mean, which skeleton to use, which returned claims must be verified and which conditions escalate, and what "done" means.
+Mode is a task-shape constructor, not a closed enum and not a label. Determine it after scout and before bake. It fixes what evidence is required, what work units mean, which skeleton to use, which returned claims must be verified, and what "done" means.
 
 Read `references/modes.md` before naming the Mode. It holds the preset catalogue (Review/Audit, Research, Decision, Understand/Map, Migration/Sweep), the specific mismatches that require constructing a new Mode, and the constructed-Mode template. Copy the chosen Mode's five properties into the blueprint `Mode` field; Bake, Structure, and Integrate read them from there. A Mode named without those five properties recorded does not satisfy the Blueprint gate.
 
@@ -140,8 +140,8 @@ Required context pack fields:
 - `SHARED`: objective, systemic risk, invariants, evidence standard, and terms of success.
 - `NOT_A_BUG`: known accepted behavior, authorized deferrals, false-positive traps, and exclusions.
 - `OUTPUT_CONTRACT`: required fields each agent returns per named root, including evidence, what was inspected, findings or result, confidence, gaps, and what it did not inspect.
-- `VERIFY_MATRIX`: two parts. Floor rows — `lane_id`; `role`: `probe | skeptic | completeness | critique-lens | judge`; owner; target; lens — for the probes and for the Mode's must-verify claims. Trigger rows — the observable condition, the lane role it adds, and its target — for the Mode's escalation conditions. Topology Floor is checked against this matrix.
-- `LIMITS`: `max_rounds`, `escalation_cap` (a claim escalates at most once; a conflict that survives its escalation is labeled `unresolved`), `max_stalls`, caps, sampling, top-N cutoffs, parent relay boundary, and when used `batching` entries each with `size`, `grouping key`, `verification command`, and `rationale`.
+- `VERIFY_MATRIX`: the lane roster, one row per lane — `lane_id`; `role`: `probe | skeptic | completeness | critique-lens | judge`; owner; target; lens. Topology Floor is checked against this roster.
+- `LIMITS`: `max_rounds`, `recheck_cap` (a contested claim gets one targeted re-check and a thin root one re-dispatch; what survives is labeled `unresolved` or named a gap), `max_stalls`, caps, sampling, top-N cutoffs, parent relay boundary, and when used `batching` entries each with `size`, `grouping key`, `verification command`, and `rationale`.
 
 Prohibited substitutes: "review this area", "research this topic", "find issues here", or any packet whose boundary is a theme without named roots, sources, hypotheses, or candidate positions.
 
@@ -162,7 +162,7 @@ Mandatory split — any hit means the blueprint is incomplete until the unit is 
 
 A packet carries one or more roots named from inventory, and its report accounts for each. Homogeneous Migration/Sweep sites share one packet only as a batch with the same invariant, the same transform or inspect action, and the same verification command, recorded under `LIMITS.batching`.
 
-Return-time split: a root whose report is empty, evidence-free, or a bare "nothing found" without what was inspected is re-dispatched as its own unit (one escalation, counted against `escalation_cap`) or named a coverage gap.
+Return-time split: a root whose report is empty, evidence-free, or a bare "nothing found" without what was inspected is re-dispatched as its own unit (counted against `recheck_cap`) or named a coverage gap.
 
 Prohibited substitutes: a coarse label (subsystem, folder, epic) standing in for roots when finer roots are listed or listable; roots left for the agent to discover inside a label; a per-root "nothing found" with no inspected evidence; intentional homogeneous batches labeled as gaps or caps.
 
@@ -176,11 +176,10 @@ Default to a pipeline: each unit flows through its stages independently, so one 
 
 Returned claims are routed by the role they play in the final answer:
 
-- **Must-verify**: the claims the Mode's verification target names, plus every claim the final answer cites as a reason for its conclusion, decision, or ruling. Each needs an independent lane before it enters as confirmed.
+- **Must-verify**: every claim the final answer cites as a reason for its conclusion, decision, or ruling, every claim it presents as confirmed, and the claims the Mode's verification target names. Each needs an independent lane before it enters as confirmed.
 - **Labeled**: every other claim enters the answer carrying its status.
-- **Escalated**: when a Mode trigger's condition is observed, the lane it names is added. Across all Modes, reports that conflict on a claim trigger a targeted verifier, and a claim touching a stakes marker — an irreversible action, a public or shared contract, security, or persisted data — triggers an additional independent lens.
 
-The parent settles a conflict decidable by one direct mechanical observation — a file exists, a symbol is defined, a command prints a value — by citing that observation verbatim; every other conflict goes to a targeted verifier.
+Reports that conflict on a claim go to one targeted verifier. The parent settles a conflict decidable by one direct mechanical observation — a file exists, a symbol is defined, a command prints a value — by citing that observation verbatim.
 
 `skeptic` and `critique-lens` lanes are read-mostly by default. A lane that finds a defect returns `fail` plus a concrete fix list for a bounded fix-pass owner rather than fixing it itself; `VERIFY_MATRIX` may name a verifier as its own fixer, but that fix then needs its own verification row. A fix no lane checked is an unverified change, not a resolved finding.
 
@@ -188,29 +187,18 @@ The parent settles a conflict decidable by one direct mechanical observation —
 
 Activation: before Launch, and again before Integrate, for every run whose answer will contain findings, load-bearing claims, candidate rulings, maps of unknown-size systems, or an inventory-style list.
 
-Before Launch, `VERIFY_MATRIX` must hold:
+Before Launch, `VERIFY_MATRIX` holds one probe or transform lane per `WORK_UNIT` (or per Decision candidate that needs a proposal), and a named independent owner for each class of claim the Mode's verification target requires checking. Before Integrate, every must-verify claim has been through an independent lane.
 
-- `probe`: one probe or transform lane per `WORK_UNIT`, or per Decision candidate that needs a proposal.
-- Floor lanes: a named independent owner for each class of claim the Mode's verification target requires checking.
-- Trigger rows: every escalation condition the Mode names, each with the lane role it adds.
-
-Before Integrate:
-
-- Every must-verify claim has been through an independent lane.
-- Every trigger whose condition was observed has run its lane, or is named a gap.
-- Every watched trigger has its observed value recorded — for example, how many Decision candidates survived the first critique round.
-
-Agent count follows from units plus floor lanes plus fired triggers — never from probe count alone, and never from a preferred headcount.
+Agent count follows from units plus verification lanes — never from probe count alone, and never from a preferred headcount.
 
 Prohibited substitutes:
 
 - A roster whose rows are all `role: probe` on work with must-verify claims.
-- The parent's own reading or lookup standing in for a floor or trigger lane.
+- The parent's own reading or lookup standing in for a verification lane.
 - One shared verify packet that does not target each must-verify claim.
 - A must-verify claim delivered under an `unverified` label in a result presented as complete.
 - A claim the answer cites as a reason, routed as label-only.
-- A trigger declared unfired without its observed value.
-- On Decision work: one shared review spanning candidates; and, once the per-lens trigger fires, one reviewer carrying several lenses.
+- On Decision work: one shared review spanning candidates; and, when the user asks for adversarial critique, one reviewer carrying several lenses.
 
 Incomplete behavior: add the missing lanes, narrow the objective so the claims are out of scope, or mark the result incomplete with the unverified must-verify claims named.
 
@@ -226,7 +214,7 @@ Before spawning, confirm:
 - Cross-cutting concerns have an owner.
 - The parent relay boundary assigns every substantive work unit, evidence hunt, edit, and verification lane to a sub-agent or names it out of scope.
 - Caps, sampling, batching, and skipped work are named in `LIMITS`.
-- Stop, stall, and escalation limits are set.
+- Stop, stall, and re-check limits are set.
 
 Dispatch independent packets in the same turn so they run concurrently. After launch the parent owns relay and control: status updates, the coordination record, claim routing and conflict settlement as Structure defines them, blocker relay, cap enforcement, and the final synthesis.
 
@@ -236,7 +224,7 @@ A new necessary work item after launch becomes one of: a bounded sub-agent packe
 
 Stall signals: the same blocker appears twice without new evidence; agents expand scope while convergence evidence stays flat; verifiers repeat generic feedback; reports contradict with no new evidence; the coordination record grows as a transcript rather than a control surface.
 
-When stalled, narrow the task, ask one focused follow-up, dispatch a smaller packet, or stop with the gap named — inside the rounds, escalation cap, and stall counts already set in `LIMITS`.
+When stalled, narrow the task, ask one focused follow-up, dispatch a smaller packet, or stop with the gap named — inside the rounds, re-check cap, and stall counts already set in `LIMITS`.
 
 ## Integrate
 
@@ -248,7 +236,7 @@ The final synthesis must include, in the user's requested format:
 - The conclusion, decision, or confirmed findings.
 - The load-bearing set: each claim the conclusion cites as a reason, with its evidence and status.
 - Coverage: which named roots, candidates, sources, or sites were inspected.
-- Verification: each material claim's status (see Receive Reports As Evidence), plus the watched triggers with their observed values and which fired. Tracing to a probe's returned evidence is not verification.
+- Verification: each material claim's status (see Receive Reports As Evidence). Tracing to a probe's returned evidence is not verification.
 - Gaps and limits: skipped scope, caps, sampling, batching, failed agents, uncertainty, and why the team stopped.
 
 Positive absence claims (no issues, safe to proceed, fully covered) require a closed inspect list. Unexamined surface stays in gaps — never folded into a clean conclusion. A write-up that implies full coverage without roots and gaps is incomplete.

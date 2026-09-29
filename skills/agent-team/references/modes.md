@@ -30,8 +30,8 @@ Use for architecture choices, trade-offs, irreversible plans, prioritization, an
 
 - Scout for constraints, decision criteria, candidate positions, and disqualifiers.
 - Bake mutually exclusive whole candidates, not analysis facets — enforced by Unit Atomicity's `candidate-position` split rule. A proposer lane builds a candidate's strongest form only when the candidate needs construction or strengthening; candidates the user supplied fully formed go straight to critique.
-- Structure as `candidate proposals where needed -> one independent critic per serious candidate -> per-lens gauntlet when escalated -> judge when critics conflict -> ruling`. Each serious candidate is attacked by its own critic; one shared review spanning candidates does not count. The per-lens gauntlet — each lens under its own owner — runs when more than one candidate survives the first round without a disqualifying finding, when the decision touches a stakes marker (SKILL.md Structure), or when the user asks for adversarial critique.
-- Done means each serious candidate was attacked by its own critic, every fired trigger ran, and the ruling records how many candidates survived the first round.
+- Structure as `candidate proposals where needed -> one independent critic per serious candidate -> judge when critics conflict -> ruling`. Each serious candidate is attacked by its own critic; one shared review spanning candidates does not count. When the user asks for adversarial critique, the critique stage becomes a candidate × critique-lens gauntlet with each lens under its own owner.
+- Done means each serious candidate was attacked by its own critic and the ruling names why the losing candidates lost.
 
 ## Understand / Map
 
@@ -71,7 +71,7 @@ Define all nine fields before Bake:
 - `Scout requirements`: what must be known before bake.
 - `Context pack fields`: any fields beyond the standard pack.
 - `Skeleton`: stage order, pipeline/barrier points, and synthesis owner.
-- `Verification matrix`: what gets independently checked, by which lenses, what observable conditions add lanes, and the pass threshold.
+- `Verification matrix`: what gets independently checked, by which lenses, and the pass threshold.
 - `Stop rule`: what evidence proves the team is done.
 - `Red flags`: how this Mode is most likely to collapse into a weak generic fan-out — one per axis the Mode leaves to judgment.
 
