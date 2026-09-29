@@ -87,7 +87,7 @@ Activation: on an active run, before spawning any sub-agent except scout.
 Required artifact: an internal or user-visible blueprint with these fields:
 
 - `Objective`: the single outcome the team is serving.
-- `Mode`: the named task shape, recorded with all five of its properties — work-unit type, evidence standard, skeleton, verification routing, and stop rule (see Mode).
+- `Mode`: the named task shape, recorded with all five of its properties — work-unit type, evidence standard, skeleton, verification target, and stop rule (see Mode).
 - `Coverage Shape`: `closed-surface | open-discovery` (see Scout).
 - `Scout Evidence`: the concrete work-list or inventory, shared risks or invariants, not-a-bug list, constraints, and unknowns.
 - `Context Pack`: the baked material every relevant packet receives.
@@ -127,14 +127,14 @@ Coverage follows the named roots; the number of packets carrying them is a separ
 
 Mode is a task-shape constructor, not a closed enum and not a label. Determine it after scout and before bake. It fixes what evidence is required, what work units mean, which skeleton to use, which returned claims must be verified and which conditions escalate, and what "done" means.
 
-Read `references/modes.md` before naming the Mode. It holds the preset catalogue (Review/Audit, Research, Decision, Understand/Map, Migration/Sweep) with each preset's verification routing, the specific mismatches that require constructing a new Mode, and the constructed-Mode template. Copy the chosen Mode's five properties into the blueprint `Mode` field; Bake, Structure, and Integrate read them from there. A Mode named without those five properties recorded does not satisfy the Blueprint gate.
+Read `references/modes.md` before naming the Mode. It holds the preset catalogue (Review/Audit, Research, Decision, Understand/Map, Migration/Sweep), the specific mismatches that require constructing a new Mode, and the constructed-Mode template. Copy the chosen Mode's five properties into the blueprint `Mode` field; Bake, Structure, and Integrate read them from there. A Mode named without those five properties recorded does not satisfy the Blueprint gate.
 
 Mode is doing real work only when both hold:
 
-- Changing the Mode name would change the required evidence, work units, skeleton, verification routing, or stop rule. If it would not, Mode is a label and the blueprint is incomplete.
-- No preset was adopted whose work-unit type, evidence standard, verification routing, or stop rule the scouted task fails to match. A mismatch on any one of the four means construct a Mode instead of forcing the fit.
+- Changing the Mode name would change the required evidence, work units, skeleton, verification target, or stop rule. If it would not, Mode is a label and the blueprint is incomplete.
+- No preset was adopted whose work-unit type, evidence standard, verification target, or stop rule the scouted task fails to match. A mismatch on any one of the four means construct a Mode instead of forcing the fit.
 
-For compound tasks, compose a Mode only where composition changes the skeleton or verification routing. Otherwise name one primary Mode and bake the secondary concern into `SHARED` or `VERIFY_MATRIX` — unless folding it in would blur ownership or replace a per-candidate critique with a shared review, in which case construct a Mode instead. A decision buried in `SHARED` is not a baked secondary concern; it is an unsplit `candidate-position` surface.
+For compound tasks, compose a Mode only where composition changes the skeleton or verification target. Otherwise name one primary Mode and bake the secondary concern into `SHARED` or `VERIFY_MATRIX` — unless folding it in would blur ownership or replace a per-candidate critique with a shared review, in which case construct a Mode instead. A decision buried in `SHARED` is not a baked secondary concern; it is an unsplit `candidate-position` surface.
 
 ## Bake
 
@@ -182,7 +182,7 @@ Default to a pipeline: each unit flows through its stages independently, so one 
 
 Returned claims are routed by the role they play in the final answer:
 
-- **Must-verify**: the claims the Mode's verification routing names, plus every claim the final answer cites as a reason for its conclusion, decision, or ruling. Each needs an independent lane before it enters as confirmed.
+- **Must-verify**: the claims the Mode's verification target names, plus every claim the final answer cites as a reason for its conclusion, decision, or ruling. Each needs an independent lane before it enters as confirmed.
 - **Labeled**: every other claim enters the answer carrying its status.
 - **Escalated**: when a Mode trigger's condition is observed, the lane it names is added. Across all Modes, reports that conflict on a claim trigger a targeted verifier, and a claim touching an irreversible action, a public or shared contract, security, or persisted data triggers an additional independent lens.
 
@@ -197,7 +197,7 @@ Activation: before Launch, and again before Integrate, for every run whose answe
 Before Launch, `VERIFY_MATRIX` must hold:
 
 - `probe`: one probe or transform lane per `WORK_UNIT`, or per Decision candidate that needs a proposal.
-- Floor lanes: a named independent owner for each must-verify class the Mode's verification routing lists.
+- Floor lanes: a named independent owner for each class of claim the Mode's verification target requires checking.
 - Trigger rows: every escalation condition the Mode names, each with the lane role it adds.
 
 Before Integrate:
