@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Review concrete code plan drafts, specs, diffs, and implementation shapes, including parity audits of an implementation against an authoritative source or reference implementation. Use for code-review requests, exhaustive or line-by-line review requests, parity/alignment/completeness audits, serious code-plan design critique, and judging whether a proposed direction is sound. Near miss: use code-plan to create or revise plans; use code-design-review for a lightweight principles-only design assessment."
+description: "Review concrete code plan drafts, specs, diffs, and implementation shapes, including parity audits of an implementation against an authoritative source or reference implementation. Use for code-review requests, exhaustive or line-by-line review requests, parity/alignment/completeness audits, serious plan design critique, and judging whether a proposed direction is sound. Near miss: use code-design-review for a lightweight principles-only design assessment."
 ---
 
 # Code Review
