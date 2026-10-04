@@ -51,9 +51,9 @@ Claude Code loads ancestor files at launch and a subdirectory's file only when i
 
 ## Contradiction and deletion pass
 
-Before adding a line, and on every refactor, scan the loaded chain — draft root, nested files in scope, files you are about to link:
+Before adding a line, and on every refactor, scan the draft root, the files you are about to link, and every file in the **instruction-file inventory** (Mode in `SKILL.md`) — including other tools' files, since the same repo should not tell different agents conflicting things:
 
-1. **Contradictions.** Two instructions that cannot both be followed. Name both. Do not pick silently; ask which to keep.
+1. **Contradictions.** Two instructions that cannot both be followed. Name both with locators. Do not pick silently; put the choice under Decisions needed with your recommendation.
 2. **Supersession.** Replace or delete in place. Never append a correction next to the old rule.
 3. **Deletion flags.** Drop a line that is redundant (model or lint/CI already enforces it), too vague to act on, or obvious ("write clean code").
 
@@ -63,13 +63,13 @@ When the file disagrees with the code, verify which is current and fix the loser
 
 Required in Refactor mode. Do not skip a step by jumping to a "clean rewrite."
 
-1. **Find contradictions** and ask which version to keep.
+1. **Find contradictions** and record each under Decisions needed.
 2. **Extract essentials** that pass the Every-task test / Placement root row.
 3. **Group the rest** by domain (language, testing, API, git, …).
 4. **Write the split**: minimal root with markdown links; one file per group; a suggested `docs/` (or equivalent) layout.
 5. **Flag for deletion** using the deletion flags above. Record drops in the Placement map.
 
-If step 1 is unanswered, pause. If step 4 cannot write a target file, name that remainder; do not leave the extra rules in root "temporarily" and call the job done.
+If step 1 is unanswered, run steps 2–5 on every line the contradiction does not touch; only the contradicted lines stay held. If step 4 cannot write a target file, name that remainder; do not leave the extra rules in root "temporarily" and call the job done.
 
 ## Claude Code loading
 
