@@ -5,9 +5,7 @@
 - `skills/` contains one directory per skill.
 - Each skill directory must contain a `SKILL.md` entrypoint.
 - The skill directory name and the `name:` field in `SKILL.md` frontmatter must match exactly.
-- `plugins/` contains one directory per Claude Code plugin, with `.claude-plugin/plugin.json` as the entrypoint. Plugins install via `claude plugin marketplace add` + `claude plugin install`, never via `npx skills add`.
-- Root `.claude-plugin/marketplace.json` is the plugin index; the marketplace name is `plimeor` (`agent-skills` is reserved for Anthropic official marketplaces). Update the index whenever a plugin is added, removed, or renamed.
-- `README.md` is the public index. Each skill and plugin entry must describe the current user-visible purpose. Update it whenever a skill or plugin is added, removed, renamed, or its functional behavior changes.
+- `README.md` is the public index. Each skill entry must describe the current user-visible purpose. Update it whenever a skill is added, removed, renamed, or its functional behavior changes.
 
 ## Naming Convention
 

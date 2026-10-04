@@ -14,21 +14,11 @@ Install a single skill:
 npx skills add plimeor/agent-skills --skill url-reader
 ```
 
-Install Claude Code plugins (marketplace name: `plimeor`; plugins do not go
-through `npx skills add`):
-
-```bash
-claude plugin marketplace add plimeor/agent-skills
-claude plugin install <plugin-name>@plimeor
-```
-
 ## Project Structure
 
 - `skills/<skill-name>/SKILL.md`: each skill has its own directory, and `SKILL.md` is the entrypoint.
 - The `name:` field in `SKILL.md` frontmatter must match the parent directory name exactly.
-- `plugins/<plugin-name>/`: Claude Code plugins, with `.claude-plugin/plugin.json` as the entrypoint.
-- `.claude-plugin/marketplace.json`: the plugin marketplace index.
-- `README.md` is the public index. Update it whenever a skill or plugin is added, removed, or renamed.
+- `README.md` is the public index. Update it whenever a skill is added, removed, or renamed.
 
 ## Skills
 
@@ -57,9 +47,3 @@ Skills are grouped by primary mode.
 
 - [writing-blog](skills/writing-blog/SKILL.md): Create, diagnose, outline, rewrite, or polish blog posts and articles; routes to one of four work modes (draft-from-notes, diagnosis, rewrite/polish, outline), each with its own reference for structure (SCQA openings, reader-path ordering), diagnosis checklist, and prose cleanup.
 - [writing-reader-feedback](skills/writing-reader-feedback/SKILL.md): Simulate a specified reader reading an article section by section and report raw reading-experience feedback.
-
-## Plugins
-
-Claude Code plugins, distributed through this repo's plugin marketplace (`plimeor`).
-
-No plugins are currently published.
