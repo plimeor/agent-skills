@@ -1,8 +1,0 @@
-{
-  "name": "english-coach",
-  "description": "Shows the English you should have written before Claude responds — copy-edits English prompts, translates non-English ones. Display-only: never added to Claude's context.",
-  "version": "0.3.0",
-  "author": {
-    "name": "Plimeor"
-  }
-}
