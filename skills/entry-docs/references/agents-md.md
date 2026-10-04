@@ -39,12 +39,15 @@ Linked files may point deeper (`docs/TYPESCRIPT.md` → `docs/TESTING.md`). Skil
 - A table of contents, full style guide, or "comprehensive" appendix inside `AGENTS.md`
 - Moving text to `docs/` while leaving a copy in the root
 - Pasting README, API docs, or license into the agents file "so the agent has it"
+- `@path` imports — Claude Code expands them at launch, so the imported file costs the same as inline text. Write pointers as plain paths or markdown links; an `@name` outside backticks is an import
 
 Describe **capabilities and stable domain terms** ("billing owns charges and invoices"; "organization ≠ group ≠ workspace"). Do not document a file tree or "auth lives in `src/auth/handlers.ts`" — paths move and then poison every later session. A pointer to a doc the agent can open now is fine; a frozen map of the tree is not.
 
 ## Monorepo
 
 Nested `AGENTS.md` files merge with root. Root: what the workspace is, how to navigate packages, shared toolchain. Package file: that package's purpose, stack, local landmines, pointers. Each level stays within the Every-task test at its scope. Nested files are deltas, never copies of root.
+
+Claude Code loads ancestor files at launch and a subdirectory's file only when it reads a file in that subdirectory. Keep one convention across the tree: under the default setting, a `CLAUDE.md` anywhere from the working directory up switches Claude Code to `CLAUDE.md` files only, and nested `AGENTS.md` files without their own `CLAUDE.md` import go unread.
 
 ## Contradiction and deletion pass
 
@@ -68,12 +71,28 @@ Required in Refactor mode. Do not skip a step by jumping to a "clean rewrite."
 
 If step 1 is unanswered, pause. If step 4 cannot write a target file, name that remainder; do not leave the extra rules in root "temporarily" and call the job done.
 
-## CLAUDE.md
+## Claude Code loading
 
-Claude Code reads `CLAUDE.md`, not `AGENTS.md`. Keep one canonical body:
+Claude Code (v2.1.277+) reads `AGENTS.md` as project instructions when no `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` exists in the working directory or above it. Any one of them switches it to `CLAUDE.md` files only under the default **Project instructions** setting (`claude-md-or-agents-md`). The user's `~/.claude/CLAUDE.md`, managed `CLAUDE.md`, and `.claude/rules/` do not count. It does not read `AGENTS.local.md`, `AGENTS.override.md`, or anything under `.agents/`.
 
-```bash
-ln -s AGENTS.md CLAUDE.md
-```
+Default: `AGENTS.md` alone, no `CLAUDE.md`.
 
-or a `CLAUDE.md` whose body is `@AGENTS.md` plus, at most, Claude-only harness notes. Two diverging files are a contradiction source. Do not create the symlink or import unless the user asked or the repo already uses Claude Code; mention it when relevant.
+A `CLAUDE.md` is warranted only when one of these holds:
+
+- Claude-only instructions exist (plan mode, hooks, Claude tool names)
+- Sessions the repo supports cannot read `AGENTS.md` directly: Claude Code before v2.1.277, the built-in `agents-md` plugin disabled, or **Project instructions** set to `claude-md`
+- The repo relies on `InstructionsLoaded` hooks or on `--add-dir` with `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD`; neither sees an `AGENTS.md` read directly
+
+Its body is `@AGENTS.md` first, then only the Claude-only notes. Prefer the import over `ln -s AGENTS.md CLAUDE.md`: a Windows clone checks a symlink out as a one-line text file unless `core.symlinks` is enabled, and Claude Code's Edit and Write tools refuse to write through the link. A symlink fits only when there are no Claude-only notes and no contributor uses Windows. Do not add a `CLAUDE.md` unless a condition holds and the user asked or the repo already uses Claude Code; mention it when relevant.
+
+Existing setups:
+
+| Found | Action |
+|---|---|
+| `CLAUDE.md` importing `@AGENTS.md` | Keep; it never loads `AGENTS.md` twice. Delete it only when it holds nothing else and no condition above holds |
+| `CLAUDE.md` symlinked to `AGENTS.md` | Keep or delete; content loads once either way |
+| `CLAUDE.md` that tells the agent in words to read `AGENTS.md` | Replace with the import or delete; the agent sees `AGENTS.md` only if it chooses to open it |
+| Hook that prints `AGENTS.md` | Remove; direct reading already loads it, so the hook adds a second copy |
+| `CLAUDE.md` with its own rule body | Fork: Claude Code reads only the `CLAUDE.md`, so `AGENTS.md` rules silently miss it. Run the **Contradiction and deletion pass** across both, then collapse to the import |
+
+When a report says Claude ignores `AGENTS.md`, check first for a `CLAUDE.md` or a personal `CLAUDE.local.md` on the path; the latter counts too. Confirm what loaded with `/memory`.

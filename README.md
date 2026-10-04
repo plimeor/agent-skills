@@ -37,7 +37,7 @@ Skills are grouped by primary mode.
 
 - [create-crew](skills/create-crew/SKILL.md): From local Claude Code / Grok session history, build a complete deployable **crew** skill (judgment Specs plus dual-branch `runtimes.md` for Orca vs portable fielding); evals follow skill-creator (live LLM on `evals/evals.json`, optional installed-crew blind predict/score on real sessions).
 - [agent-team](skills/agent-team/SKILL.md): Run team-shaped work — exhaustive audits, open-discovery inventories, cross-checked research, codebase maps, sweeps, adversarial decision critique — across sub-agents, leaving orchestration mechanics to the model and holding the result to four gates: coverage over named evidence roots with per-root returns, independent verification of every claim the answer relies on or presents as confirmed, one unit and one critic per decision candidate, and isolated mutators. The synthesis names coverage, verification status, and gaps. Single bounded delegations stay with the caller.
-- [entry-docs](skills/entry-docs/SKILL.md): Author, refactor, or diagnose `AGENTS.md` / `CLAUDE.md` and `README.md` as complementary entrypoints — agents get a minimal every-request file with progressive disclosure; humans get a short cognitively-funneled README that can keep them out of the source.
+- [entry-docs](skills/entry-docs/SKILL.md): Author, refactor, or diagnose `AGENTS.md` / `CLAUDE.md` and `README.md` as complementary entrypoints — agents get a minimal every-request `AGENTS.md` with progressive disclosure, plus a `CLAUDE.md` only where Claude Code needs one; humans get a short cognitively-funneled README that can keep them out of the source.
 
 ### Ops
 

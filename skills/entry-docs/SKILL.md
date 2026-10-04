@@ -1,6 +1,6 @@
 ---
 name: entry-docs
-description: "Author, refactor, or diagnose a repository's AGENTS.md (and CLAUDE.md) and/or README.md as complementary entrypoints. Use when writing, shrinking, splitting, or reviewing those files, when AGENTS.md is bloated or contradictory, or when a README cannot keep users out of the source. Near miss: not for SKILL.md authoring, ADRs, API reference as the primary artifact, CONTRIBUTING.md alone, blog posts, or implementing product features."
+description: "Author, refactor, or diagnose a repository's AGENTS.md (and CLAUDE.md) and/or README.md as complementary entrypoints. Use when writing, shrinking, splitting, or reviewing those files, when AGENTS.md is bloated or contradictory, when deciding whether a repo needs a CLAUDE.md beside AGENTS.md, or when a README cannot keep users out of the source. Near miss: not for SKILL.md authoring, ADRs, API reference as the primary artifact, CONTRIBUTING.md alone, blog posts, or implementing product features."
 ---
 
 # Entry Docs
@@ -10,11 +10,11 @@ description: "Author, refactor, or diagnose a repository's AGENTS.md (and CLAUDE
 Produce or improve the repo's two entrypoint files so each serves its reader and neither becomes a dump:
 
 - **`README.md`** — human consumers deciding whether and how to use the project
-- **`AGENTS.md`** — coding agents on every request. Canonical agent file. `CLAUDE.md` is a symlink or a one-line `@AGENTS.md` import, never a second body of rules
+- **`AGENTS.md`** — coding agents on every request. Canonical agent file. Claude Code reads it directly when no `CLAUDE.md` is on the path; a `CLAUDE.md` exists only under **Claude Code loading** in `references/agents-md.md`, never as a second body of rules
 
 They share a shape, not a template: as short as they can be without being shorter, with depth behind pointers. They are complementary, not mirrors. One-liner project description is the only intended overlap.
 
-Sources this skill distills (do not paste them in): [A Complete Guide To AGENTS.md](https://www.aihero.dev/a-complete-guide-to-agents-md) and [Art of README](https://github.com/hackergrrl/art-of-readme) (CC BY 2.0, Kira / hackergrrl).
+Sources this skill distills (do not paste them in): [A Complete Guide To AGENTS.md](https://www.aihero.dev/a-complete-guide-to-agents-md), [How Claude remembers your project](https://code.claude.com/docs/en/memory), and [Art of README](https://github.com/hackergrrl/art-of-readme) (CC BY 2.0, Kira / hackergrrl).
 
 ## Mode
 
@@ -71,10 +71,10 @@ Required evidence:
 - Root contents satisfy the Placement root row and the **Every-task test**
 - **Contradiction and deletion pass** has been run on the loaded chain
 - Refactor mode followed **Refactor order**
-- `CLAUDE.md` is not a fork
-- Depth uses **Disclosure mechanics** (a root TOC or leftover copies of moved rules do not count)
+- Claude Code loading is decided: every `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` in the repo is named with its **Claude Code loading** reason, or none exists
+- Depth uses **Disclosure mechanics** (a root TOC, `@path` imports, or leftover copies of moved rules do not count)
 
-Prohibited substitutes: a "comprehensive" agents file; directory tours or volatile paths as the project map; ALL-CAPS / always-forcing on mere pointers; claiming disclosure while the root still contains the moved text.
+Prohibited substitutes: a "comprehensive" agents file; directory tours or volatile paths as the project map; ALL-CAPS / always-forcing on mere pointers; claiming disclosure while the root still contains the moved text; a `CLAUDE.md` with its own rule body beside `AGENTS.md`; a `CLAUDE.md` that tells the agent in words to read `AGENTS.md`; a hook that prints `AGENTS.md` into context.
 
 Incomplete: unresolved contradictions pause for a user choice. Unwritable split targets are named remainder, not claimed disclosure.
 
