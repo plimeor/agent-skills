@@ -19,7 +19,7 @@ through `npx skills add`):
 
 ```bash
 claude plugin marketplace add plimeor/agent-skills
-claude plugin install english-coach@plimeor
+claude plugin install <plugin-name>@plimeor
 ```
 
 ## Project Structure
@@ -38,11 +38,6 @@ Skills are grouped by primary mode.
 
 - [code-design-review](skills/code-design-review/SKILL.md): Assess whether a design holds up against modern software-engineering principles across four lenses — complexity and cognitive load (APOSD), change economics (coupling/cohesion, abstraction timing, deletability), boundary correctness (parse-don't-validate, functional core / imperative shell), and agent legibility (machine-checkable contracts, tests as spec) — mapping each concern to a concrete surface, reader task, symptom, and cause; delivers a verdict with impact-ranked concerns and a named examined/unexamined boundary, as a consulting judgment rather than a coverage-accounted merge gate.
 - [code-review](skills/code-review/SKILL.md): Review plan drafts, specs, diffs, and implementation shapes for direction soundness, premise validity, high-potential preservation, boundary clarification, alternatives, APOSD-style complexity, contracts, tests, implementation fit, and synthesis; coverage reads everything in scope breadth-first and drills into flagged units, and the report delivers a coverage manifest plus root-cause-aggregated findings whose locators and evidence can be independently followed.
-- [code-test-strategy](skills/code-test-strategy/SKILL.md): Test-strategy gate for coding tasks; avoid test-driven production complexity, premature tests, and implementation-detail tests.
-
-### Decision
-
-- [reconsider](skills/reconsider/SKILL.md): Reconsider a non-trivial answer before finalizing; challenge stale context, premature compromise, hidden uncertainty, and context-inertia risk to raise answer quality.
 
 ### Design
 
@@ -67,4 +62,4 @@ Skills are grouped by primary mode.
 
 Claude Code plugins, distributed through this repo's plugin marketplace (`plimeor`).
 
-- [english-coach](plugins/english-coach/README.md): On every prompt, shows the English you should have written — copy-edits English, translates other languages — with short fix notes before Claude responds. Display-only via the hook `systemMessage` channel — never enters Claude's context.
+No plugins are currently published.
