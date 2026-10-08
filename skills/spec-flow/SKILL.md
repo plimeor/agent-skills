@@ -1,6 +1,6 @@
 ---
 name: "spec-flow"
-description: "Manage a repo's plans and specs through init, propose, verify, archive, and decide: scaffold the docs layout, grill then write a plan with its spec changes, check the work against plan and spec, merge the plan into the spec and archive it."
+description: "Manage a repo's plans and specs through init, propose, verify, archive, and decide: scaffold the docs layout, grill then write a plan with its spec changes, check the work against plan and spec, merge the plan into the spec and archive it; record, supersede, or consolidate decision records."
 ---
 
 # Spec Flow
@@ -23,7 +23,8 @@ docs/plans/<slug>/                intent: one directory per feature being built 
   plan.md                         why, what changes, design, tasks
   specs/<feature>.md              proposed changes to docs/specs/<feature>.md
 docs/archive/YYYY-MM-DD-<slug>/   history: a shipped plan's directory, kept as it was
-docs/decisions/NNNN-slug.md       cross-feature technical decisions
+docs/decisions/NNNN-slug.md       live: cross-feature decisions in force (Accepted) or ruled out (Rejected)
+docs/decisions/superseded/        history: replaced decision records, not read by default
 ```
 
 The `## Docs conventions` block in the repo's instruction file is authoritative for paths. Read it first; a repo may place these directories elsewhere. Use the defaults above only when the block is absent.
@@ -103,7 +104,21 @@ An archived plan is history. Its contents stay as they were at archive time. Its
 
 ### Decision — `docs/decisions/NNNN-slug.md`
 
-Sequential number, one decision per file, one to two pages. `Status:` is one of `Proposed` | `Accepted` | `Rejected` | `Superseded by NNNN`. The body of an accepted record is immutable; a changed decision is a new record. Rejected and superseded records stay in place.
+One decision per file, one to two pages. Numbers are sequential and never reused; the next number is one past the highest in `docs/decisions/` and `docs/decisions/superseded/` together.
+
+The directory states the status:
+- `docs/decisions/` holds the live set: records with `Status: Accepted`, which are in force, and records with `Status: Rejected`, which stay so the approach is not proposed again.
+- `docs/decisions/superseded/` holds history: a replaced record, moved with `git mv` under its own number and file name, its status line reading `Superseded by NNNN`. It is read only to trace why a decision changed.
+
+A record is written once the user has decided. A choice still under discussion lives in the conversation or in a plan's Design.
+
+**Published records.** A record is published once it is on the repo's default branch, where other branches and downstream readers can cite it. Before that it belongs to the branch that adds it: it is edited in place, renumbered when another branch published the same number first, or deleted when the decision is dropped. A published record's body is fixed; changing the decision means a new record that supersedes it.
+
+**Superseding.** The new record restates everything still in force from the records it replaces, so the live set reads complete without opening `superseded/`, and names them on its `Supersedes:` line, a line other records omit. A record that is partly outdated is superseded whole, with its still-valid part carried forward.
+
+**Consolidation.** The live set grows with the number of topics, not with time. A topic is a set of records a reader would need together to apply any one of them. Write one consolidated record that supersedes the others when a topic holds two or three live records, or when an Accepted record is partly outdated. It carries the parts still in force, leaves out what is outdated, and may fold the topic's `Rejected` records into its Considered options, each with its reason. It restates decisions that already passed the decision gate; the gate is not reapplied.
+
+**Budget.** The live set stays small enough to read in one pass: about 10–15 records. A larger set signals that consolidation is due; it is not a hard limit.
 
 Decision gate — write a record only when all three hold:
 1. Hard to reverse.
@@ -126,9 +141,9 @@ An operation runs through to its end. It stops only where nothing can move witho
 
 Stops that belong:
 - `init`: the user's answers for the overview.
-- `propose`: each round of the interview; an idea that runs into a Non-goal or a `Rejected` decision.
+- `propose`: each round of the interview; an idea that runs into a Non-goal, a `Rejected` decision, or an option a live record turned down.
 - `archive`: a `Not ready` verdict the user has not accepted; a merge or check that fails; an archive target that already exists.
-- `decide`: the user's call on whether a proposed decision is accepted.
+- `decide`: the user's call on a decision; the user's approval of a consolidated record before the records it replaces move.
 
 Stops that do not belong:
 - In `propose`, pausing between the spec change files and `plan.md` to ask whether to continue.
@@ -154,12 +169,12 @@ Identify which operation the request maps to. When it maps to none, say so rathe
 
 **1. Ground.** Look widely before asking or writing anything; what the idea depends on is often somewhere the request does not mention.
 - Read the overview.
-- List `docs/specs/` and `docs/decisions/` and open every file that could bear on the idea, including ones the request does not name. Read each spec the idea touches in full, scenarios included.
+- List `docs/specs/` and `docs/decisions/` (the live set, not `superseded/`) and open every file that could bear on the idea, including ones the request does not name. Read each spec the idea touches in full, scenarios included.
 - List `docs/plans/`. Another plan that changes the same spec is a conflict in the making: raise it with the user in the first round of the interview.
 - Look in `docs/archive/` for earlier plans on the same feature; they hold the reasons behind its current shape.
 - Read the code that implements the feature.
 
-When the idea runs into a Non-goal or a `Rejected` decision, say so and ask whether the user is reopening it before going further.
+When the idea runs into a Non-goal, a `Rejected` decision, or an option a live record turned down, say so and ask whether the user is reopening it before going further.
 
 **2. Grill.** Interview the user until there is a shared understanding of what is being built.
 - Treat the idea as a design tree: each decision branches into the decisions that hang off it.
@@ -220,18 +235,20 @@ The order is fixed: merge, check, move. When the merge or the check fails, nothi
 3. **Move the plan directory** with `git mv` to `docs/archive/YYYY-MM-DD-<slug>/`, dated today. When the target already exists, stop and report.
 4. **Update the overview**: Current focus, Next, and the date.
 5. Keep these edits in the same change set as the code when that change is still open.
-6. **Report** what was merged and moved. In the same report, propose decision records: run each choice under the plan's Design through the decision gate and list those that pass. A record is written through `decide` once the user approves it; the archive does not wait for that.
+6. **Report** what was merged and moved. In the same report, propose decision records: run each choice under the plan's Design through the decision gate and list those that pass, each with any live record on the same topic it would supersede or consolidate with. A record is written through `decide` once the user approves it; the archive does not wait for that.
 
-### decide — record a decision
+### decide — record, supersede, or consolidate a decision
 
-1. Apply the decision gate. When it fails, say which condition fails and write nothing.
-2. Create the record with the next number. Use `Proposed` while undecided, `Accepted` once the user decides, `Rejected` for an approach turned down for durable reasons.
-3. Superseding: write the new record, then change only the old record's status line to `Superseded by NNNN`.
+1. **New decision.** Apply the decision gate. When it fails, say which condition fails and write nothing. Otherwise create the record in `docs/decisions/` with the next number: `Accepted` for the user's chosen approach, `Rejected` for an approach turned down for durable reasons.
+2. **Changed decision.** An unpublished record is edited in place. A published one is superseded: write the new record, `git mv` each replaced record to `docs/decisions/superseded/`, change only its status line to `Superseded by NNNN`, and update links to its old path in the overview, plans, specs, and live records. Links inside `docs/archive/` stay as written; the number still locates the record.
+3. **Consolidation.** When a topic meets the consolidation condition, or the live set is past its budget, group the live records by topic and draft the consolidated record. Put the draft to the user; on approval, write it and supersede the records it replaces as in step 2. An unpublished record it replaces is deleted rather than moved.
+4. **Check the live set.** After any write, count the live records and look for topics that meet the consolidation condition. Name them in the report as consolidation candidates.
+5. **Report** the records created, edited, moved, or deleted, and the size of the live set.
 
 ## Boundaries
 
 - Commit or push only when the user asks.
-- The body of an accepted decision and the contents of `docs/archive/` are left as written.
+- The body of a published decision record and the contents of `docs/archive/` and `docs/decisions/superseded/` are left as written; superseding changes only the replaced record's location and status line.
 - A directory the conventions block does not name is outside this skill's remit.
 - Report every file created, moved, edited, or deleted at the end of an operation.
 
@@ -245,7 +262,7 @@ The order is fixed: merge, check, move. When the merge or the check fails, nothi
 - `docs/specs/`: the behavior contract of each shipped feature. Update the spec in the same change as the code. When a spec and the code disagree, the code is right and the spec gets fixed.
 - `docs/plans/`: intent for features being built or queued. Everything under it, including the spec change files in `docs/plans/<slug>/specs/`, is a proposal and not a description of current behavior. When implementing a plan, read the Tasks in its `plan.md` to find what is open, and tick each task as its work lands.
 - `docs/archive/`: shipped plans kept as history. Nothing in it describes current behavior or is work to do; its spec change files are already merged into `docs/specs/`. Read it only to learn why something was built the way it was. Its contents are not edited.
-- `docs/decisions/`: only records with `Status: Accepted` are in force. A changed decision is a new record that supersedes the old one. An approach recorded as `Rejected` is not to be proposed again.
+- `docs/decisions/`: cross-feature technical decisions. Records directly in it are live: `Status: Accepted` is in force; an approach recorded as `Rejected`, or turned down in a live record's Considered options, is not to be proposed again unless the user reopens it. `docs/decisions/superseded/` is history; read it only to learn why a decision changed. A record on the default branch is changed by a new record that supersedes it; a record not yet there is edited in place.
 ```
 
 ### Overview
@@ -349,8 +366,9 @@ The system SHALL <one behavior>.
 ```markdown
 # NNNN: <title>
 
-Status: Proposed
+Status: Accepted
 Date: YYYY-MM-DD
+Supersedes: NNNN, NNNN
 
 ## Context
 
