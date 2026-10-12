@@ -22,7 +22,7 @@ docs/specs/<feature>.md           reality: the behavior contract of a shipped fe
 docs/plans/<slug>/                intent: one directory per feature being built or queued
   plan.md                         why, what changes, design, tasks
   specs/<feature>.md              proposed changes to docs/specs/<feature>.md
-docs/archive/YYYY-MM-DD-<slug>/   history: a shipped plan's directory, kept as it was
+docs/archive/YYYY-MM-DD-<slug>/   history: a shipped plan's plan.md, kept as it was
 docs/decisions/NNNN-slug.md       live: cross-feature decisions in force (Accepted) or ruled out (Rejected)
 docs/decisions/superseded/        history: replaced decision records, not read by default
 ```
@@ -98,9 +98,11 @@ The plan is edited as understanding changes during implementation; plan and spec
 
 ### Archive — `docs/archive/YYYY-MM-DD-<slug>/`
 
-A shipped plan's directory, moved whole and dated with the day it was archived. It records why the feature was built, what was left out, the design choices and the alternatives turned down, and the tasks as they were carried out.
+A shipped plan's directory, moved and dated with the day it was archived. It holds `plan.md` only, which records why the feature was built, what was left out, the design choices and the alternatives turned down, and the tasks as they were carried out.
 
-An archived plan is history. Its contents stay as they were at archive time. Its spec change files are already merged into `docs/specs/` and carry no authority; the spec is the contract.
+The spec change files stay out of the archive. After the merge their content lives in `docs/specs/`, and the change each one made is in the git history of its target spec. Kept, they would add several files per shipped plan and leave stale copies of requirements beside the contract, where a search finds them. Earlier plans on a feature are found by the feature's name in their `Specs:` list.
+
+An archived plan is history. `plan.md` stays as it was at archive time and carries no authority over behavior; the spec is the contract.
 
 ### Decision — `docs/decisions/NNNN-slug.md`
 
@@ -171,7 +173,7 @@ Identify which operation the request maps to. When it maps to none, say so rathe
 - Read the overview.
 - List `docs/specs/` and `docs/decisions/` (the live set, not `superseded/`) and open every file that could bear on the idea, including ones the request does not name. Read each spec the idea touches in full, scenarios included.
 - List `docs/plans/`. Another plan that changes the same spec is a conflict in the making: raise it with the user in the first round of the interview.
-- Look in `docs/archive/` for earlier plans on the same feature; they hold the reasons behind its current shape.
+- Look in `docs/archive/` for earlier plans on the same feature, found by the feature's name in their `Specs:` list; they hold the reasons behind its current shape.
 - Read the code that implements the feature.
 
 When the idea runs into a Non-goal, a `Rejected` decision, or an option a live record turned down, say so and ask whether the user is reopening it before going further.
@@ -228,14 +230,15 @@ Then check each spec change file against its target spec:
 
 Archive runs on a verified plan. With no verify result at hand, run `verify` first. With a `Not ready` verdict, continue only when the user accepts the open findings by name.
 
-The order is fixed: merge, check, move. When the merge or the check fails, nothing is moved. Once the merge starts, steps 1 to 5 run without a pause, so the repo is never left with specs merged and the plan still in `docs/plans/`.
+The order is fixed: merge, check, then delete the change files and move the plan. When the merge or the check fails, nothing is deleted or moved. Once the merge starts, steps 1 to 6 run without a pause, so the repo is never left with specs merged and the plan still in `docs/plans/`.
 
-1. **Merge each spec change file into the spec of the same name.** ADDED: append the blocks as they are. MODIFIED: replace the requirement of that name with the full updated block. REMOVED: delete the requirement. A new spec is created with its Purpose. Where verify found the code behaving differently from a planned requirement and the user accepted it, correct the change file first, then merge, so the archive and the spec agree.
+1. **Merge each spec change file into the spec of the same name.** ADDED: append the blocks as they are. MODIFIED: replace the requirement of that name with the full updated block. REMOVED: delete the requirement. A new spec is created with its Purpose. Where verify found the code behaving differently from a planned requirement and the user accepted it, correct the change file first, then merge, so the spec states the behavior that shipped.
 2. **Check the result.** Each merged spec still follows the spec contract: every requirement has a scenario, no requirement appears twice, no ADDED / MODIFIED / REMOVED heading remains.
-3. **Move the plan directory** with `git mv` to `docs/archive/YYYY-MM-DD-<slug>/`, dated today. When the target already exists, stop and report.
-4. **Update the overview**: Current focus, Next, and the date.
-5. Keep these edits in the same change set as the code when that change is still open.
-6. **Report** what was merged and moved. In the same report, propose decision records: run each choice under the plan's Design through the decision gate and list those that pass, each with any live record on the same topic it would supersede or consolidate with. A record is written through `decide` once the user approves it; the archive does not wait for that.
+3. **Delete the spec change files**: the plan's `specs/` directory. Their content is now in `docs/specs/`.
+4. **Move the plan directory** with `git mv` to `docs/archive/YYYY-MM-DD-<slug>/`, dated today. When the target already exists, stop and report.
+5. **Update the overview**: Current focus, Next, and the date.
+6. Keep these edits in the same change set as the code when that change is still open.
+7. **Report** what was merged, deleted, and moved. In the same report, propose decision records: run each choice under the plan's Design through the decision gate and list those that pass, each with any live record on the same topic it would supersede or consolidate with. A record is written through `decide` once the user approves it; the archive does not wait for that.
 
 ### decide — record, supersede, or consolidate a decision
 
@@ -261,7 +264,7 @@ The order is fixed: merge, check, move. When the merge or the check fails, nothi
 - `docs/overview.md`: what this project is, its principles, current focus, and non-goals. Read it before starting work. Non-goals are not to be implemented or proposed.
 - `docs/specs/`: the behavior contract of each shipped feature. Update the spec in the same change as the code. When a spec and the code disagree, the code is right and the spec gets fixed.
 - `docs/plans/`: intent for features being built or queued. Everything under it, including the spec change files in `docs/plans/<slug>/specs/`, is a proposal and not a description of current behavior. When implementing a plan, read the Tasks in its `plan.md` to find what is open, and tick each task as its work lands.
-- `docs/archive/`: shipped plans kept as history. Nothing in it describes current behavior or is work to do; its spec change files are already merged into `docs/specs/`. Read it only to learn why something was built the way it was. Its contents are not edited.
+- `docs/archive/`: shipped plans kept as history, `plan.md` only. Nothing in it describes current behavior or is work to do; the spec changes each plan made are merged into `docs/specs/` and recorded in its git history. Read it only to learn why something was built the way it was. Its contents are not edited.
 - `docs/decisions/`: cross-feature technical decisions. Records directly in it are live: `Status: Accepted` is in force; an approach recorded as `Rejected`, or turned down in a live record's Considered options, is not to be proposed again unless the user reopens it. `docs/decisions/superseded/` is history; read it only to learn why a decision changed. A record on the default branch is changed by a new record that supersedes it; a record not yet there is edited in place.
 ```
 
