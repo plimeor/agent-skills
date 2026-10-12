@@ -56,7 +56,7 @@ One plan covers one shippable feature or one change to shipped features. Every d
 
 **`plan.md`**
 - **Why**: the problem or opportunity in one or two sentences.
-- **What changes**: bullets, specific about what is added, modified, or removed. Lists each affected spec as new or modified; each has a spec change file.
+- **What changes**: bullets, specific about what is added, modified, or removed; a removed requirement's bullet gives the reason for removing it. Lists each affected spec as new or modified; each has a spec change file.
 - **Out of scope**: see the rule below.
 - **Design**: how. Included only when the change is cross-cutting, adds a dependency or changes the data model, carries security, performance, or migration complexity, or has ambiguity worth settling before coding.
   - Decisions: each choice with its reason and the alternative turned down.
@@ -100,7 +100,7 @@ The plan is edited as understanding changes during implementation; plan and spec
 
 A shipped plan's directory, moved and dated with the day it was archived. It holds `plan.md` only, which records why the feature was built, what was left out, the design choices and the alternatives turned down, and the tasks as they were carried out.
 
-The spec change files stay out of the archive. After the merge their content lives in `docs/specs/`, and the change each one made is in the git history of its target spec. Kept, they would add several files per shipped plan and leave stale copies of requirements beside the contract, where a search finds them. Earlier plans on a feature are found by the feature's name in their `Specs:` list.
+The spec change files stay out of the archive. After the merge their content lives in `docs/specs/`, and the change each one made is in the git history of its target spec, in the commit that lands the plan on the default branch under any merge strategy. The one part a spec diff cannot show, the reason a requirement was removed, is kept in `plan.md`'s What changes. Kept, they would add several files per shipped plan and leave stale copies of requirements beside the contract, where a search finds them. Earlier plans on a feature are found by the feature's name in their `Specs:` list.
 
 An archived plan is history. `plan.md` stays as it was at archive time and carries no authority over behavior; the spec is the contract.
 
