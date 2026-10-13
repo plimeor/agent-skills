@@ -73,8 +73,9 @@ Required evidence:
 - Refactor mode followed **Refactor order**
 - Claude Code loading is decided: every `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` in the repo is named with its **Claude Code loading** reason, or none exists
 - Depth uses **Disclosure mechanics** (a root TOC, `@path` imports, or leftover copies of moved rules do not count)
+- Every kept rule passes **Rule shape**: a count or a stop where it holds a line, and no section that collects what the other sections leave out
 
-Prohibited substitutes: a "comprehensive" agents file; directory tours or volatile paths as the project map; ALL-CAPS / always-forcing on mere pointers; claiming disclosure while the root still contains the moved text; a `CLAUDE.md` with its own rule body beside `AGENTS.md`; a `CLAUDE.md` that tells the agent in words to read `AGENTS.md`; a hook that prints `AGENTS.md` into context.
+Prohibited substitutes: a "comprehensive" agents file; directory tours or volatile paths as the project map; ALL-CAPS / always-forcing on mere pointers; a notes, gotchas, or misc section as the home for lines without a Placement row; claiming disclosure while the root still contains the moved text; a `CLAUDE.md` with its own rule body beside `AGENTS.md`; a `CLAUDE.md` that tells the agent in words to read `AGENTS.md`; a hook that prints `AGENTS.md` into context.
 
 Incomplete: an unresolved contradiction holds only the lines it touches. Finish everything that does not depend on it, leave the held lines unchanged in place, and list the choice under Decisions needed; ending the run to ask while independent work remains is not a pause, it is unfinished work. Unwritable split targets are named remainder, not claimed disclosure.
 

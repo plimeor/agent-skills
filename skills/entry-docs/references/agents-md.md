@@ -20,6 +20,12 @@ Name the toolchain **negatively** when the model would guess wrong: `pnpm, not n
 
 Include a command only when it is non-standard or easy to get wrong. `go test ./...` in a Go module is usually skippable; `pnpm check` as the one required wrapper is not.
 
+## Rule shape
+
+A rule that exists to hold a line the agent would otherwise cross while being complete, thorough, or helpful is written as something a reader or a check can count or stop on, not as a judgment the agent applies in the moment: `at most three bullets`, `one example per rule`, `stop and ask before the first write to prod`; not `keep it concise`, `only add examples that earn their place`, `be careful with prod`. A judgment rule reads well and holds nothing: the agent that needed it is the one that will decide its case is the exception. The test: a second agent, given the rule and the output, can say whether it was followed without re-deciding the question.
+
+A section that collects what the other sections leave out — notes, gotchas, misc, other conventions — grows by one line after every disliked action and never shrinks. Do not create one. A line with no home under Placement is dropped, not parked.
+
 ## Disclosure mechanics
 
 Agents navigate documentation hierarchies well. Root `AGENTS.md` points; it does not copy.
