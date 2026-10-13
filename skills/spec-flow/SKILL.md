@@ -1,39 +1,67 @@
 ---
 name: "spec-flow"
-description: "Manage a repo's plans and specs through init, propose, verify, archive, and decide: scaffold the docs layout, grill then write a plan with its spec changes, check the work against plan and spec, merge the plan into the spec and archive it; record, supersede, or consolidate decision records."
+description: "Manage a repo's plans and specs through init, propose, verify, archive, decide, and tidy: scaffold the docs layout, grill then write a plan with its spec changes, check the work against plan and spec, merge the plan into the spec and archive it, record, supersede, or consolidate decision records, and bring existing specs and decisions back within their contracts."
 ---
 
 # Spec Flow
 
-Keep a trace of intent and decisions in the repo without letting stale documents pass as current truth. The governing idea: **a document's location states its status**. A reader, human or agent, knows from the directory alone whether a file describes intent, reality, or history.
+Keep a trace of intent and decisions in the repo without letting stale documents pass as current truth. Two ideas govern it. **A document's location states its status**: a reader, human or agent, knows from the directory alone whether a file describes intent, reality, or history. **A spec states promises, not behavior**: it holds what the project would owe users a fix or a migration note for, and stays silent on everything else, however visible.
 
-This skill owns the layout, the format of each document type, and the transitions between states.
+This file is the map: the layout, how to read a repo's state, which operation a request maps to, and the contract of each document type. Each operation's steps, stops, and templates are in its own file under `references/`; read that file before running the operation.
 
-A feature moves through `propose → (implementation) → verify → archive`. `init` runs once per repo. `decide` applies at any point.
+A feature moves through `propose → (implementation) → verify → archive`. `init` runs once per repo. `decide` applies at any point. `tidy` runs on request, outside any plan.
 
 Sources: plan and spec formats adapted from OpenSpec's `spec-driven` schema — https://github.com/Fission-AI/OpenSpec/blob/main/schemas/spec-driven/schema.yaml · the interview in `propose` adapted from Matt Pocock's `grilling` skill — https://github.com/mattpocock/skills
 
 ## Layout
 
-```
-AGENTS.md / CLAUDE.md             conventions block + overview loaded every session
-docs/overview.md                  one page: what, principles, current focus, next, non-goals
-docs/specs/<feature>.md           reality: the behavior contract of a shipped feature
-docs/plans/<slug>/                intent: one directory per feature being built or queued
-  plan.md                         why, what changes, design, tasks
-  specs/<feature>.md              proposed changes to docs/specs/<feature>.md
-docs/archive/YYYY-MM-DD-<slug>/   history: a shipped plan's plan.md, kept as it was
-docs/decisions/NNNN-slug.md       live: cross-feature decisions in force (Accepted) or ruled out (Rejected)
-docs/decisions/superseded/        history: replaced decision records, not read by default
-```
+- `AGENTS.md` / `CLAUDE.md` — the conventions block, and the overview loaded every session
+- `docs/overview.md` — one page: what, principles, current focus, next, non-goals
+- `docs/specs/<feature>.md` — reality: the promises a shipped feature makes to its users
+- `docs/plans/<slug>/` — intent: one directory per feature being built or queued
+  - `plan.md` — why, what changes, design, tasks
+  - `specs/<feature>.md` — proposed changes to `docs/specs/<feature>.md`
+- `docs/archive/YYYY-MM-DD-<slug>/` — history: a shipped plan's `plan.md`, kept as it was
+- `docs/decisions/NNNN-slug.md` — live: cross-feature decisions in force (`Accepted`) or ruled out (`Rejected`)
+- `docs/decisions/superseded/` — history: replaced decision records, not read by default
 
 The `## Docs conventions` block in the repo's instruction file is authoritative for paths. Read it first; a repo may place these directories elsewhere. Use the defaults above only when the block is absent.
 
-Write documents in the language the repo's existing docs use. The structural keywords `Requirement:`, `Scenario:`, `ADDED`, `MODIFIED`, `REMOVED`, `WHEN`, `THEN`, `AND` stay as written.
+Write documents in the language the repo's existing docs use. The structural keywords `Type:`, `Budget:`, `Requirement:`, `Scenario:`, `ADDED`, `MODIFIED`, `REMOVED`, `WHEN`, `THEN`, `AND`, and the type names `feature`, `api`, and `format` stay as written.
+
+## Reading a repo's state
+
+Before any operation, and to answer any question about where a project stands, read in this order. Each location answers one question and no other.
+
+- **The `## Docs conventions` block** in `AGENTS.md` / `CLAUDE.md`: where the directories below live in this repo. It says nothing about the project. A missing block means `init` has not run.
+- **`docs/overview.md`**: what the project is, its principles, the current focus, what is next, the non-goals. Not what is shipped; the specs directory is the inventory.
+- **`docs/specs/`**: the promises in force, one file per shipped feature. Not how the code does it, nor anything a spec is silent on.
+- **`docs/plans/`**: live intent. Every directory is a feature being built or queued; the unticked Tasks in its `plan.md` are the open work; its `specs/` are proposals. Not how the system behaves today.
+- **`docs/decisions/`**, the files directly in it: decisions in force (`Accepted`) and approaches ruled out (`Rejected`). Not feature behavior; that is the spec's.
+- **`docs/archive/`** and **`docs/decisions/superseded/`**: why things came to be as they are. Not current behavior or open work; read only when the question is why.
+
+The code is authoritative over the specs. A spec that disagrees with it is the defect, except where the code breaks a guarantee users rely on; that is a suspected bug to report, not to write into the spec.
+
+## Routing
+
+Identify which operation the request maps to, then read that operation's file before doing anything else; it holds the steps, the stops, and the templates the operation writes. When a request maps to none, say so rather than improvising a new transition.
+
+- **Set up the docs layout** in a repo that has none, or complete a partial one: `init`, in `references/init.md`.
+- **Plan a feature or a change** ("I want to add", "let's build", "propose"): `propose`, in `references/propose.md`.
+- **Check finished work against its plan** ("is it ready", "verify", "review against the plan"): `verify`, in `references/verify.md`.
+- **Ship a verified plan** ("archive", "merge the spec changes"): `archive`, in `references/archive.md`.
+- **Record, change, or consolidate a cross-feature decision**: `decide`, in `references/decide.md`.
+- **Tidy, shorten, or consolidate existing specs or decisions**: `tidy`, in `references/tidy.md`.
+
+Three requests map to no operation:
+
+- **Implement a plan's tasks.** Read the plan's Tasks to find what is open, tick each task as its work lands, keep `plan.md` and its spec change files consistent, and write the code against the spec change files and the specs the plan leaves untouched.
+- **A question about the project's state**: what is shipped, what is open, why something is the way it is. Read the state as above and answer; open the archive and `superseded/` only when the question is why.
+- **Drop a plan.** See Abandoned plans.
 
 ## Document contracts
 
-Each type has a template under Templates. A document follows its template's sections in order; a section with nothing to say is omitted, not filled.
+Each type has a template: the spec's under Templates below, the others in the file of the operation that writes them (overview and conventions block in `init`, plan and spec change file in `propose`, decision record in `decide`). A document follows its template's sections in order; a section with nothing to say is omitted, not filled.
 
 ### Overview — `docs/overview.md`
 
@@ -41,20 +69,38 @@ One page, dated. Principles and non-goals are trade-off rules an agent applies w
 
 ### Spec — `docs/specs/<feature>.md`
 
-A spec is a behavior contract for one feature a user would name. It is not an implementation description, a copy of the test suite, or an index of the code.
+A spec is the set of promises one feature, named as a user would name it, makes to its users. It is not a description of behavior, a copy of the test suite, or an index of the code. Every statement the spec could carry lands in one of three places:
 
+| The statement | Where it goes |
+|---|---|
+| A promise: if it changed, users would be owed a fix or a migration note | A requirement |
+| Pinned but not promised: regression protection the project wants without owing anyone | The tests only; the spec is silent |
+| Left to the implementation | Nowhere. When silence would mislead, one unspecified clause closing the requirement it qualifies |
+
+The test for every sentence: if this changed, would users be owed a fix or a migration note? Yes: it is a requirement. No: it is not in the spec, however visible the behavior is.
+
+- **Type.** The line after the title reads `Type: feature`, `Type: api`, or `Type: format`. The type sets where the promise line lies.
+  - `feature`: a capability users act on. The promise is what the user can do and what follows, at the grain the user would describe it. Orderings, tiebreaks, algorithm steps, and the format of internal values are the implementation's unless the user named them in the interview. Layout, icons, and styling stay out.
+  - `api`: a library or interface other code calls. The promise is signatures and types, guaranteed semantics, error conditions, and stability constraints such as versioning rules, build targets, and minimum toolchain. Exact outputs for given inputs, offsets, and the absence of panics under generated input are tests. Where an external specification is the authority, the spec names it and lists the extensions and divergences; it does not restate it. Examples show usage.
+  - `format`: a data format, on-disk layout, or interop contract other tools read and write. The field table is the promise, written as a table under `## Fields`, one row per field: name, type, default, handling when invalid. Rows are not requirements. How leniently the format is read is one requirement.
 - **Purpose**: one or two sentences on what the feature is for, naming the module that owns it.
-- **Requirements**: each is `### Requirement: <name>` followed by one normative statement using SHALL or MUST (or the equivalent in the repo's language). One behavior per requirement, where a behavior is a rule a reader applies as a unit: its input checks, error variants, and edge cases stay in the same requirement, shown through scenarios. A requirement that mixes several rules first loses the detail this contract keeps out, and is split only along rules that remain; a split does not make the spec longer.
-- **Scenarios**: every requirement has at least one `#### Scenario: <name>` in WHEN / THEN form. Examples and edge cases go in scenarios, not in the requirement text. A scenario earns its place by pinning down something a reader needs to apply the requirement: the case that shows what the rule means, an edge where the behavior turns, an error the user sees. Further combinations of the same rule and input checks that follow directly from the requirement text live in the tests only. Every scenario is a test case; not every test case is a scenario.
-- Belongs in a spec: observable behavior, inputs and outputs, error conditions, external constraints (security, privacy, compatibility).
-- Stays out: internal class and function names, library choices, implementation steps, history, rejected options. The test: when the implementation can change without changing visible behavior, the detail does not belong in the spec.
-- **Details with another authoritative source.** When the repo already holds the authority for a detail — a data table in the code, a visual baseline, a design file, a generated schema — the spec states the rule that defines it and shows one or two values in scenarios. It does not enumerate the values or give counts derived from them. For a UI the spec states what the user can do and what follows; layout, icons, and styling stay out whether or not the repo keeps a baseline or design for them.
+- **Requirements**: each is `### Requirement: <name>` followed by one normative statement using SHALL or MUST (or the equivalent in the repo's language). One rule per requirement, where a rule is what a reader applies as a unit: its input checks, error variants, and edge cases stay in the same requirement. A requirement that mixes several rules is split only along rules that pass the promise test; a split does not make the spec longer.
+- **Unspecified clauses.** The default for what the spec does not promise is silence.
+  - A clause such as `; the order within a tier is unspecified` closes a requirement's statement only when a reader of that rule would assume a finer rule exists and go looking or fill it in, or when the user placed the matter below the promise line in the interview.
+  - The clause names what is left open and says nothing about what the implementation does today. What the agent alone judged below the line is not written.
+  - There is no `Unspecified` section: a list of what is not promised grows the way a list of scenarios does.
+- **Scenarios**: `#### Scenario: <name>` in WHEN / THEN form, zero to two per requirement. A scenario exists only when the rule would be misread without it: the case that shows what the rule means, or the edge where it turns. Combinations, boundaries, and error variants are tests. Every scenario is a test case; most test cases are not scenarios.
+- **Tests name requirements.** Each requirement is named by at least one test, in the test's name or a comment beside it. The name is the link from the promise to its evidence; `verify` checks it.
+- **Details with another authoritative source.** When the repo already holds the authority for a detail — a data table in the code, a visual baseline, a design file, a generated schema, an external specification — the spec states the rule that defines it and shows at most one or two values. It does not enumerate the values or give counts derived from them.
 - **Paths.** The spec names a concept, not the file that implements it. Where readers need the location, the repo's instruction file or overview maps the concept to it, in one place. A path stays in a spec only when it is itself observable: a path the user types, one printed in output, or a file whose presence the feature checks.
-- **Size.** A spec stays readable in one pass: about 400 lines. A longer spec signals that it covers more than one feature a reader applies together, or carries detail that belongs in the tests or in another source. Split it along the features a user would name. This is a signal, not a hard limit.
-- **Requirement names are handles.** Other specs, code comments, and docs may cite a requirement by name. A change that renames, merges, or removes a requirement updates every such reference in the same change, except in `docs/archive/` and `docs/decisions/superseded/`, which stay as written.
+- **Budget.** Ten requirements, two scenarios per requirement, about 150 lines.
+  - The counts are the budget; the line count checks them, since blank-line conventions differ between languages. A `format` spec's field table is outside the budget.
+  - `verify` returns `Not ready` and `archive` stops for a spec that would be over budget once a plan is merged; the finding names the cuts that bring it back: requirements that demote to tests, scenarios that go, clauses that fall silent.
+  - A spec that holds more promises than the budget allows is usually two features a user would name separately; split it. When it is one feature, the line after `Type:` reads `Budget: <N> requirements, because <reason>`, so the exception is visible to every reader.
+- **Requirement names are handles.** Other specs, tests, code comments, and docs cite a requirement by name. A change that renames, merges, or removes a requirement updates every such reference in the same change, except in `docs/archive/` and `docs/decisions/superseded/`, which stay as written.
 - Code is authoritative. A spec that disagrees with the code is a defect in the spec, with one exception: when the code breaks a guarantee users rely on, such as data kept, state consistent across commands, or a security constraint, the disagreement is a suspected bug. The spec is not rewritten to describe it; report it and let the user decide whether the code or the spec changes.
 
-**Bringing existing specs in line.** A request to review, tidy, or shorten existing specs is a direct edit to `docs/specs/`, not a plan: it changes no behavior. Set a line target below the current size before editing, and check it after. The result follows this contract and states no behavior the spec did not already state, even where tests cover it. Statements that disagree with the code are corrected under the rule above.
+**Bringing existing specs in line** is the `tidy` operation: a direct edit to `docs/specs/`, not a plan. It changes no behavior and states nothing the spec did not already state; what leaves the spec is in the tests or in git history, not lost.
 
 ### Plan — `docs/plans/<slug>/`
 
@@ -62,10 +108,10 @@ One plan covers one shippable feature or one change to shipped features. Every d
 
 **`plan.md`**
 - **Why**: the problem or opportunity in one or two sentences.
-- **What changes**: bullets, specific about what is added, modified, or removed; a removed requirement's bullet gives the reason for removing it. Lists each affected spec as new or modified; each has a spec change file.
+- **What changes**: one line per requirement added, modified, or removed, naming the spec and the requirement; a removed requirement's line gives the reason. The spec change file holds the content; What changes does not restate it. Lists each affected spec as new or modified; each has a spec change file. A plan with no behavior change says so in one line.
 - **Out of scope**: see the rule below.
 - **Design**: how. Included only when the change is cross-cutting, adds a dependency or changes the data model, carries security, performance, or migration complexity, or has ambiguity worth settling before coding.
-  - Decisions: each choice with its reason and the alternative turned down.
+  - Decisions: at most five, each a choice a later reader would ask why about, with its reason and the alternative turned down. A choice below the promise line is not a decision; the implementer makes it in the code.
   - Risks: `[risk] → mitigation`.
   - Open questions: only unknowns that can be answered later without changing the requirements, the approach, or the tasks.
 - **Tasks**: numbered groups of checkboxes, `- [ ] 1.1 <task>`, ordered by dependency, each small enough for one session. Each task states how its completion is verified. Each group lands the tests its own work calls for; a final group holds integration checks only.
@@ -86,17 +132,18 @@ The section has no minimum length. With no real boundary decision to record, it 
 
 Tasks is the working checklist during implementation. A task is ticked the moment its work lands. An agent picking the work up, after a break or in a new session, reads Tasks first to find what is open.
 
-Why and What changes stay short; `plan.md` is one to two pages before tasks.
+**Budget.** What changes holds at most ten lines and Design at most five decisions; `plan.md` is about 80 lines before Tasks. `verify` lists a plan over its budget.
 
 **Spec change files — `specs/<feature>.md`**
 
 One file per affected spec, named after the spec it targets: `docs/plans/<slug>/specs/tasks.md` proposes changes to `docs/specs/tasks.md`. Requirements and scenarios use the same heading levels and wording rules as a spec, so a block moves between the two unchanged.
 
-- `## Purpose`: present only when the target spec does not exist yet.
+- The `Type:` line and `## Purpose`: present only when the target spec does not exist yet.
 - `## ADDED Requirements`: new requirements, complete with scenarios.
 - `## MODIFIED Requirements`: the full updated requirement block under its existing name. The name is the handle that locates the requirement in the spec.
 - `## REMOVED Requirements`: the requirement's heading followed by `**Reason**:`.
 - A rename is a REMOVED entry for the old name and an ADDED entry for the new one.
+- The file is written against the merged budget: the target spec's requirements plus ADDED minus REMOVED fit the spec budget, or the file carries the REMOVED entries that make it fit, each with its reason. A requirement that leaves the spec for the tests is a REMOVED entry whose reason says so.
 
 A plan with no behavior change (refactor, tooling) has no `specs/` directory and touches no spec.
 
@@ -145,119 +192,7 @@ A plan dropped for lack of time or interest leaves nothing behind. Ask the user 
 
 ## Stops
 
-An operation runs through to its end. It stops only where nothing can move without the user.
-
-Stops that belong:
-- `init`: the user's answers for the overview.
-- `propose`: each round of the interview; an idea that runs into a Non-goal, a `Rejected` decision, or an option a live record turned down.
-- `archive`: a `Not ready` verdict the user has not accepted; a merge or check that fails; an archive target that already exists.
-- `decide`: the user's call on a decision; the user's approval of a consolidated record before the records it replaces move.
-
-Stops that do not belong:
-- In `propose`, pausing between the spec change files and `plan.md` to ask whether to continue.
-- In `verify`, reporting after the code review and waiting before the plan and spec checks. Verify produces one report, at the end.
-- In `archive`, pausing between the merge and the move, or holding the archive until decision records are approved.
-- In any operation, ending the turn with a summary that announces the next step instead of taking it.
-
-A status note goes in the same message as the next action.
-
-## Operations
-
-Identify which operation the request maps to. A request to tidy existing specs is the direct edit described under Spec, not an operation. When a request maps to none, say so rather than improvising a new transition.
-
-### init — scaffold a repo
-
-1. Read the instruction file and any existing `docs/`. Report what exists. Existing documents are kept as they are; create only what is missing.
-2. Create the missing directories.
-3. Create `docs/overview.md` from the template. Fill What / Principles / Non-goals from the user's answers; ask for them. Leave a section empty rather than inventing content.
-4. Add the conventions block to the instruction file, and make the overview load every session: an `@docs/overview.md` import in `CLAUDE.md`, or a read-first line in `AGENTS.md`.
-5. Report the files created and the lines added.
-
-### propose — grill, then write the plan with its spec changes
-
-**1. Ground.** Look widely before asking or writing anything; what the idea depends on is often somewhere the request does not mention.
-- Read the overview.
-- List `docs/specs/` and `docs/decisions/` (the live set, not `superseded/`) and open every file that could bear on the idea, including ones the request does not name. Read each spec the idea touches in full, scenarios included.
-- List `docs/plans/`. Another plan that changes the same spec is a conflict in the making: raise it with the user in the first round of the interview.
-- Look in `docs/archive/` for earlier plans on the same feature, found by the feature's name in their `Specs:` list; they hold the reasons behind its current shape.
-- Read the code that implements the feature.
-
-When the idea runs into a Non-goal, a `Rejected` decision, or an option a live record turned down, say so and ask whether the user is reopening it before going further.
-
-**2. Grill.** Interview the user until there is a shared understanding of what is being built.
-- Treat the idea as a design tree: each decision branches into the decisions that hang off it.
-- Work in rounds. The frontier is every decision whose prerequisites are settled. Ask the whole frontier in one round, numbered, each question with a recommended answer. A question that depends on another still open in this round waits for a later round.
-- Ask through the host's built-in question tool when it has one (such as `AskUserQuestion` in Claude Code). Each decision becomes one question; the recommended answer is the first option, marked as recommended, and the realistic alternatives are the other options. When the tool limits how many questions one call carries, split the round across consecutive calls. A decision whose answer cannot be reduced to a few options is asked in plain text in the same round. Without such a tool, ask in plain text.
-- Facts are the agent's job: anything answerable from the code, the specs, or the environment is looked up, not asked. Decisions are the user's: each is put to them.
-- Scope boundaries are decisions like any other. Where neighbouring work could reasonably be part of this plan (a related case, an adjacent module the change passes through, a follow-up the user mentioned), ask whether it is in. The answers that come back "no" or "later" are the plan's Out of scope; nothing else is.
-- The interview ends when the frontier is empty, with no branch left silently assumed, and the user confirms the shared understanding.
-
-**3. Write the plan directory** from what the interview settled, spec change files and `plan.md` in one go.
-- Spec change files come first: one per affected spec, stating the behavior being committed to. A MODIFIED entry is the existing requirement block copied whole from the spec and then edited.
-- Then `plan.md`. Design is written only when the plan contract calls for it; its decisions record what the interview chose and what it turned down.
-- A question that would change the requirements, the approach, or the tasks goes back to the user. It does not become an open question in the plan.
-
-**4. Report** the plan's path and a short summary: what changes, which specs are affected, what is out of scope. The plan is ready for implementation once the user approves it.
-
-### verify — read plan and spec, review the code against them, check plan and spec
-
-Report only. Verify changes no files. All five steps run before anything is reported.
-
-**1. Read the plan and the specs.** Read `plan.md`, every spec change file in the plan, and each target spec in `docs/specs/` in full. Everything after this step is judged against what these say, so the reading comes first.
-
-**2. Code review with that context.** Run the `code-review` skill on the change and hand it the context from step 1, so the review judges the code against what was intended, not only against general standards:
-- the plan directory's path, with `plan.md` as the statement of intent
-- the requirements and scenarios in the spec change files, as the behavior the change commits to
-- the requirements in the target specs that the plan leaves untouched, as contracts the change must keep
-- Out of scope, as the boundary the change stays inside
-- the plan's Design decisions, as choices already made with the user; the review flags code that departs from them, and does not reopen them
-
-When the `code-review` skill is unavailable, say so and review the diff directly with the same context.
-
-**3. Plan check.**
-- Every task is ticked.
-- Each task's stated verification holds: the test exists and passes, the command runs, the behavior is observable.
-- Work in the diff that no task covers is listed as unplanned.
-
-**4. Spec check.** For each scenario in the plan's spec change files, classify it, drawing on the review's findings:
-- satisfied and covered by a test
-- satisfied, no test
-- not satisfied
-
-Then check each spec change file against its target spec:
-- Each MODIFIED and REMOVED entry names a requirement that exists in the spec.
-- Each affected spec listed in `plan.md` has a change file, and each change file is listed.
-- The change breaks no existing requirement that the plan leaves unlisted. A broken, unlisted requirement is either a bug or a missing MODIFIED entry; report it and let the user say which.
-- Behavior the code adds that no requirement describes is listed, each with where it belongs: a requirement when users rely on it, the tests alone when it only repeats a rule already stated.
-
-Then check the spec change files against the spec contract, and list:
-- text the contract keeps out: values copied from another authoritative source, paths that point at the implementation, layout and styling, scenarios that only repeat a rule already shown;
-- references elsewhere in the repo to a requirement the plan renames, merges, or removes;
-- each target spec that would pass the size budget once the plan is merged, with the split it suggests.
-
-**5. Verdict.** `Ready to archive` or `Not ready`, followed by findings from the review and the two checks in one list ordered by severity, each tied to a file, task, or scenario. A spec past the size budget does not by itself make the plan `Not ready`. State what was run and what was only read.
-
-### archive — merge the plan into the specs, then move it to the archive
-
-Archive runs on a verified plan. With no verify result at hand, run `verify` first. With a `Not ready` verdict, continue only when the user accepts the open findings by name.
-
-The order is fixed: merge, check, then delete the change files and move the plan. When the merge or the check fails, nothing is deleted or moved. Once the merge starts, steps 1 to 6 run without a pause, so the repo is never left with specs merged and the plan still in `docs/plans/`.
-
-1. **Merge each spec change file into the spec of the same name.** ADDED: append the blocks as they are. MODIFIED: replace the requirement of that name with the full updated block. REMOVED: delete the requirement. A new spec is created with its Purpose. Where verify found the code behaving differently from a planned requirement and the user accepted it, correct the change file first, then merge, so the spec states the behavior that shipped.
-2. **Check the result.** Each merged spec still follows the spec contract: every requirement has a scenario, no requirement appears twice, no ADDED / MODIFIED / REMOVED heading remains, and no reference elsewhere in the repo still cites a requirement the plan renamed or removed. A merged spec past the size budget is not a failure: name it in the report with the split it suggests.
-3. **Delete the spec change files**: the plan's `specs/` directory. Their content is now in `docs/specs/`.
-4. **Move the plan directory** with `git mv` to `docs/archive/YYYY-MM-DD-<slug>/`, dated today. When the target already exists, stop and report.
-5. **Update the overview**: Current focus, Next, and the date.
-6. Keep these edits in the same change set as the code when that change is still open.
-7. **Report** what was merged, deleted, and moved, and any spec past the size budget. In the same report, propose decision records: run each choice under the plan's Design through the decision gate and list those that pass, each with any live record on the same topic it would supersede or consolidate with. A record is written through `decide` once the user approves it; the archive does not wait for that.
-
-### decide — record, supersede, or consolidate a decision
-
-1. **New decision.** Apply the decision gate. When it fails, say which condition fails and write nothing. Otherwise create the record in `docs/decisions/` with the next number: `Accepted` for the user's chosen approach, `Rejected` for an approach turned down for durable reasons.
-2. **Changed decision.** An unpublished record is edited in place. A published one is superseded: write the new record, `git mv` each replaced record to `docs/decisions/superseded/`, change only its status line to `Superseded by NNNN`, and update links to its old path in the overview, plans, specs, and live records. Links inside `docs/archive/` stay as written; the number still locates the record.
-3. **Consolidation.** When a topic meets the consolidation condition, or the live set is past its budget, group the live records by topic and draft the consolidated record. Put the draft to the user; on approval, write it and supersede the records it replaces as in step 2. An unpublished record it replaces is deleted rather than moved.
-4. **Check the live set.** After any write, count the live records and look for topics that meet the consolidation condition. Name them in the report as consolidation candidates.
-5. **Report** the records created, edited, moved, or deleted, and the size of the live set.
+An operation runs through to its end and stops only where nothing can move without the user. Each operation's file lists its stops and the pauses that do not belong to it. In every operation, ending the turn with a summary that announces the next step instead of taking it is not a stop. A status note goes in the same message as the next action.
 
 ## Boundaries
 
@@ -268,127 +203,26 @@ The order is fixed: merge, check, then delete the change files and move the plan
 
 ## Templates
 
-### Conventions block (instruction file)
-
-```markdown
-## Docs conventions
-- `docs/overview.md`: what this project is, its principles, current focus, and non-goals. Read it before starting work. Non-goals are not to be implemented or proposed.
-- `docs/specs/`: the behavior contract of each shipped feature. Update the spec in the same change as the code. When a spec and the code disagree, the code is right and the spec gets fixed, unless the code breaks a guarantee users rely on; that is reported as a suspected bug for the user to decide.
-- `docs/plans/`: intent for features being built or queued. Everything under it, including the spec change files in `docs/plans/<slug>/specs/`, is a proposal and not a description of current behavior. When implementing a plan, read the Tasks in its `plan.md` to find what is open, and tick each task as its work lands.
-- `docs/archive/`: shipped plans kept as history, `plan.md` only. Nothing in it describes current behavior or is work to do; the spec changes each plan made are merged into `docs/specs/` and recorded in its git history. Read it only to learn why something was built the way it was. Its contents are not edited.
-- `docs/decisions/`: cross-feature technical decisions. Records directly in it are live: `Status: Accepted` is in force; an approach recorded as `Rejected`, or turned down in a live record's Considered options, is not to be proposed again unless the user reopens it. `docs/decisions/superseded/` is history; read it only to learn why a decision changed. A record on the default branch is changed by a new record that supersedes it; a record not yet there is edited in place.
-```
-
-### Overview
-
-```markdown
-# Project overview
-Updated YYYY-MM-DD
-
-## What this is
-
-## Principles
-
-## Status
-Shipped features are described in `docs/specs/`.
-
-## Current focus
-
-## Next
-
-## Non-goals
-```
-
 ### Spec
 
 ```markdown
 # <Feature>
+Type: feature | api | format
 
 ## Purpose
+
+## Fields
+| Field | Type | Default | When invalid |
+|---|---|---|---|
 
 ## Requirements
 
 ### Requirement: <name>
-The system SHALL <one behavior>.
+The system SHALL <one rule>.
 
 #### Scenario: <name>
 - **WHEN** <condition>
 - **THEN** <expected outcome>
 ```
 
-### Plan — `plan.md`
-
-```markdown
-# <Feature or change>
-
-## Why
-
-## What changes
-- <change>
-
-Specs:
-- `<feature>` (new | modified)
-
-## Out of scope
-- <work someone would expect here, left out> — <why, or where it goes instead>
-
-## Design
-
-### Decisions
-- <choice> — because <reason>. Turned down: <alternative>, because <reason>.
-
-### Risks
-- [<risk>] → <mitigation>
-
-### Open questions
-
-## Tasks
-
-### 1. <group>
-- [ ] 1.1 <task>; verified by <test, command, or observable behavior>
-```
-
-### Spec change file — `specs/<feature>.md`
-
-```markdown
-# <Feature> — spec changes
-
-## Purpose
-
-## ADDED Requirements
-
-### Requirement: <name>
-The system SHALL <one behavior>.
-
-#### Scenario: <name>
-- **WHEN** <condition>
-- **THEN** <expected outcome>
-
-## MODIFIED Requirements
-
-### Requirement: <existing name>
-<full updated requirement and all its scenarios>
-
-## REMOVED Requirements
-
-### Requirement: <existing name>
-**Reason**: <why it is removed>
-```
-
-### Decision record
-
-```markdown
-# NNNN: <title>
-
-Status: Accepted
-Date: YYYY-MM-DD
-Supersedes: NNNN, NNNN
-
-## Context
-
-## Decision
-
-## Considered options
-
-## Consequences
-```
+`## Fields` appears in a `format` spec only. A scenario appears only where the rule would be misread without it.

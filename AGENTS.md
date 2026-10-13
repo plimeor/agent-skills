@@ -28,6 +28,7 @@ Skill names should be readable, intuitive, and easy to invoke. Prefer the shorte
 - Use absolute terms like `always`, `never`, `must`, and `only` only for true invariants: safety, irreversible actions, exact output contracts, or tool syntax.
 - Keep frontmatter `description:` focused on routing: trigger conditions and near-miss exclusions only.
 - Put behavior contracts, output formats, validation rules, workflow details, examples, internal rationale, and historical framing in the `SKILL.md` body or bundled resources, not in frontmatter `description:`.
+- When a rule exists to counter an agent's drive to be complete, write it as a count or a stop that an operation checks, not as a judgment the agent applies. A section that collects what the other sections leave out grows like the list it was meant to prevent; default to leaving such things out.
 
 ## Verification
 
