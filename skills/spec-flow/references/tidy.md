@@ -47,7 +47,7 @@ Nothing else stops. Rewriting an approved spec, annotating its tests, updating r
 | Path into the implementation or tests | Replace with the concept, or drop |
 | Third and later scenarios, scenarios that repeat the rule, combinations and error variants | Demote to tests |
 | One-per-field requirements in a `format` spec | Rows of the `## Fields` table; leniency rules become one requirement |
-| Promises alone still over budget | Split along features a user would name, or propose a `Budget:` line with the reason |
+| Promises alone still over budget | Split along features a user would name, under an area directory when the parts share one, or propose a `Budget:` line with the reason |
 
 **3. Propose.** One proposal per spec, in this shape, put to the user:
 
@@ -74,7 +74,7 @@ Open: <sentences the agent could not place>
 
 **1. Inventory** the live set: count, and group by topic, where a topic is the records a reader needs together to apply any one of them.
 
-**2. Consolidate** each topic that meets the consolidation condition in the Decision contract: two or three live records on one topic, or an Accepted record partly outdated. Draft the consolidated record under that contract, put it to the user, and on approval supersede the records it replaces as `references/decide.md` step 2 describes. A record that stands alone on its topic is left as it is; tidy reapplies no gate.
+**2. Consolidate** each topic that meets the consolidation condition in the Decision contract: three or more live records on one topic, or an Accepted record partly outdated. Draft the consolidated record under that contract, put it to the user, and on approval supersede the records it replaces as `references/decide.md` step 2 describes. A record that stands alone on its topic is left as it is; tidy reapplies no gate.
 
 **3. Links.** Every link in the overview, specs, plans, and live records to a record now in `superseded/` is updated to the record that replaced it. Links inside `docs/archive/` stay.
 
