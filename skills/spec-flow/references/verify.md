@@ -44,7 +44,7 @@ Then check each spec change file against its target spec:
 
 Then check the spec change files against the spec contract, and list:
 - a requirement whose statement fails the promise test for the spec's type;
-- text the contract keeps out: values copied from another authoritative source, paths that point at the implementation, layout and styling, a third scenario on a requirement, a scenario that only repeats the rule, a detail carried over from the design that sits below the promise line;
+- text the contract keeps out: values copied from another authoritative source, paths that point at the implementation, layout and styling, a scenario the rule would not be misread without, such as one that only repeats the rule, a detail carried over from the design that sits below the promise line;
 - an unspecified clause that describes what the implementation does, or that qualifies a rule no reader would take as finer than written;
 - references elsewhere in the repo to a requirement the plan renames, merges, or removes;
 - each target spec that would be over budget once the plan is merged, with the cuts that bring it within budget or the split it suggests.
