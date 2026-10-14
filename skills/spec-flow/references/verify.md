@@ -44,9 +44,10 @@ Then check each spec change file against its target spec:
 
 Then check the spec change files against the spec contract, and list:
 - a requirement whose statement fails the promise test for the spec's type;
-- text the contract keeps out: values copied from another authoritative source, paths that point at the implementation, layout and styling, a third scenario on a requirement, a scenario that only repeats the rule, a detail carried over from the design that sits below the promise line;
+- text the contract keeps out: values copied from another authoritative source, paths that point at the implementation, layout and styling, a scenario the rule would not be misread without, such as one that only repeats the rule, a detail carried over from the design that sits below the promise line;
 - an unspecified clause that describes what the implementation does, or that qualifies a rule no reader would take as finer than written;
 - references elsewhere in the repo to a requirement the plan renames, merges, or removes;
 - each target spec that would be over budget once the plan is merged, with the cuts that bring it within budget or the split it suggests.
+- each target spec past about 300 lines once the plan is merged, with the lines that belong elsewhere.
 
 **5. Verdict.** `Ready to archive` or `Not ready`, followed by findings from the review and the two checks in one list ordered by severity. A finding from the checks is tied to a task, a scenario, a requirement, or a rule of the spec or plan contract; what cannot be tied to one of these is not a finding. A review finding is tied to the code it concerns. A target spec over budget once the plan is merged makes the plan `Not ready`, and so does a blocking question still unanswered, unless the user accepts it by name. State what was run and what was only read.
