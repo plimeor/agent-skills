@@ -1,6 +1,6 @@
 ---
 name: "spec-flow"
-description: "Manage a repo's plans, specs, and architecture doc through init, propose, skeleton-review, spec-review, verify, archive, decide, tidy, and architecture-review: scaffold the docs layout, grill then write a plan with its skeleton, design, and spec changes, review a plan's skeleton or spec changes, check the work against plan, skeleton, design, and spec, merge the plan into the specs and the architecture doc and archive it, record, supersede, or consolidate decision records, bring existing specs and decisions back within their contracts, and keep the architecture doc true to the code."
+description: "Manage a repo's docs for plans, specs, structure, and decisions. Use when setting up the docs layout; planning a feature or change; reviewing a plan's skeleton or spec change files; checking finished work against its plan; archiving a shipped plan; recording, superseding, or consolidating a decision record; tidying existing specs or decisions; or building or checking docs/architecture.md against the code. Near miss: a principle-based judgment of a design outside a plan is code-design-review; a review of a diff with no plan is code-review."
 ---
 
 # Spec Flow
@@ -54,7 +54,7 @@ Identify which operation the request maps to, then read that operation's file be
 
 - **Set up the docs layout** in a repo that has none, or complete a partial one: `init`, in `references/init.md`.
 - **Plan a feature or a change** ("I want to add", "let's build", "propose"): `propose`, in `references/propose.md`.
-- **Review a plan's skeleton** ("review the skeleton", "does this structure hold"): `skeleton-review`, in `references/skeleton-review.md`.
+- **Review a plan's skeleton** ("review the skeleton", "check the plan's structure"): `skeleton-review`, in `references/skeleton-review.md`.
 - **Review a plan's spec change files** against the spec contract: `spec-review`, in `references/spec-review.md`.
 - **Check finished work against its plan** ("is it ready", "verify", "review against the plan"): `verify`, in `references/verify.md`.
 - **Ship a verified plan** ("archive", "merge the spec changes"): `archive`, in `references/archive.md`.
@@ -106,6 +106,7 @@ The inclusion test for every entry: would a change confined to one unit's intern
 - **Invariants are decided, not observed.** An absence found in the code becomes an invariant only when the user confirms it, a decision record sets it, or a shipped skeleton introduces it.
 - **Who edits it.** `init` creates it empty; `archive` merges a shipped skeleton's Architecture changes; `architecture-review` builds the document from the code and corrects drift. Nothing else edits it.
 - **Code is authoritative.** An entry that disagrees with the code is a defect in the document and is corrected to the code, with one exception: code that breaks an invariant is a suspected violation. The invariant is not rewritten to describe it; report it and let the user decide whether the code or the invariant changes.
+- **Broken invariants block shipping.** An invariant the code breaks, as a plan leaves it — kept, introduced, or changed — makes `verify` return `Not ready` and stops `archive`, unless the user accepts it by name.
 - **Checked date.** The line after the title reads `Checked against the code: YYYY-MM-DD`, the last day `architecture-review` compared the whole document with the code.
 - **Length is a signal.** Past about 300 lines, the document likely holds entries below the top level; `architecture-review` lists them.
 
@@ -127,7 +128,7 @@ The test for every sentence: if this changed, would users be owed a fix or a mig
   - `feature`: a capability users act on. The promise is what the user can do and what follows, at the grain the user would describe it. Orderings, tiebreaks, algorithm steps, and the format of internal values are the implementation's unless the user named them in the interview. Layout, icons, and styling stay out.
   - `api`: a library or interface that code outside the project calls, such as a published package, a public endpoint, or an extension point. An interface only the project's own code calls is structure, not a promise: its callers change with it in the same change, and nobody is owed a fix. The promise is signatures and types, guaranteed semantics, error conditions, and stability constraints such as versioning rules, build targets, and minimum toolchain. Exact outputs for given inputs, offsets, and the absence of panics under generated input are tests. Where an external specification is the authority, the spec names it and lists the extensions and divergences; it does not restate it. Examples show usage.
   - `format`: a data format, on-disk layout, or interop contract other tools read and write. The field table is the promise, written as a table under `## Fields`, one row per field: name, type, default, handling when invalid. Rows are not requirements. How leniently the format is read is one requirement.
-- **Purpose**: one or two sentences on what the feature is for, naming the unit that owns it as `docs/architecture.md` names it.
+- **Purpose**: one or two sentences on what the feature is for. Which unit implements it is the codemap's to say.
 - **Requirements**: each is `### Requirement: <name>` followed by one normative statement using SHALL or MUST (or the equivalent in the repo's language). One rule per requirement, where a rule is what a reader applies as a unit: its input checks, error variants, and edge cases stay in the same requirement. A requirement that mixes several rules is split only along rules that pass the promise test; a split does not make the spec longer.
 - **Unspecified clauses.** The default for what the spec does not promise is silence.
   - A clause such as `; the order within a tier is unspecified` closes a requirement's statement only when a reader of that rule would assume a finer rule exists and go looking or fill it in, or when the user placed the matter below the promise line in the interview.
@@ -192,7 +193,7 @@ The inclusion test for every entry: if the units on either side were built indep
 
 **Design**
 
-Written only when the change is cross-cutting, adds a dependency or changes the data model, carries security, performance, or migration complexity, or has ambiguity worth settling before coding.
+Written only when the change has a skeleton, is cross-cutting, adds a dependency or changes the data model, carries security, performance, or migration complexity, or has ambiguity worth settling before coding.
 
 - Up to 100 lines, it is `plan.md`'s `## Design` section.
 - Longer, it is `design.md`, and `plan.md`'s Design section is one line pointing to it.
@@ -223,7 +224,7 @@ Its sections, each used only when the change calls for it:
 - Line numbers in the code: name the symbol.
 - Conventions that hold across the repo: they belong in the instruction file.
 
-**Budget.** Why holds at most two sentences and five bullets. A skeleton holds at most 150 lines, an inline Design at most 100 lines, and a design file at most 800 before it splits. What changes, Out of scope, and Tasks have no line count: What changes grows with the requirements it names, which the spec budget bounds. `verify` lists a plan over its budget and each line that belongs elsewhere.
+**Budget.** Why holds at most two sentences and five bullets. The skeleton stays within its own budget, an inline Design holds at most 100 lines, and a design file at most 800 before it splits. What changes, Out of scope, and Tasks have no line count: What changes grows with the requirements it names, which the spec budget bounds. `verify` lists a plan over its budget and each line that belongs elsewhere.
 
 **Spec change files — `specs/[<area>/]<feature>.md`**
 

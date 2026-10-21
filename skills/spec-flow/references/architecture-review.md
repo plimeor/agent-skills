@@ -22,7 +22,7 @@ Nothing else stops. Correcting entries to the code, cutting what sits below the 
 
 ## Steps
 
-1. **Read** `docs/architecture.md`, the decision records its invariants name, and the code's top-level layout and imports. When the document or its line in the conventions block is missing, run `init` first; it creates only what is missing.
+1. **Read** `docs/architecture.md`, the decision records its invariants name, the live decision records that set a rule between units, and the code's top-level layout and imports. A rule a live record sets that the document lacks is added as an invariant. When the document or its line in the conventions block is missing, run `init` first; it creates only what is missing.
 2. **Inventory the top-level units** in the code: the crates, packages, services, or directory groups a maintainer would name, what each owns, and the imports between them. Use the repo's dependency tool to draw the graph when one is configured.
 3. **Compare the codemap** with the inventory, and correct it to the code:
    - a unit in the code with no entry gets one;
@@ -36,6 +36,12 @@ Nothing else stops. Correcting entries to the code, cutting what sits below the 
 7. **Date the check**: `Checked against the code: YYYY-MM-DD`.
 8. **Report** the entries added, corrected, removed, and cut; the invariants checked, unchecked, and violated; the candidates confirmed and declined; and each invariant a dependency checker the repo has, or could add, would enforce.
 
-## Checks for archive
+## Checks for archive and verify
 
-`archive` runs steps 3, 4, and 6 on the entries of a skeleton's Architecture changes, before merging them. An entry that disagrees with the code means the shipped structure departs from the skeleton: the entry is corrected to the code, then merged. An invariant the plan introduces or keeps that the code breaks is a suspected violation and stops the archive. Drift in entries the plan does not touch is reported for a later `architecture-review`, not corrected by `archive`, and the check date is left as it was.
+`archive`, before merging, and `verify`, reporting only, run three checks on a skeleton's Architecture changes:
+
+- Each ADDED or MODIFIED unit entry matches the code: the unit exists where `Lives in:` names it, and `Depends on:` matches its imports of other units.
+- Each invariant the plan keeps, introduces, or changes holds, by search or by the repo's dependency tool; one no static check can decide is listed as unchecked.
+- Each entry passes the inclusion test, with no file tree, link, or line number.
+
+In `archive`, an entry that disagrees with the code means the shipped structure departs from the skeleton: the entry is corrected to the code, then merged. A broken invariant follows the Architecture contract's rule on broken invariants. Drift in entries the plan does not touch is reported for a later `architecture-review`, not corrected, and the check date is left as it was.

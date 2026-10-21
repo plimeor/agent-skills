@@ -7,7 +7,7 @@ Read with `SKILL.md`, whose How plan, skeleton, design, and spec relate section 
 - Each round of the interview.
 - An idea that runs into a Non-goal, a `Rejected` decision, an option a live record turned down, or an invariant of `docs/architecture.md`: say so and ask whether the user is reopening it before going further.
 - A question a review raises that only the user can answer, asked as an interview round.
-- Blocking findings still open after a review's third round, as each review's file describes.
+- Findings still open after a review's third round, as the Stops of each review's file describe.
 
 Not a stop: waiting for the user to approve the skeleton before writing the rest, or pausing between `plan.md`, the skeleton, the design, the spec change files, and the tasks to ask whether to continue. All are written in one go, with the reviews in between.
 
@@ -41,14 +41,14 @@ Not a stop: waiting for the user to approve the skeleton before writing the rest
 
 **3. Write the plan directory** from what the interview settled, top-down and in one go. Each level is reviewed before the levels built on it are written.
 - `plan.md`'s Why, What changes, and Out of scope.
-- The skeleton, when the plan contract calls for one. Run `skeleton-review` on it, as `references/skeleton-review.md` describes, until it passes or stops. Nothing below the skeleton is written before it passes.
+- The skeleton, when the plan contract calls for one. Run `skeleton-review` on it, as `references/skeleton-review.md` describes, until it passes or stops. Nothing below the skeleton is written before it passes, or before the user decides or accepts the findings it stopped on.
 - The design, when the plan contract calls for one: inline or in `design.md` by its budget. Its decisions record what the interview chose and what it turned down, including the alternative `skeleton-review` compared.
 - The spec change files, extracted from the plan, the skeleton, and the design: one per affected spec, at the target's path, stating the promises being made, each sentence passing the promise test for the spec's type. A MODIFIED entry is the existing requirement block copied whole from the spec and then edited. Before writing, count the merged result against the spec budget; when it would not fit, the file carries the REMOVED entries that make it fit, each with its reason, and the report names them. Run `spec-review` on them, as `references/spec-review.md` describes, until it passes or stops.
 - `plan.md`'s Tasks, cut from the skeleton and the design. In a plan with a skeleton, group 1 is the walking skeleton along its first path, and each caller of a changed interface listed under `Called by:` is covered by a task.
 - Then check `plan.md` and the design against what stays out of them, and against the plan budget.
 - A question that would change the requirements, the approach, or the tasks goes back to the user. It is recorded only as a blocking open question with the owner the user named.
 
-**4. Report** the plan's path and a short summary: what changes, the skeleton's units and first path, where the design lives, which specs are affected, what is out of scope, each review's rounds and the findings it left open, and each blocking question with its owner and date. The plan is ready for implementation once the user approves it.
+**4. Report** the plan's path and a short summary: what changes, the skeleton's units and first path, the invariants it introduces or changes and its Architecture changes, where the design lives, which specs are affected, what is out of scope, each review's rounds and the findings it left open, and each blocking question with its owner and date. The plan is ready for implementation once the user approves it.
 
 ## Templates
 
@@ -125,15 +125,15 @@ New | Changed — <responsibility in one sentence>
 ## Architecture changes
 
 ### ADDED
-#### <unit, or invariant name>
-<final entry text>
+#### Codemap: <unit> | Invariant: <name> | Cross-cutting: <concern> | Bird's eye
+<final entry text, in the form `docs/architecture.md` uses>
 
 ### MODIFIED
-#### <existing entry name>
+#### <section>: <existing entry name>
 <full updated entry>
 
 ### REMOVED
-#### <existing entry name>
+#### <section>: <existing entry name>
 **Reason**: <why it is removed>
 ````
 

@@ -6,7 +6,7 @@ Archive runs on a verified plan. With no verify result at hand, run `verify` fir
 
 - A `Not ready` verdict the user has not accepted.
 - A merged spec that would be over budget, until the user has chosen the cuts.
-- An invariant the plan introduces or keeps that the code breaks.
+- A broken invariant the user has not accepted, as the Architecture contract's rule on broken invariants describes.
 - A merge or check that fails.
 - An archive target that already exists.
 
@@ -14,16 +14,18 @@ Not a stop: pausing between the merge and the move, or holding the archive until
 
 ## Steps
 
-The order is fixed: count, merge, check, then close the open questions, delete the change files, and move the plan. When the count, the merge, or the check fails, nothing is deleted or moved. Once the merge starts, steps 2 to 8 run without a pause, so the repo is never left with specs merged and the plan still in `docs/plans/`.
+The order is fixed: count and check, merge, check the result, then close the open questions, delete the change files, and move the plan. When step 1, the merge, or the check fails, nothing is deleted or moved. Once the merge starts, steps 2 to 8 run without a pause, so the repo is never left with specs merged and the plan still in `docs/plans/`.
 
-1. **Count the merged result.** For each target spec: its requirements plus ADDED minus REMOVED, against the spec budget. When a spec would be over budget, stop before merging and put the cuts to the user: requirements that demote to tests or merge into one rule, or a split along features a user would name. Apply the chosen cuts to the change files, then continue.
+1. **Count and check before merging.**
+   - For each target spec: its requirements plus ADDED minus REMOVED, against the spec budget. When a spec would be over budget, stop before merging and put the cuts to the user: requirements that demote to tests or merge into one rule, or a split along features a user would name. Apply the chosen cuts to the change files, then continue.
+   - When the plan has a skeleton: when `docs/architecture.md` or its line in the conventions block is missing, run `init` first; it creates only what is missing. Then run the checks `references/architecture-review.md` lists for `archive` and `verify` on the skeleton's Architecture changes, correcting each entry the shipped structure departs from.
 2. **Merge.**
    - Each spec change file into the spec at the same path. ADDED: append the blocks as they are. MODIFIED: replace the requirement of that name with the full updated block. REMOVED: delete the requirement. A new spec is created with its `Type:` line and Purpose, in its area directory when it has one. Where verify found the code behaving differently from a planned requirement and the user accepted it, correct the change file first, then merge, so the spec states the behavior that shipped.
-   - The skeleton's Architecture changes into `docs/architecture.md`, created first from `init`'s template when it does not exist, after running the checks `references/architecture-review.md` lists for `archive` on them, which correct an entry to the code where the shipped structure departs from the skeleton. ADDED: append each entry under its section. MODIFIED: replace the entry of that name. REMOVED: delete it.
+   - The skeleton's Architecture changes into `docs/architecture.md`. ADDED: append each entry to the section its heading names. MODIFIED: replace the entry of that name. REMOVED: delete it.
 3. **Check the result.** Each merged spec follows the spec contract: within budget, no requirement appears twice, no ADDED / MODIFIED / REMOVED heading remains, and no reference elsewhere in the repo still cites a requirement the plan renamed or removed. `docs/architecture.md` follows its contract: no entry appears twice, and no ADDED / MODIFIED / REMOVED heading remains.
 4. **Close the open questions.** Each answered question is written into the text of the design it settled and removed from the list. One the user accepted unanswered stays, marked as shipped unanswered.
 5. **Delete the merged change files**: the plan's `specs/` directory and the skeleton's Architecture changes section. Their content is now in `docs/specs/` and `docs/architecture.md`.
 6. **Move the plan directory** with `git mv` to `docs/archive/YYYY-MM-DD-<slug>/`, dated today, with `plan.md`, the skeleton, the design, and the attachments. When the target already exists, stop and report.
 7. **Update the overview**: Current focus, Next, and the date.
 8. Keep these edits in the same change set as the code when that change is still open.
-9. **Report** what was merged into the specs and the architecture doc, what was cut, corrected, deleted, and moved, and any drift the architecture checks found in entries the plan does not touch. In the same report, propose decision records: run each of the design's Decisions through the decision gate and list those that pass, each with any live record on the same topic it would supersede or consolidate with. A record is written through `decide` once the user approves it; the archive does not wait for that.
+9. **Report** what was merged into the specs and the architecture doc, what was cut, corrected, deleted, and moved, and any drift the architecture checks found in entries the plan does not touch. When the codemap held no entries before this merge, name `architecture-review` as the step that fills the rest from the code. In the same report, propose decision records: run each of the design's Decisions through the decision gate and list those that pass, each with any live record on the same topic it would supersede or consolidate with. A record is written through `decide` once the user approves it; the archive does not wait for that.
