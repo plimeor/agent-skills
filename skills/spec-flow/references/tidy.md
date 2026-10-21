@@ -4,7 +4,7 @@ Read with `SKILL.md`, whose Spec and Decision contracts define the target state.
 
 ## Outcome
 
-Every spec in `docs/specs/` follows the spec contract: a `Type:` line, requirements that pass the promise test for that type, scenarios only where a rule would be misread without them, no copied value lists or implementation paths, within budget or carrying a `Budget:` line with its reason, and each requirement named by a test. The live decision set is within its budget with one record per topic. Nothing the repo promises has changed; what left the prose is in the tests or in git history.
+Every spec in `docs/specs/` follows the spec contract: a `Type:` line, requirements that pass the promise test for that type, scenarios only where a rule would be misread without them, no structure, copied value lists, or implementation paths, within budget or carrying a `Budget:` line with its reason, and each requirement named by a test. The live decision set is within its budget with one record per topic. Nothing the repo promises has changed; what left the prose is in the tests or in git history.
 
 ## Constraints
 
@@ -19,7 +19,7 @@ Every spec in `docs/specs/` follows the spec contract: a `Type:` line, requireme
 - Each spec passes the checks `archive` step 3 applies: within budget, `Type:` line present, no requirement twice, no stale reference to a removed or renamed requirement.
 - Each kept requirement is named by a test, or is listed in the report as a gap.
 - The live decision set is within its budget, every topic that met the consolidation condition has been consolidated or the user has declined, and no link in the overview, specs, plans, or live records points at a superseded record's old path.
-- The report shows, per spec, the counts before and after, and each requirement or scenario that left with where it went: a test, silence, an unspecified clause, or another spec.
+- The report shows, per spec, the counts before and after, and each requirement or scenario that left with where it went: a test, silence, an unspecified clause, another spec, or the list for `architecture-review`.
 
 ## Stops
 
@@ -45,6 +45,8 @@ Nothing else stops. Rewriting an approved spec, annotating its tests, updating r
 | Requirement that restates an external specification | Replace with the reference to it, plus the extensions and divergences |
 | Requirement body that walks through an algorithm | Keep the outcome at the user's grain; when silence would mislead, close with an unspecified clause |
 | Path into the implementation or tests | Replace with the concept, or drop |
+| Requirement that states structure: units, interfaces between the project's own units, ownership, dependency direction | Demote: leaves the spec; when it states a top-level fact, listed in the report for `architecture-review` |
+| An `api` spec for an interface only the project's own code calls | Leaves `docs/specs/`: its requirements that pin behavior stay in the tests, its top-level facts are listed for `architecture-review` |
 | Scenarios the rule would not be misread without: ones that repeat the rule, combinations and error variants | Demote to tests |
 | One-per-field requirements in a `format` spec | Rows of the `## Fields` table; leniency rules become one requirement |
 | Promises alone still over budget | Split along features a user would name, under an area directory when the parts share one, or propose a `Budget:` line with the reason |
