@@ -1,22 +1,25 @@
-# propose — grill, then write the plan with its design and spec changes
+# propose — grill, then write the plan with its skeleton, design, and spec changes
 
-Read with `SKILL.md`, whose How plan, design, and spec relate section sets the order, and whose Spec and Plan contracts define what gets written; this file holds the steps, the stops, and the templates `propose` writes.
+Read with `SKILL.md`, whose How plan, skeleton, design, and spec relate section sets the order, and whose Architecture, Spec, and Plan contracts define what gets written; this file holds the steps, the stops, and the templates `propose` writes. The two reviews it runs are in `references/skeleton-review.md` and `references/spec-review.md`.
 
 ## Stops
 
 - Each round of the interview.
-- An idea that runs into a Non-goal, a `Rejected` decision, or an option a live record turned down: say so and ask whether the user is reopening it before going further.
+- An idea that runs into a Non-goal, a `Rejected` decision, an option a live record turned down, or an invariant of `docs/architecture.md`: say so and ask whether the user is reopening it before going further.
+- A question a review raises that only the user can answer, asked as an interview round.
+- Findings still open after a review's third round, as the Stops of each review's file describe.
 
-Not a stop: pausing between `plan.md`, the design, the spec change files, and the tasks to ask whether to continue. All are written in one go.
+Not a stop: waiting for the user to approve the skeleton before writing the rest, or pausing between `plan.md`, the skeleton, the design, the spec change files, and the tasks to ask whether to continue. All are written in one go, with the reviews in between.
 
 ## Steps
 
 **1. Ground.** Look widely before asking or writing anything; what the idea depends on is often somewhere the request does not mention.
 - Read the overview, and any material the user brings: a PRD, a review page, an interface contract.
+- Read `docs/architecture.md`. A skeleton starts from its codemap and its invariants.
 - List `docs/specs/` and `docs/decisions/` (the live set, not `superseded/`) and open every file that could bear on the idea, including ones the request does not name. Read each spec the idea touches in full, scenarios included.
-- List `docs/plans/`. Another plan that changes the same spec is a conflict in the making: raise it with the user in the first round of the interview.
+- List `docs/plans/`. Another plan that changes the same spec, or the same units, is a conflict in the making: raise it with the user in the first round of the interview.
 - Look in `docs/archive/` for earlier plans on the same feature, found by the spec's name in their `Specs:` list; they hold the reasons behind its current shape.
-- Read the code that implements the feature.
+- Read the code of each unit the idea passes through.
 
 **2. Grill.** Interview the user until there is a shared understanding of what is being built and how.
 - Treat the idea as a design tree: each decision branches into the decisions that hang off it.
@@ -29,22 +32,23 @@ Not a stop: pausing between `plan.md`, the design, the spec change files, and th
 - Four kinds of question, three owners. The frontier holds the second and third kinds.
   - Facts are the agent's: anything answerable from the code, the specs, or the environment is looked up, not asked.
   - Decisions above the promise line are the user's: each is put to them.
-  - Design decisions with real alternatives are the user's too: architecture and module boundaries, interface changes, migration, rollout. Their answers go in the design, not the spec.
+  - Design decisions with real alternatives are the user's too: which units exist and what each owns, interface changes, migration, rollout. Their answers go in the skeleton or the design, not the spec.
   - Details below the promise line that no reviewer needs to see first are the implementer's: the agent settles them while coding and writes them nowhere but the code and tests.
   - An answer of "leave it to the implementation" produces no plan text, unless silence would mislead a reader of the related requirement; then that requirement closes with an unspecified clause.
 - A decision only someone outside the conversation can make is still put to the user, who names its owner and the date it must be answered by. It becomes a blocking open question.
 - Scope boundaries are decisions like any other. Where neighbouring work could reasonably be part of this plan (a related case, an adjacent module the change passes through, a follow-up the user mentioned), ask whether it is in. The answers that come back "no" or "later" are the plan's Out of scope; nothing else is.
 - The interview ends when the frontier is empty, with no branch left silently assumed, and the user confirms the shared understanding.
 
-**3. Write the plan directory** from what the interview settled, top-down and in one go.
+**3. Write the plan directory** from what the interview settled, top-down and in one go. Each level is reviewed before the levels built on it are written.
 - `plan.md`'s Why, What changes, and Out of scope.
-- The design, when the plan contract calls for one: inline or in `design.md` by its budget. Its decisions record what the interview chose and what it turned down.
-- The spec change files, extracted from the plan and the design: one per affected spec, at the target's path, stating the promises being made, each sentence passing the promise test for the spec's type. A MODIFIED entry is the existing requirement block copied whole from the spec and then edited. Before writing, count the merged result against the spec budget; when it would not fit, the file carries the REMOVED entries that make it fit, each with its reason, and the report names them.
-- `plan.md`'s Tasks, cut from the design.
+- The skeleton, when the plan contract calls for one. Run `skeleton-review` on it, as `references/skeleton-review.md` describes, until it passes or stops. Nothing below the skeleton is written before it passes, or before the user decides or accepts the findings it stopped on.
+- The design, when the plan contract calls for one: inline or in `design.md` by its budget. Its decisions record what the interview chose and what it turned down, including the alternative `skeleton-review` compared.
+- The spec change files, extracted from the plan, the skeleton, and the design: one per affected spec, at the target's path, stating the promises being made, each sentence passing the promise test for the spec's type. A MODIFIED entry is the existing requirement block copied whole from the spec and then edited. Before writing, count the merged result against the spec budget; when it would not fit, the file carries the REMOVED entries that make it fit, each with its reason, and the report names them. Run `spec-review` on them, as `references/spec-review.md` describes, until it passes or stops.
+- `plan.md`'s Tasks, cut from the skeleton and the design. In a plan with a skeleton, group 1 is the walking skeleton along its first path, and each caller of a changed interface listed under `Called by:` is covered by a task.
 - Then check `plan.md` and the design against what stays out of them, and against the plan budget.
 - A question that would change the requirements, the approach, or the tasks goes back to the user. It is recorded only as a blocking open question with the owner the user named.
 
-**4. Report** the plan's path and a short summary: what changes, where the design lives, which specs are affected, what is out of scope, and each blocking question with its owner and date. The plan is ready for implementation once the user approves it.
+**4. Report** the plan's path and a short summary: what changes, the skeleton's units and first path, the invariants it introduces or changes and its Architecture changes, where the design lives, which specs are affected, what is out of scope, each review's rounds and the findings it left open, and each blocking question with its owner and date. The plan is ready for implementation once the user approves it.
 
 ## Templates
 
@@ -74,15 +78,64 @@ Specs:
 - <work someone would expect here, left out> — <why, or where it goes instead>
 
 ## Design
-See `design.md`.
+See `skeleton.md` and `design.md`.
 
 ## Tasks
 <preamble: conventions specific to this plan, test drops, dependencies and lanes, external dependency dates>
 
-### 1. <group>
-- [ ] 1.1 <task>; verified by <test, command, or observable behavior>
-  - <detail, or the design section it follows>
+### 1. Walking skeleton
+- [ ] 1.1 <interfaces and types of the skeleton wired along its first path>; verified by <end-to-end test along that path>
+
+### 2. <group>
+- [ ] 2.1 <task>; verified by <test, command, or observable behavior>
+  - <detail, or the skeleton or design section it follows>
 ```
+
+### Skeleton — `skeleton.md`
+
+````markdown
+# <Feature or change> — skeleton
+
+## Units
+
+### <unit>
+New | Changed — <responsibility in one sentence>
+- Owns: <state it alone writes, or the decision it hides>
+- Depends on: <units>
+- Called by: <units that call its changed interface today>
+
+```<language>
+<signatures and types other units call>
+```
+
+#### <part of the unit, one level down; at most two units refined>
+
+## Paths
+
+### 1. <path name> — walking skeleton
+1. <unit>.<call>(<input>) → <output>
+2. <unit>.<call>(<input>) → <output>
+   - fails when <condition>: <where the path turns>
+
+### 2. <path name>
+
+## Invariants
+- <unit> never <calls | imports | writes> <what> — kept | introduced | changed
+
+## Architecture changes
+
+### ADDED
+#### Codemap: <unit> | Invariant: <name> | Cross-cutting: <concern> | Bird's eye
+<final entry text, in the form `docs/architecture.md` uses>
+
+### MODIFIED
+#### <section>: <existing entry name>
+<full updated entry>
+
+### REMOVED
+#### <section>: <existing entry name>
+**Reason**: <why it is removed>
+````
 
 ### Design — `design.md`, or `plan.md`'s `## Design`
 
@@ -95,8 +148,6 @@ Inline in `plan.md`, the sections drop one heading level and Overview and Conten
 - `design/<topic>.md`: <what it settles>
 
 ## Overview
-
-## Architecture
 
 ## Flows
 
