@@ -15,7 +15,7 @@ Not a stop: a skeleton that passes. It goes on to the design without the user's 
 
 ## Rounds
 
-A round reviews the whole skeleton in three parts — design review, skeleton checks, static pre-check — and then acts on what it found:
+A round reviews the whole skeleton in three parts — design review, skeleton checks, static pre-check — and then acts on what it found. Once a round passes, the readability part runs once (section 4):
 
 - No blocking finding: the review passes. Fix the non-blocking findings whose fix is plain; list the rest in the report.
 - Blocking findings after the first or second round's review: fix each one whose fix follows from the code, the specs, the interview's answers, or the correction a review states; ask the user the ones that need their decision. Then run the next round.
@@ -43,6 +43,14 @@ Each is answered yes or no.
 - Every entry passes the inclusion test. An entry that fails moves to the design or is cut.
 - Each unit is defined by what it owns or hides, not by its place in a path: no unit whose responsibility reads as a stage, such as "validate" or "then persist".
 - Each piece of state has exactly one owning unit, and only that unit writes it.
+- Each fact is stated one way everywhere it appears. Checked strictly, across Units, Paths, and Invariants:
+  - a unit's `Depends on:` agrees with the invariants, including their exceptions, and with the calls its path steps make;
+  - each value a path step passes or receives has the type the interface declares, and a step that turns one type into another names the call that does it;
+  - who reads or writes a piece of state, and through which interface, is the same in Owns, Paths, and Invariants;
+  - one name, one meaning: a term, a sentinel such as `null` or `undefined` for "unset", or a word such as "version" means the same thing in every section, and two things never share one word;
+  - what a unit's responsibility line says it holds, such as "components and hooks", appears in its interface.
+
+  Any disagreement is blocking. Fix it to the side the code, the design, or the interview's answers support; when none decides, ask the user.
 - The dependencies form no cycle and run in the direction `docs/architecture.md` already sets.
 - Every path step names a unit, from Units or from the codemap, and a call in that unit's declared or existing interface. Every unit in Units appears in a path.
 - The first path runs from an entry a user or caller triggers to an end someone can observe.
@@ -64,6 +72,10 @@ Checks that task group 1 can be built as the skeleton states, against the curren
 
 Each check reports what it inspected and what it found. A check that cannot run, such as one on a unit with no code yet, is named as not run; that is not a finding.
 
+## 4. Readability
+
+Run `readability-review` on `skeleton.md`, as `references/readability-review.md` describes. Each contradiction its cold read reports is a failed consistency check (section 2) and is fixed under this file's rules; one that needs the user's decision is asked as an interview round. A fix that changes a unit, an interface, an owner, or a dependency reruns the skeleton checks and the static pre-check on what it touched before the readability part finishes.
+
 ## Report
 
-Inside `propose`'s report, or on its own when run on request: the rounds run; each finding fixed, one line each; the non-blocking findings left; the findings the user accepted; the static checks not run; and the alternative compared, with the outcome.
+Inside `propose`'s report, or on its own when run on request: the rounds run; each finding fixed, one line each; the non-blocking findings left; the findings the user accepted; the static checks not run; the alternative compared, with the outcome; and the readability report.

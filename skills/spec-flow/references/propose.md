@@ -1,6 +1,6 @@
 # propose — grill, then write the plan with its skeleton, design, and spec changes
 
-Read with `SKILL.md`, whose How plan, skeleton, design, and spec relate section sets the order, and whose Architecture, Spec, and Plan contracts define what gets written; this file holds the steps, the stops, and the templates `propose` writes. The two reviews it runs are in `references/skeleton-review.md` and `references/spec-review.md`.
+Read with `SKILL.md`, whose How plan, skeleton, design, and spec relate section sets the order, and whose Architecture, Spec, and Plan contracts define what gets written; this file holds the steps, the stops, and the templates `propose` writes. The three reviews it runs are in `references/skeleton-review.md`, `references/spec-review.md`, and `references/readability-review.md`.
 
 ## Stops
 
@@ -45,10 +45,10 @@ Not a stop: waiting for the user to approve the skeleton before writing the rest
 - The design, when the plan contract calls for one: inline or in `design.md` by its budget. Its decisions record what the interview chose and what it turned down, including the alternative `skeleton-review` compared.
 - The spec change files, extracted from the plan, the skeleton, and the design: one per affected spec, at the target's path, stating the promises being made, each sentence passing the promise test for the spec's type. A MODIFIED entry is the existing requirement block copied whole from the spec and then edited. Before writing, count the merged result against the spec budget; when it would not fit, the file carries the REMOVED entries that make it fit, each with its reason, and the report names them. Run `spec-review` on them, as `references/spec-review.md` describes, until it passes or stops.
 - `plan.md`'s Tasks, cut from the skeleton and the design. In a plan with a skeleton, group 1 is the walking skeleton along its first path, and each caller of a changed interface listed under `Called by:` is covered by a task.
-- Then check `plan.md` and the design against what stays out of them, and against the plan budget.
+- Then check `plan.md` and the design against what stays out of them, and against the plan budget. Then run `readability-review` on `plan.md` and on the design, as `references/readability-review.md` describes; a contradiction its cold read reports is fixed upstream, as `SKILL.md`'s How plan, skeleton, design, and spec relate describes, or asked of the user. The skeleton and the spec change files had theirs inside their own reviews.
 - A question that would change the requirements, the approach, or the tasks goes back to the user. It is recorded only as a blocking open question with the owner the user named.
 
-**4. Report** the plan's path and a short summary: what changes, the skeleton's units and first path, the invariants it introduces or changes and its Architecture changes, where the design lives, which specs are affected, what is out of scope, each review's rounds and the findings it left open, and each blocking question with its owner and date. The plan is ready for implementation once the user approves it.
+**4. Report** the plan's path and a short summary: what changes, the skeleton's units and first path, the invariants it introduces or changes and its Architecture changes, where the design lives, which specs are affected, what is out of scope, each review's rounds and the findings it left open, the readability findings left and the passages left over budget, and each blocking question with its owner and date. The plan is ready for implementation once the user approves it.
 
 ## Templates
 

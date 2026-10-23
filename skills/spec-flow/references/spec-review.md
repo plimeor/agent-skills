@@ -38,7 +38,7 @@ For each spec change file, against its target spec in `docs/specs/`:
 
 When fixing, up to three rounds. Each round runs every check on every change file, then:
 
-- No finding other than the length signal: the review passes.
+- No finding other than the length signal: the review passes. Then run `readability-review` on each change file, as `references/readability-review.md` describes; a contradiction its cold read reports is a finding of this review, fixed by the rules here.
 - Findings after the first or second round's review: fix each one whose fix follows from the contract, the plan, or the interview's answers; ask the user the ones the Stops name. Then run the next round. A budget overrun is fixed with REMOVED entries, each with a reason that says where the requirement goes, and the report names them.
 - Findings after the third round's review, other than the length signal: stop, without a further fix.
 
@@ -46,4 +46,4 @@ When reporting only, run every check once and report each finding.
 
 ## Report
 
-The rounds run, each finding fixed, the findings left or accepted, and the REMOVED entries added for the budget.
+The rounds run, each finding fixed, the findings left or accepted, the REMOVED entries added for the budget, and the readability report.

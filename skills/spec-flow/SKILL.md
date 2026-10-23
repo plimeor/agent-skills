@@ -9,7 +9,7 @@ Keep a trace of intent, structure, and decisions in the repo without letting sta
 
 This file is the map: the layout, how to read a repo's state, which operation a request maps to, and the contract of each document type. Each operation's steps, stops, and templates are in its own file under `references/`; read that file before running the operation.
 
-A feature moves through `propose → (implementation) → verify → archive`. `init` runs once per repo. `decide` applies at any point. `tidy` and `architecture-review` run on request, outside any plan. `skeleton-review` runs inside `propose`, `spec-review` inside `propose` and `verify`; both also run on request.
+A feature moves through `propose → (implementation) → verify → archive`. `init` runs once per repo. `decide` applies at any point. `tidy` and `architecture-review` run on request, outside any plan. `skeleton-review` runs inside `propose`, `spec-review` inside `propose` and `verify`; both also run on request. `readability-review` is the last part of `skeleton-review`, of `spec-review` when it fixes, of `architecture-review`, and of `propose`'s check of `plan.md` and the design; it also runs on request.
 
 Sources: plan and spec formats adapted from OpenSpec's `spec-driven` schema — https://github.com/Fission-AI/OpenSpec/blob/main/schemas/spec-driven/schema.yaml · the interview in `propose` adapted from Matt Pocock's `grilling` skill — https://github.com/mattpocock/skills · the architecture doc adapted from matklad's `ARCHITECTURE.md` — https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html — and arc42's building block view — https://docs.arc42.org/section-5/ · the skeleton's inclusion test adapted from BMAD-METHOD's architecture spine — https://github.com/bmad-code-org/BMAD-METHOD
 
@@ -56,6 +56,7 @@ Identify which operation the request maps to, then read that operation's file be
 - **Plan a feature or a change** ("I want to add", "let's build", "propose"): `propose`, in `references/propose.md`.
 - **Review a plan's skeleton** ("review the skeleton", "check the plan's structure"): `skeleton-review`, in `references/skeleton-review.md`.
 - **Review a plan's spec change files** against the spec contract: `spec-review`, in `references/spec-review.md`.
+- **Review a document's readability** ("the plan is hard to read", "clean up the skeleton's prose", "can a newcomer follow the architecture doc"): `readability-review`, in `references/readability-review.md`.
 - **Check finished work against its plan** ("is it ready", "verify", "review against the plan"): `verify`, in `references/verify.md`.
 - **Ship a verified plan** ("archive", "merge the spec changes"): `archive`, in `references/archive.md`.
 - **Record, change, or consolidate a cross-feature decision**: `decide`, in `references/decide.md`.
@@ -189,7 +190,7 @@ Its sections, in this order:
 
 The inclusion test for every entry: if the units on either side were built independently, could they choose incompatibly? Yes: it belongs in the skeleton. No: it belongs in the design or only in the code. Bodies, algorithms, file trees, fields no other unit reads, and UI stay out. Why the structure is this one, and the alternatives turned down, are the design's Decisions.
 
-**Budget**: 150 lines, three paths, and two units refined one level down. `skeleton-review` counts them.
+**Budget**: 300 lines, three paths, and two units refined one level down. `skeleton-review` counts them.
 
 **Design**
 

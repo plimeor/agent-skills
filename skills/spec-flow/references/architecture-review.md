@@ -18,7 +18,7 @@ Runs on request: to build the document from the code in a repo that has none, or
 - A suspected violation: report it, and leave the invariant as written.
 - An invariant that no longer constrains anything, such as one naming a unit that no longer exists: propose its removal.
 
-Nothing else stops. Correcting entries to the code, cutting what sits below the top level, and dating the check happen in one run.
+Nothing else stops. Correcting entries to the code, cutting what sits below the top level, the readability review, and dating the check happen in one run.
 
 ## Steps
 
@@ -33,8 +33,9 @@ Nothing else stops. Correcting entries to the code, cutting what sits below the 
 4. **Check each invariant** by the means the code allows: an absence of imports, calls, or writes is checked by search or by the repo's dependency tool. One that holds stays; one that fails is a suspected violation; one no static check can decide is listed as unchecked.
 5. **Find candidate invariants**: absences between units that look deliberate, such as a lower layer that never imports a higher one. Put them to the user.
 6. **Apply the contract.** Each entry passes the inclusion test; an entry below the top level, a file tree, a link, a line number, or the path of a single feature is cut. Past about 300 lines, list the entries that most likely belong one level down.
-7. **Date the check**: `Checked against the code: YYYY-MM-DD`.
-8. **Report** the entries added, corrected, removed, and cut; the invariants checked, unchecked, and violated; the candidates confirmed and declined; and each invariant a dependency checker the repo has, or could add, would enforce.
+7. **Read it cold.** Run `readability-review` on `docs/architecture.md`, as `references/readability-review.md` describes. A contradiction its cold read reports is corrected to the code, or, when it concerns an invariant, handled as this file's Stops say.
+8. **Date the check**: `Checked against the code: YYYY-MM-DD`.
+9. **Report** the entries added, corrected, removed, and cut; the invariants checked, unchecked, and violated; the candidates confirmed and declined; each invariant a dependency checker the repo has, or could add, would enforce; and the readability report.
 
 ## Checks for archive and verify
 
