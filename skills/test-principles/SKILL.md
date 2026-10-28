@@ -1,6 +1,6 @@
 ---
 name: test-principles
-description: "Apply test principles when writing, reviewing, rewriting, or pruning automated tests, or when setting a repo's testing policy. Use when adding tests for a feature or bug fix, judging whether existing tests are worth keeping, fixing tests that break on refactors or miss real regressions, choosing assertion granularity, test doubles, or the test layer (unit, integration, e2e), or drafting a testing decision record. Near miss: a whole-diff review is code-review; writing spec requirements is spec-flow."
+description: "Apply test principles when writing, reviewing, rewriting, or pruning automated tests, or when setting a repo's testing policy. Use when adding tests for a feature or bug fix, judging whether existing tests are worth keeping, fixing tests that break on refactors or miss real regressions, choosing assertion granularity, test doubles, or the test layer (unit, integration, e2e), or drafting a testing decision record. Near miss: a whole-diff review is code-review."
 ---
 
 # Test Principles
@@ -15,7 +15,7 @@ A repo's own testing decision overrides these defaults where they conflict. Befo
 
 A test stays only when all three checks pass:
 
-1. **Guarantee**: its name states the guarantee as "when …, the user or caller sees …", traceable to a spec requirement or to something users actually depend on.
+1. **Guarantee**: its name states the guarantee as "when …, the user or caller sees …", traceable to a documented requirement or to something users actually depend on.
 2. **Breaks red**: deliberately breaking that behavior (flip a condition, drop a field, skip a guard, change an exit code, return early) turns it red.
 3. **Refactors green**: restructuring without a behavior change (rewording human text, reordering JSON keys, renaming internal functions, splitting a module) leaves it green.
 
@@ -75,7 +75,6 @@ Classify each dependency by whether anyone outside the system observes it:
 - No branches or loops in a test body, except a table of cases.
 - An expected value comes from an independent source: a literal, a worked example, the spec. A value computed the way the code computes it agrees with the code by construction.
 - A test guarding a specific defect names that defect.
-- When the repo keeps specs, each test points at the requirement it guards in the repo's reference format (for spec-flow repos, a comment naming the spec and requirement), and every requirement is named by at least one test. A test that checks every reference resolves and no requirement is left unnamed keeps this true.
 
 ## 7. A failing test is evidence
 
@@ -85,4 +84,4 @@ To turn a failing test green, change the code, or change the test only when the 
 
 - **Writing or rewriting tests**: report the tests added, changed, or removed, each with its guarantee and the mutation run against it; the commands run and their results; guarantees left without a test and why.
 - **Reviewing tests**: do not edit unless asked. Give one verdict per test (`keep`, `rewrite`, `merge`, `delete`) with the guarantee, the mutation and whether it was `run` or `reasoned`, and the refactor that would break it if any. List the guarantees in scope that no test covers, and which files were not read.
-- **Setting a repo's testing policy**: fill each principle with the repo's concrete entry points, fakes, helpers, and commands; a policy that only restates these principles gives the next agent nothing to check. When the repo uses spec-flow, record it through `spec-flow`'s `decide`.
+- **Setting a repo's testing policy**: fill each principle with the repo's concrete entry points, fakes, helpers, and commands; a policy that only restates these principles gives the next agent nothing to check.
