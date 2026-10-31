@@ -32,7 +32,7 @@ For each spec change file, against its target spec in `docs/specs/`:
 - Each affected spec listed in `plan.md` has a change file at the matching path, and each change file is listed. Each requirement What changes names is in a change file, and each requirement in a change file is named in What changes.
 - No reference elsewhere in the repo still cites a requirement the plan renames, merges, or removes, outside `docs/archive/` and `docs/decisions/superseded/`.
 - Each target spec is within budget once the plan is merged.
-- Each target spec past about 300 lines once the plan is merged is listed with the lines that belong elsewhere. This one is a signal, not a finding to fix.
+- Each target spec past about 600 lines once the plan is merged is listed with the lines that belong elsewhere. This one is a signal, not a finding to fix.
 
 ## Rounds
 
